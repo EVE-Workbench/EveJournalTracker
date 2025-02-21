@@ -1,5 +1,6 @@
 ﻿using EWB_Tracker.ViewModels;
 using System.Windows;
+using System.Windows.Controls;
 using SharedLibrary.Services;
 
 namespace EWB_Tracker
@@ -8,6 +9,7 @@ namespace EWB_Tracker
     {
         
         private FileWatcherService _fileWatcherService;
+        private bool _isWatching = true;
         
         public MainWindow()
         {
@@ -19,17 +21,22 @@ namespace EWB_Tracker
             Loaded += (s, e) => _fileWatcherService.StartWatching();
             Closing += (s, e) => _fileWatcherService.StopWatching();
         }
-
-        private void StartWatching_Click(object sender, RoutedEventArgs e)
-        {
-            _fileWatcherService.StartWatching();
-            MessageBox.Show("Started watching log files.");
-        }
-
+        
         private void StopWatching_Click(object sender, RoutedEventArgs e)
         {
-            _fileWatcherService.StopWatching();
-            MessageBox.Show("Stopped watching log files.");
+            if (_isWatching)
+            {
+                _fileWatcherService.StopWatching();
+                ((Button)sender).Content = "Start Watching";
+                MessageBox.Show("Stopped watching log files.");
+            }
+            else
+            {
+                _fileWatcherService.StartWatching();
+                ((Button)sender).Content = "Stop Watching";
+                MessageBox.Show("Started watching log files.");
+            }
+            _isWatching = !_isWatching;
         }
     }
 }

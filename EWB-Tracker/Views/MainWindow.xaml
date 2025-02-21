@@ -31,9 +31,7 @@
             </StackPanel>
         </Border>
 
-        <ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <ContentControl Content="{Binding CurrentView}" />
-        </ScrollViewer>
+        <ContentControl Grid.Column="0" Grid.Row="1" Content="{Binding CurrentView}" />
 
         <!-- Character List -->
         <ListBox Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
@@ -88,7 +86,7 @@
             </Button>
             <!-- Delimiter -->
             <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5"/>
-            <Button Content="Stop" Margin="5" />
+            <Button Content="Stop Watching" Margin="5" Click="StopWatching_Click" />
             <Button Content="New Lap" Margin="5"/>
             <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5"/>
             <Button Content="Exit" Margin="5"/>

@@ -17,26 +17,40 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="10 0 0 0">
-            <TextBlock Text="Event logs" FontSize="20" FontWeight="Bold" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Event logs" FontSize="20" FontWeight="Bold" Grid.Column="0" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="📂" ToolTip="Import" Margin="5,0" VerticalAlignment="Center" Click="ImportLogEvents_Click" />
+                <Button Grid.Column="2" Content="🧹" ToolTip="Clear log" Margin="5,0" VerticalAlignment="Center" Click="ClearLogEvents_Click" />
+                <Button Grid.Column="3" Content="🔃" ToolTip="Sort" Margin="5,0" VerticalAlignment="Center" Click="SortLogEvents_Click" />
+            </Grid>
             <Border BorderBrush="Black" BorderThickness="0,0,0,1" />
         </StackPanel>
-        <ListBox x:Name="LogListBox" Grid.Row="1" Margin="10 10 0 10 ">
-            <ListBox.ItemTemplate>
-                <DataTemplate DataType="{x:Type models:LogEvent}">
-                    <StackPanel>
-                        <TextBlock>
-                            <Run Text="{Binding Timestamp}" />
-                            <Run Text=" - " />
-                            <Run Text="{Binding Character.Name}" />
-                            <Run Text=" - " />
-                            <Run Text="{Binding Type}" />
-                            <Run Text=" - " />
-                            <Run Text="{Binding Value}" />
-                            <Run Text="{Binding BountyValue, Converter={StaticResource BountyConverter}}" />
-                        </TextBlock>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ListBox x:Name="LogListBox" Grid.Row="1" Margin="10 10 0 10 ">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:LogEvent}">
+                        <StackPanel>
+                            <TextBlock>
+                                <Run Text="{Binding Timestamp}" />
+                                <Run Text=" - " />
+                                <Run Text="{Binding Character.Name}" />
+                                <Run Text=" - " />
+                                <Run Text="{Binding Type}" />
+                                <Run Text=" - " />
+                                <Run Text="{Binding Value}" />
+                                <Run Text="{Binding BountyValue, Converter={StaticResource BountyConverter}}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </ScrollViewer>
     </Grid>
 </UserControl>

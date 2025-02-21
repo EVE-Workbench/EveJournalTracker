@@ -179,7 +179,6 @@ public class FileWatcherService
             Raw = line,
         };
 
-        
         // get the system time for the log line
         var timePattern = @"\[ ([\d\.: ]+) \]";
         var timeMatch = Regex.Match(line, timePattern);
@@ -194,7 +193,6 @@ public class FileWatcherService
 
         if (line.Contains("Jumping from"))
         {
-            // raw = [ 2025.02.19 09:29:57 ] (None) Jumping from Tash-Murkon Prime to Marthia
             const string jumpPattern = @"Jumping from (.+) to (.+)";
             var match = Regex.Match(line, jumpPattern);
             if (match.Success)
@@ -212,18 +210,16 @@ public class FileWatcherService
 
         if (line.Contains("(bounty)"))
         {
-            // raw = '[ 2025.02.20 09:57:04 ] (bounty) <font size=12><b><color=0xff00aa00>543,750 ISK</b><color=0x77ffffff> added to next bounty payout'
-            const string bountyPattern = @"<color=0xff00aa00>([\d,]+) ISK</b>";
+            const string bountyPattern = @"<color=0xff00aa00>([\d,. ]+) ISK</b>";
             var match = Regex.Match(line, bountyPattern);
 
             if (match.Success)
             {
-                var valueString = match.Groups[1].Value.Replace(",", "");
+                var valueString = match.Groups[1].Value.Replace(",", "").Replace(".", "").Replace(" ", "");
                 if (int.TryParse(valueString, out var value))
                 {
                     logEvent.BountyValue = value;
 
-                    // calculate the totalCharacterBounty by getting the total of all eventlogs for this character with the bounty type
                     var totalCharacterBounty = _logEvents
                         .Where(log =>
                             log.Character.CharacterId == character.CharacterId && log.Type == LogEventType.Bounty)

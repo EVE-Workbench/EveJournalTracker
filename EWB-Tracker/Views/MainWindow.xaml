@@ -6,8 +6,8 @@
         xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
         Title="EVE Journal - EWB" Height="600" Width="1024">
     <Window.Resources>
-        <converters:BountyConverter x:Key="BountyConverter"/>
-        <converters:CharacterIdToImageSourceConverter x:Key="CharacterIdToImageSourceConverter"/>
+        <converters:BountyConverter x:Key="BountyConverter" />
+        <converters:CharacterIdToImageSourceConverter x:Key="CharacterIdToImageSourceConverter" />
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -16,16 +16,18 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!-- ISK Display -->
-        <Border Grid.Column="0" Grid.Row="0" Margin="10 10 0 10" Padding="10 20" Background="#2E2E2E" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border Grid.Column="0" Grid.Row="0" Margin="10 10 0 10" Padding="10 20" Background="#2E2E2E"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="{Binding TotalIsk, Converter={StaticResource BountyConverter}}" HorizontalAlignment="Center" FontSize="30" Foreground="#00ff00"/>
+                <TextBlock Text="{Binding TotalIsk, Converter={StaticResource BountyConverter}}"
+                           HorizontalAlignment="Center" FontSize="30" Foreground="#00ff00" />
                 <TextBlock HorizontalAlignment="Center" FontSize="20" Foreground="#00ff00">
-                    + 
+                    +
                     <TextBlock Text="{Binding IskChange, Converter={StaticResource BountyConverter}}" />
                 </TextBlock>
             </StackPanel>
@@ -39,19 +41,38 @@
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:Character}">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{Binding CharacterId, Converter={StaticResource CharacterIdToImageSourceConverter}}" Width="50" Height="50" Margin="5" ClipToBounds="True">
-                            <Image.Clip>
-                                <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25"/>
-                            </Image.Clip>
-                        </Image>
+                        <Grid Width="54" Height="54" Margin="5">
+                            <Ellipse StrokeThickness="2" Fill="Transparent">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Online}" Value="True">
+                                                <Setter Property="Stroke" Value="Green" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Online}" Value="False">
+                                                <Setter Property="Stroke" Value="Red" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <Ellipse Fill="White" Margin="2"/>
+                            <Image
+                                Source="{Binding CharacterId, Converter={StaticResource CharacterIdToImageSourceConverter}}"
+                                Width="50" Height="50" ClipToBounds="True" Margin="2">
+                                <Image.Clip>
+                                    <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25" />
+                                </Image.Clip>
+                            </Image>
+                        </Grid>
                         <StackPanel>
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold" />
                             <TextBlock>
-                                Bounty: 
+                                Bounty:
                                 <TextBlock Text="{Binding Bounty, Converter={StaticResource BountyConverter}}" />
                             </TextBlock>
                             <TextBlock>
-                                System: 
+                                System:
                                 <TextBlock Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
                             </TextBlock>
                         </StackPanel>
@@ -63,7 +84,7 @@
         <!-- Toolbar -->
         <StackPanel Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Orientation="Vertical"
                     Background="LightGray" Width="140">
-            <TextBlock Text="Menu" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <TextBlock Text="Menu" VerticalAlignment="Center" HorizontalAlignment="Center" />
             <Button Content="Bounties" Margin="5" Command="{Binding ShowViewCommand}">
                 <Button.CommandParameter>
                     <views:DefaultView />
@@ -85,11 +106,11 @@
                 </Button.CommandParameter>
             </Button>
             <!-- Delimiter -->
-            <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5"/>
+            <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
             <Button Content="Stop Watching" Margin="5" Click="StopWatching_Click" />
-            <Button Content="New Lap" Margin="5"/>
-            <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5"/>
-            <Button Content="Exit" Margin="5"/>
+            <Button Content="New Lap" Margin="5" />
+            <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
+            <Button Content="Exit" Margin="5" />
         </StackPanel>
     </Grid>
 </Window>

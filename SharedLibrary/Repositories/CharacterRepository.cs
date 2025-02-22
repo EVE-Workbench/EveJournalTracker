@@ -17,7 +17,6 @@ public class CharacterRepository
     public Dictionary<int, Character> Characters => _characters;
 
     public event Action<Character> CharacterAdded;
-    public event Action<Character> CharacterUpdated;
 
     public Character GetOrCreateCharacter(int characterId, Func<int, Character> createCharacter)
     {

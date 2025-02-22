@@ -58,10 +58,12 @@ public class FileWatcherService
 
     public void StopWatching()
     {
-        _cancellationTokenSource.Cancel();
+        //_cancellationTokenSource.Cancel();
         foreach (var watcher in _fileWatchers)
         {
             watcher.EnableRaisingEvents = false;
+            watcher.Changed -= OnLogFileChanged;
+            watcher.Created -= OnLogFileChanged;
             watcher.Dispose();
         }
 

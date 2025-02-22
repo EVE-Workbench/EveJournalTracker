@@ -5,6 +5,7 @@ namespace SharedLibrary.Models
     public class Character : INotifyPropertyChanged
     {
         private string _name;
+        private bool _online;
         private int _bounty;
         private EveSystem? _eveSystem;
 
@@ -19,6 +20,19 @@ namespace SharedLibrary.Models
                 {
                     _name = value;
                     OnPropertyChanged(nameof(Name));
+                }
+            }
+        }
+        
+        public bool Online
+        {
+            get => _online;
+            set
+            {
+                if (_online != value)
+                {
+                    _online = value;
+                    OnPropertyChanged(nameof(Online));
                 }
             }
         }

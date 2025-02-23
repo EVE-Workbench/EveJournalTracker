@@ -4,113 +4,171 @@
         xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
         xmlns:views="clr-namespace:EWB_Tracker.Views"
         xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
-        Title="EVE Journal - EWB" Height="600" Width="1024">
+        Title="EVE Journal - EWB" Height="600" Width="1024"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
     <Window.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
         <converters:CharacterIdToImageSourceConverter x:Key="CharacterIdToImageSourceConverter" />
     </Window.Resources>
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
 
-        <!-- ISK Display -->
-        <Border Grid.Column="0" Grid.Row="0" Margin="10 10 0 10" Padding="10 20" Background="#2E2E2E"
-                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="{Binding TotalIsk, Converter={StaticResource BountyConverter}}"
-                           HorizontalAlignment="Center" FontSize="30" Foreground="#00ff00" />
-                <TextBlock HorizontalAlignment="Center" FontSize="20" Foreground="#00ff00">
-                    +
-                    <TextBlock Text="{Binding IskChange, Converter={StaticResource BountyConverter}}" />
-                </TextBlock>
-            </StackPanel>
-        </Border>
+    <Border Background="{DynamicResource WindowBackground}" BorderBrush="{DynamicResource WindowBorder}"
+            BorderThickness="1" CornerRadius="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-        <ContentControl Grid.Column="0" Grid.Row="1" Content="{Binding CurrentView}" />
+            <!-- Custom Titelbalk -->
+            <DockPanel Grid.Row="0" 
+                       Background="{DynamicResource TitleBarBackground}" 
+                       MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <TextBlock Text="EVE Journal - EWB" 
+                           VerticalAlignment="Center" 
+                           Margin="10 0" 
+                           FontSize="16" 
+                           Foreground="{DynamicResource TitleBarTextColor}" />
 
-        <!-- Character List -->
-        <ListBox Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
-                 ItemsSource="{Binding Characters}" Margin="10">
-            <ListBox.ItemTemplate>
-                <DataTemplate DataType="{x:Type models:Character}">
-                    <StackPanel Orientation="Horizontal">
-                        <Grid Width="54" Height="54" Margin="5">
-                            <Ellipse StrokeThickness="2" Fill="Transparent">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Online}" Value="True">
-                                                <Setter Property="Stroke" Value="Green" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Online}" Value="False">
-                                                <Setter Property="Stroke" Value="Red" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-                            <Ellipse Fill="White" Margin="2"/>
-                            <Image
-                                Source="{Binding CharacterId, Converter={StaticResource CharacterIdToImageSourceConverter}}"
-                                Width="50" Height="50" ClipToBounds="True" Margin="2">
-                                <Image.Clip>
-                                    <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25" />
-                                </Image.Clip>
-                            </Image>
-                        </Grid>
-                        <StackPanel>
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                            <TextBlock>
-                                Bounty:
-                                <TextBlock Text="{Binding Bounty, Converter={StaticResource BountyConverter}}" />
-                            </TextBlock>
-                            <TextBlock>
-                                System:
-                                <TextBlock Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
-                            </TextBlock>
-                        </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Content="—" Width="30" Height="30" Margin="5" 
+                            Click="Minimize_Click"
+                            Background="{DynamicResource TitleBarButtonBackground}" 
+                            Foreground="{DynamicResource TitleBarButtonTextColor}" />
+
+                    <Button Content="🗖" Width="30" Height="30" Margin="5" 
+                            Click="Maximize_Click"
+                            Background="{DynamicResource TitleBarButtonBackground}" 
+                            Foreground="{DynamicResource TitleBarButtonTextColor}" />
+
+                    <Button Content="X" Width="30" Height="30" Margin="5" 
+                            Click="Close_Click"
+                            Background="{DynamicResource CloseButtonBackground}" 
+                            Foreground="{DynamicResource CloseButtonTextColor}" />
+                </StackPanel>
+            </DockPanel>
+
+
+
+
+            <!-- Main Content -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- ISK Display -->
+                <Border Grid.Column="0" Grid.Row="0" Margin="10 0 0 10" Padding="10 20"
+                        Background="{DynamicResource PanelBackground}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding TotalIsk, Converter={StaticResource BountyConverter}}"
+                                   HorizontalAlignment="Center" FontSize="30"
+                                   Foreground="{DynamicResource AccentColor}" />
+                        <TextBlock HorizontalAlignment="Center" FontSize="20"
+                                   Foreground="{DynamicResource AccentColor}">
+                            +
+                            <TextBlock Text="{Binding IskChange, Converter={StaticResource BountyConverter}}" />
+                        </TextBlock>
                     </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+                </Border>
 
-        <!-- Toolbar -->
-        <StackPanel Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Orientation="Vertical"
-                    Background="LightGray" Width="140">
-            <TextBlock Text="Menu" VerticalAlignment="Center" HorizontalAlignment="Center" />
-            <Button Content="Bounties" Margin="5" Command="{Binding ShowViewCommand}">
-                <Button.CommandParameter>
-                    <views:DefaultView />
-                </Button.CommandParameter>
-            </Button>
-            <Button Content="Account" Margin="5" Command="{Binding ShowViewCommand}">
-                <Button.CommandParameter>
-                    <views:AccountView />
-                </Button.CommandParameter>
-            </Button>
-            <Button Content="Settings" Margin="5" Command="{Binding ShowViewCommand}">
-                <Button.CommandParameter>
-                    <views:SettingsView />
-                </Button.CommandParameter>
-            </Button>
-            <Button Content="Log viewer" Margin="5" Command="{Binding ShowViewCommand}">
-                <Button.CommandParameter>
-                    <views:LogView />
-                </Button.CommandParameter>
-            </Button>
-            <!-- Delimiter -->
-            <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
-            <Button Content="Stop Watching" Margin="5" Click="StopWatching_Click" />
-            <Button Content="New Lap" Margin="5" />
-            <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
-            <Button Content="Exit" Margin="5" />
-        </StackPanel>
-    </Grid>
+                <ContentControl Grid.Column="0" Grid.Row="1" Content="{Binding CurrentView}" />
+
+                <!-- Character List -->
+                <ListBox Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
+                         ItemsSource="{Binding Characters}" Margin="10 0 10 10"
+                         Background="{DynamicResource PanelBackground}"
+                         Foreground="{DynamicResource TextColor}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:Character}">
+                            <StackPanel Orientation="Horizontal">
+                                <Grid Width="54" Height="54" Margin="5">
+                                    <Ellipse StrokeThickness="2" Fill="Transparent">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Online}" Value="True">
+                                                        <Setter Property="Stroke" Value="Green" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Online}" Value="False">
+                                                        <Setter Property="Stroke" Value="Red" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                    <Ellipse Fill="White" Margin="2" />
+                                    <Image
+                                        Source="{Binding CharacterId, Converter={StaticResource CharacterIdToImageSourceConverter}}"
+                                        Width="50" Height="50" ClipToBounds="True" Margin="2">
+                                        <Image.Clip>
+                                            <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25" />
+                                        </Image.Clip>
+                                    </Image>
+                                </Grid>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextColor}" />
+                                    <TextBlock Foreground="{DynamicResource TextColor}">
+                                        Bounty:
+                                        <TextBlock Text="{Binding Bounty, Converter={StaticResource BountyConverter}}" />
+                                    </TextBlock>
+                                    <TextBlock Foreground="{DynamicResource TextColor}">
+                                        System:
+                                        <TextBlock Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- Toolbar -->
+                <Border Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" 
+                        Background="{DynamicResource PanelBackground}" 
+                        Width="140" 
+                        CornerRadius="0,0,10,0"
+                        Margin="0 0 10 10">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="Menu" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                   Foreground="{DynamicResource TextColor}" />
+                        <Button Content="Bounties" Margin="5" Command="{Binding ShowViewCommand}">
+                            <Button.CommandParameter>
+                                <views:DefaultView />
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Content="Account" Margin="5" Command="{Binding ShowViewCommand}">
+                            <Button.CommandParameter>
+                                <views:AccountView />
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Content="Settings" Margin="5" Command="{Binding ShowViewCommand}">
+                            <Button.CommandParameter>
+                                <views:SettingsView />
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Content="Log viewer" Margin="5" Command="{Binding ShowViewCommand}">
+                            <Button.CommandParameter>
+                                <views:LogView />
+                            </Button.CommandParameter>
+                        </Button>
+                        <!-- Delimiter -->
+                        <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
+                        <Button Content="Stop Watching" Click="StopWatching_Click" />
+                        <Button Content="New Lap" />
+                        <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
+                        <Button Content="Exit" Click="Close_Click"/>
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </Grid>
+    </Border>
 </Window>

@@ -10,6 +10,7 @@
     <UserControl.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
     </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -24,20 +25,29 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Event logs" FontSize="20" FontWeight="Bold" Grid.Column="0" VerticalAlignment="Center" />
+                <TextBlock Text="Event logs" FontSize="20" FontWeight="Bold" 
+                           Grid.Column="0" VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextColor}" />
+
                 <Button Grid.Column="1" Content="📂" ToolTip="Import" Margin="5,0" VerticalAlignment="Center" Click="ImportLogEvents_Click" />
                 <Button Grid.Column="2" Content="🧹" ToolTip="Clear log" Margin="5,0" VerticalAlignment="Center" Click="ClearLogEvents_Click" />
-                <Button Grid.Column="3" Content="🔃" ToolTip="Sort" Margin="5,0" VerticalAlignment="Center" Click="SortLogEvents_Click" />
+                <Button Grid.Column="3" Content="🔃" ToolTip="Sort" Margin="5,0 0 0" VerticalAlignment="Center" Click="SortLogEvents_Click" />
             </Grid>
-            <Border BorderBrush="Black" BorderThickness="0,0,0,1" />
         </StackPanel>
-        
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <ListBox x:Name="LogListBox" Grid.Row="1" Margin="10 10 0 10 ">
+
+        <!-- ListBox with Event Logs -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" 
+                      Background="{DynamicResource PanelBackground}"
+                      Margin="10 10 0 10">
+            <ListBox x:Name="LogListBox" 
+                     Margin="10 10 0 10" 
+                     Background="{DynamicResource PanelBackground}" 
+                     Foreground="{DynamicResource TextColor}"
+                     BorderBrush="Transparent">
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:LogEvent}">
                         <StackPanel>
-                            <TextBlock>
+                            <TextBlock Foreground="{DynamicResource TextColor}">
                                 <Run Text="{Binding Timestamp}" />
                                 <Run Text=" - " />
                                 <Run Text="{Binding Character.Name}" />

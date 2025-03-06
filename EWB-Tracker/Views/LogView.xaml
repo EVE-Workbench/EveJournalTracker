@@ -7,6 +7,7 @@
              xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
+
     <UserControl.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
     </UserControl.Resources>
@@ -17,6 +18,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <!-- Header met buttons -->
         <StackPanel Grid.Row="0" Margin="10 0 0 0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -29,17 +31,21 @@
                            Grid.Column="0" VerticalAlignment="Center"
                            Foreground="{DynamicResource TextColor}" />
 
-                <Button Grid.Column="1" Content="📂" ToolTip="Import" Margin="5,0" VerticalAlignment="Center" Click="ImportLogEvents_Click" />
-                <Button Grid.Column="2" Content="🧹" ToolTip="Clear log" Margin="5,0" VerticalAlignment="Center" Click="ClearLogEvents_Click" />
-                <Button Grid.Column="3" Content="🔃" ToolTip="Sort" Margin="5,0 0 0" VerticalAlignment="Center" Click="SortLogEvents_Click" />
+                <Button Grid.Column="1" Content="📂" ToolTip="Import" Margin="5,0" VerticalAlignment="Center" 
+                        Command="{Binding ImportLogEventsCommand}" />
+                <Button Grid.Column="2" Content="🧹" ToolTip="Clear log" Margin="5,0" VerticalAlignment="Center" 
+                        Command="{Binding ClearLogEventsCommand}" />
+                <Button Grid.Column="3" Content="🔃" ToolTip="Sort" Margin="5,0 0 0" VerticalAlignment="Center" 
+                        Command="{Binding SortLogEventsCommand}" />
             </Grid>
         </StackPanel>
 
-        <!-- ListBox with Event Logs -->
+        <!-- ListBox met Event Logs -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" 
                       Background="{DynamicResource PanelBackground}"
                       Margin="10 10 0 10">
-            <ListBox x:Name="LogListBox" 
+            <ListBox ItemsSource="{Binding LogEvents}" 
+                     x:Name="LogListBox"
                      Margin="10 10 0 10" 
                      Background="{DynamicResource PanelBackground}" 
                      Foreground="{DynamicResource TextColor}"

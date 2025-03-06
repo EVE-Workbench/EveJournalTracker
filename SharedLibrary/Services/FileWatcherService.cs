@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
+using SharedLibrary.Cache;
 using SharedLibrary.Enums;
 using SharedLibrary.Models;
-using SharedLibrary.Repositories;
 
 namespace SharedLibrary.Services;
 
 public class FileWatcherService
 {
     private readonly string _logDirectory;
+    private readonly CharacterCache _characterCache;
     private readonly List<LogEvent> _logEvents;
     private readonly List<FileSystemWatcher> _fileWatchers;
     private readonly ConcurrentQueue<string> _fileChangeQueue;
@@ -22,9 +20,10 @@ public class FileWatcherService
     public event EventHandler<LogEvent> OnNewLogEvent;
     public event EventHandler<(int TotalISK, int ISKChange)> OnISKUpdated;
 
-    public FileWatcherService(string logDirectory)
+    public FileWatcherService(string logDirectory, CharacterCache characterCache)
     {
         _logDirectory = logDirectory;
+        _characterCache = characterCache;
         _logEvents = new List<LogEvent>();
         _fileWatchers = new List<FileSystemWatcher>();
         _fileChangeQueue = new ConcurrentQueue<string>();
@@ -62,8 +61,8 @@ public class FileWatcherService
         foreach (var watcher in _fileWatchers)
         {
             watcher.EnableRaisingEvents = false;
-            watcher.Changed -= OnLogFileChanged;
-            watcher.Created -= OnLogFileChanged;
+            //watcher.Changed -= OnLogFileChanged;
+            //watcher.Created -= OnLogFileChanged;
             watcher.Dispose();
         }
 
@@ -122,7 +121,7 @@ public class FileWatcherService
         }
     }
 
-    private void OnLogFileChanged(object sender, FileSystemEventArgs e)
+    /*private void OnLogFileChanged(object sender, FileSystemEventArgs e)
     {
         try
         {
@@ -149,7 +148,7 @@ public class FileWatcherService
         {
             // Ignore for now
         }
-    }
+    }*/
 
 
     private string? ExtractCharacterIdFromFileName(string fileName)
@@ -161,16 +160,26 @@ public class FileWatcherService
 
     private Character GetOrCreateCharacter(int characterId)
     {
-        return CharacterRepository.Instance.GetOrCreateCharacter(characterId, id =>
+        var character = _characterCache.GetCharacter(characterId);
+        if (character != null)
         {
-            var characterName = CharacterService.GetCharacterNameAsync(id).GetAwaiter().GetResult();
-            return new Character
-            {
-                CharacterId = id,
-                Name = characterName ?? $"Char-{id}"
-            };
-        });
+            return character;
+        }
+
+        // Get the character name from the ESI API
+        var characterName = CharacterService.GetCharacterNameAsync(characterId).GetAwaiter().GetResult();
+
+        var newCharacter = new Character
+        {
+            CharacterId = characterId,
+            Name = characterName ?? $"Char-{characterId}"
+        };
+
+        _characterCache.AddCharacter(newCharacter);
+
+        return newCharacter;
     }
+
 
     private LogEvent? ParseLogLine(string line, Character character)
     {

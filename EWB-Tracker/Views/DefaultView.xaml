@@ -9,44 +9,10 @@
     <StackPanel Margin="10">
         <!-- Sprints Section -->
         <TextBlock Text="Sprints" FontSize="16" Margin="5 0" FontWeight="Bold" />
-        <ItemsControl ItemsSource="{Binding Sprints}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <UniformGrid Columns="3" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Border BorderBrush="#cccccc" BorderThickness="1" Padding="5" Margin="5">
-                        <StackPanel>
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                            <TextBlock Text="Bounty:" />
-                            <TextBlock Text="{Binding Bounty}" Foreground="Blue" />
-                        </StackPanel>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        
 
         <!-- Systems Section -->
         <TextBlock Text="Systems" FontSize="16" Margin="5 0" FontWeight="Bold" />
-        <ItemsControl ItemsSource="{Binding Systems}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <UniformGrid Columns="3" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Border BorderBrush="#cccccc" BorderThickness="1" Padding="5" Margin="5">
-                        <StackPanel>
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                            <TextBlock Text="Bounty:" />
-                            <TextBlock Text="{Binding Bounty}" Foreground="Blue" />
-                        </StackPanel>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        
     </StackPanel>
 </UserControl>

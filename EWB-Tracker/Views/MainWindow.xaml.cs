@@ -1,25 +1,24 @@
 ﻿using System;
-using EWB_Tracker.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using SharedLibrary.Services;
+using EWB_Tracker.ViewModels;
 
 namespace EWB_Tracker
 {
     public partial class MainWindow : Window
     {
-        private FileWatcherService _fileWatcherService;
+        private readonly FileWatcherService _fileWatcherService;
         private bool _isWatching = true;
-        private bool isDragging = false;
-        private Point startPoint;
 
-        public MainWindow()
+        // ViewModel en FileWatcherService worden nu via DI geïnjecteerd
+        public MainWindow(MainWindowViewModel viewModel, FileWatcherService fileWatcherService)
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel();
+            DataContext = viewModel;
 
-            _fileWatcherService = ServiceLocator.GetService<FileWatcherService>();
+            _fileWatcherService = fileWatcherService;
 
             Loaded += (s, e) => _fileWatcherService.StartWatching();
             Closing += (s, e) => _fileWatcherService.StopWatching();
@@ -42,7 +41,6 @@ namespace EWB_Tracker
 
             _isWatching = !_isWatching;
         }
-
 
         // Minimize Window
         private void Minimize_Click(object sender, RoutedEventArgs e)
@@ -68,11 +66,10 @@ namespace EWB_Tracker
         {
             this.Close();
         }
-        
+
         // Slepen en Dubbelklik afhandelen
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            // Dubbelklik om te Maximaliseren of Restoren
             if (e.ClickCount == 2)
             {
                 if (this.WindowState == WindowState.Maximized)
@@ -86,7 +83,6 @@ namespace EWB_Tracker
             }
             else
             {
-                // Enkelklik om te slepen
                 this.DragMove();
             }
         }

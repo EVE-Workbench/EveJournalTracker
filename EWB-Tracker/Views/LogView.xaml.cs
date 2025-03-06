@@ -1,47 +1,74 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Input;
+using EWB_Tracker.Commands;
+using Microsoft.Extensions.DependencyInjection;
 using SharedLibrary.Enums;
 using SharedLibrary.Models;
 using SharedLibrary.Services;
 
 namespace EWB_Tracker.Views;
 
-public partial class LogView : UserControl
+public partial class LogView
 {
-    private FileWatcherService _fileWatcherService;
-    private ObservableCollection<LogEvent> _logEventCollection;
     
+    private readonly FileWatcherService _fileWatcherService;
+    private ObservableCollection<LogEvent> _logEventCollection { get; set; }
+
+    public ICommand ImportLogEventsCommand { get; }
+    public ICommand ClearLogEventsCommand { get; }
+    public ICommand SortLogEventsCommand { get; }
+
     public LogView()
     {
         InitializeComponent();
-        _fileWatcherService = ServiceLocator.GetService<FileWatcherService>();
         _logEventCollection = new ObservableCollection<LogEvent>();
         LogListBox.ItemsSource = _logEventCollection;
         
-        // Subscribe op het event voor nieuwe log entries
-        _fileWatcherService.OnNewLogEvent += OnNewLogEvent;
-    }
-    
+        _fileWatcherService = App.ServiceProvider.GetRequiredService<FileWatcherService>();
 
-    // Event handler voor nieuwe log entries
+        _fileWatcherService.OnNewLogEvent += OnNewLogEvent;
+
+        ImportLogEventsCommand = new RelayCommand(ImportLogEvents);
+        ClearLogEventsCommand = new RelayCommand(ClearLogEvents);
+        SortLogEventsCommand = new RelayCommand(SortLogEvents);
+    }
+
+    // Event handler for new log events
     private void OnNewLogEvent(object sender, LogEvent e)
     {
-        // UI updaten moet op de UI thread gebeuren
         Dispatcher.Invoke(() =>
         {
-            if (e.Type != LogEventType.Combat)
-            {
-                _logEventCollection.Add(e);     
-                //SortLogEvents();
-                LogListBox.ScrollIntoView(e);
-            }
+            if (e.Type == LogEventType.Combat) return;
+            
+            _logEventCollection.Add(e);     
+            //SortLogEvents();
+            LogListBox.ScrollIntoView(e);
         });
     }
-    
-    
-    private void SortLogEvents_Click(object sender, RoutedEventArgs e)
+
+    private void ImportLogEvents()
+    {
+        var fileDialog = new Microsoft.Win32.OpenFileDialog
+        {
+            DefaultExt = ".txt",
+            Filter = "Text documents (.txt)|*.txt"
+        };
+
+        var result = fileDialog.ShowDialog();
+        if (result == true)
+        {
+            var filePath = fileDialog.FileName;
+            // Implement import logic 
+        }
+    }
+
+    private void ClearLogEvents()
+    {
+        _logEventCollection.Clear();
+    }
+
+    private void SortLogEvents()
     {
         var sorted = _logEventCollection.OrderBy(log => log.Timestamp).ToList();
         _logEventCollection.Clear();
@@ -49,28 +76,7 @@ public partial class LogView : UserControl
         {
             _logEventCollection.Add(logEvent);
         }
+        sorted.Clear();
     }
-    
-    private void ClearLogEvents_Click(object sender, RoutedEventArgs e)
-    {
-        _logEventCollection.Clear();
-    }
-    
-    private void ImportLogEvents_Click(object sender, RoutedEventArgs e)
-    {
-        var fileDialog = new Microsoft.Win32.OpenFileDialog
-        {
-            DefaultExt = ".txt",
-            Filter = "Text documents (.txt)|*.txt"
-        };
-        
-        var result = fileDialog.ShowDialog();
-        if (result == true)
-        {
-            var filePath = fileDialog.FileName;
-            
-            // for now this uses the file touch event to trigger the file processing because the files in the evelog directory are being watched. 
-            // this needs to be replaced by an actual import function that reads the file and processes the logs. but leaves the current user system untouched.
-        }
-    }
+
 }

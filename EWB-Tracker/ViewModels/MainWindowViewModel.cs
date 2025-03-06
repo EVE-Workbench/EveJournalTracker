@@ -2,19 +2,21 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
-using System.Windows.Threading;
 using EWB_Tracker.Commands;
 using EWB_Tracker.Views;
+using SharedLibrary.Cache;
 using SharedLibrary.Models;
-using SharedLibrary.Repositories;
 using SharedLibrary.Services;
 
 namespace EWB_Tracker.ViewModels
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
+        private readonly FileWatcherService _fileWatcherService;
+        private readonly CharacterCache _characterCache;
         private object _currentView;
         private ObservableCollection<Character> _characters;
+
         public ObservableCollection<Character> Characters
         {
             get => _characters;
@@ -24,11 +26,31 @@ namespace EWB_Tracker.ViewModels
                 OnPropertyChanged(nameof(Characters));
             }
         }
+
         public ObservableCollection<Sprint> Sprints { get; set; }
-        public ObservableCollection<SystemBounty> Systems { get; set; }
-        public int TotalIsk { get; set; } = 0;
-        public int IskChange { get; set; } = 0;
-        
+
+        private int _totalIsk;
+        public int TotalIsk
+        {
+            get => _totalIsk;
+            set
+            {
+                _totalIsk = value;
+                OnPropertyChanged(nameof(TotalIsk));
+            }
+        }
+
+        private int _iskChange;
+        public int IskChange
+        {
+            get => _iskChange;
+            set
+            {
+                _iskChange = value;
+                OnPropertyChanged(nameof(IskChange));
+            }
+        }
+
         public object CurrentView
         {
             get => _currentView;
@@ -38,36 +60,38 @@ namespace EWB_Tracker.ViewModels
                 OnPropertyChanged(nameof(CurrentView));
             }
         }
-        
+
         public ICommand ShowViewCommand { get; }
 
-        public MainWindowViewModel()
+        // FileWatcherService wordt nu via DI geïnjecteerd
+        public MainWindowViewModel(FileWatcherService fileWatcherService, CharacterCache characterCache)
         {
-            _characters = new ObservableCollection<Character>(CharacterRepository.Instance.Characters.Values);
-            CharacterRepository.Instance.CharacterAdded += OnCharacterAdded;
-            
+            _fileWatcherService = fileWatcherService;
+            _characterCache = characterCache;
+            _characterCache.CharacterAdded += (sender, e) =>
+            {
+                var characters = Characters.ToList();
+                characters.Add(e);
+                Characters = new ObservableCollection<Character>(characters);
+            };
+
+            var characters = _characterCache.GetAllCharacters();
+            _characters = new ObservableCollection<Character>(characters);
+
             Sprints = new ObservableCollection<Sprint>();
-            Systems = new ObservableCollection<SystemBounty>();
-            
+
             CurrentView = new DefaultView(); 
 
             ShowViewCommand = new RelayCommand(ShowView);
-            
-            var fileWatcherService = ServiceLocator.GetService<FileWatcherService>();
-            fileWatcherService.OnISKUpdated += (sender, iskValues) =>
+
+            // Subscriben op ISK updates
+            _fileWatcherService.OnISKUpdated += (sender, iskValues) =>
             {
                 TotalIsk = iskValues.TotalISK;
                 IskChange = iskValues.ISKChange;
-                OnPropertyChanged(nameof(TotalIsk));
-                OnPropertyChanged(nameof(IskChange));
             };
         }
-        
-        private void OnCharacterAdded(Character newCharacter)
-        {
-            App.Current.Dispatcher.Invoke(() => Characters.Add(newCharacter));
-        }
-        
+
         private void ShowView(object view)
         {
             CurrentView = view;

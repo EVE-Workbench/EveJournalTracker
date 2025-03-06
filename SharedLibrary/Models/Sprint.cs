@@ -1,7 +1,10 @@
-﻿namespace SharedLibrary.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SharedLibrary.Models;
 
 public class Sprint
 {
+    [Key]
+    public int Id { get; set; }
     public string Name { get; set; }
-    public string Bounty { get; set; }
 } 

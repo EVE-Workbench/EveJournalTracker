@@ -11,4 +11,17 @@
       <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="assets\ewb-journal-logo.png" />
+      <Resource Include="assets\ewb-journal-logo.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+    </ItemGroup>
+
 </Project>

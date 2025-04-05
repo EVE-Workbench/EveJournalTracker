@@ -8,6 +8,6 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <StackPanel Margin="10">
         <TextBlock Text="Settings" FontSize="20" FontWeight="Bold" />
-        <!-- Voeg hier je instellingen toe -->
+        <!-- Settings form here -->
     </StackPanel>
 </UserControl>

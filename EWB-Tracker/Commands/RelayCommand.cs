@@ -8,7 +8,6 @@ namespace EWB_Tracker.Commands
         private readonly Action<object> _execute;
         private readonly Func<object, bool> _canExecute;
 
-        // Extra constructor voor parameterloze methodes
         public RelayCommand(Action execute, Func<bool> canExecute = null)
         {
             _execute = _ => execute();

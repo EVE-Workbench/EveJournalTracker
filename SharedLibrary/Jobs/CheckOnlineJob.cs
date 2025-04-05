@@ -14,7 +14,7 @@ public class CheckOnlineJob
     {
         _characterCache = characterCache ?? throw new ArgumentNullException(nameof(characterCache));
         _timer = new Timer(interval);
-        _timer.Elapsed += CheckProcesses;
+        _timer.Elapsed += CheckProcesses!;
     }
 
     public void Start()
@@ -29,21 +29,20 @@ public class CheckOnlineJob
 
     private void CheckProcesses(object sender, ElapsedEventArgs e)
     {
-        // Haal alle actieve EVE Online processen op
+        // Fetch all processes with a main window title that starts with "EVE -"
         var processes = Process.GetProcesses()
             .Where(p => !string.IsNullOrWhiteSpace(p.MainWindowTitle) &&
                         p.MainWindowTitle.StartsWith("EVE -", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        // Verkrijg alle characters uit de cache
+        // Get all characters from the cache
         var allCharacters = _characterCache.GetAllCharacters();
 
-        // Alle online character namen
-        HashSet<string?> onlineCharacterNames = processes
+        var onlineCharacterNames = processes
             .Select(p => p.MainWindowTitle.Split('-')[1].Trim())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        // Controleer voor elke character of deze online is
+        // check for each character in the cache
         foreach (var character in allCharacters)
         {
             var characterForUpdate = _characterCache.GetCharacter(character.CharacterId);

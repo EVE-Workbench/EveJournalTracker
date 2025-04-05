@@ -89,7 +89,8 @@
                 <ListBox Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
                          ItemsSource="{Binding Characters}" Margin="10 0 10 10"
                          Background="{DynamicResource PanelBackground}"
-                         Foreground="{DynamicResource TextColor}">
+                         Foreground="{DynamicResource TextColor}"
+                         MinWidth="200">
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:Character}">
                             <StackPanel Orientation="Horizontal">
@@ -141,6 +142,8 @@
                         CornerRadius="0,0,10,0"
                         Margin="0 0 10 10">
                     <StackPanel Orientation="Vertical">
+                        <Image Source="pack://application:,,,/EWB-Tracker;component/assets/ewb-journal-logo.png"
+                               Width="120" Height="120" Margin="10 10" />
                         <TextBlock Text="Menu" VerticalAlignment="Center" HorizontalAlignment="Center"
                                    Foreground="{DynamicResource TextColor}" />
                         <Button Content="Bounties" Margin="5" Command="{Binding ShowViewCommand}">

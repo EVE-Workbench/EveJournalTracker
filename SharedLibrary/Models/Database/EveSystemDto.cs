@@ -13,7 +13,7 @@ public class EveSystemDto
     public string Name { get; set; } = null!;
     
     [MaxLength(32)]
-    public string SecurityClass { get; set; } = null!;
+    public string? SecurityClass { get; set; } = null!;
     
-    public double SecurityStatus { get; set; }
+    public double? SecurityStatus { get; set; }
 }

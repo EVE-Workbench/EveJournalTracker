@@ -13,7 +13,7 @@ public partial class LogView
 {
     
     private readonly FileWatcherService _fileWatcherService;
-    private ObservableCollection<LogEvent> _logEventCollection { get; set; }
+    private ObservableCollection<LogEvent> LogEventCollection { get; set; }
 
     public ICommand ImportLogEventsCommand { get; }
     public ICommand ClearLogEventsCommand { get; }
@@ -22,8 +22,8 @@ public partial class LogView
     public LogView()
     {
         InitializeComponent();
-        _logEventCollection = new ObservableCollection<LogEvent>();
-        LogListBox.ItemsSource = _logEventCollection;
+        LogEventCollection = new ObservableCollection<LogEvent>();
+        LogListBox.ItemsSource = LogEventCollection;
         
         _fileWatcherService = App.ServiceProvider.GetRequiredService<FileWatcherService>();
 
@@ -41,7 +41,7 @@ public partial class LogView
         {
             if (e.Type == LogEventType.Combat) return;
             
-            _logEventCollection.Add(e);     
+            LogEventCollection.Add(e);     
             //SortLogEvents();
             LogListBox.ScrollIntoView(e);
         });
@@ -65,16 +65,16 @@ public partial class LogView
 
     private void ClearLogEvents()
     {
-        _logEventCollection.Clear();
+        LogEventCollection.Clear();
     }
 
     private void SortLogEvents()
     {
-        var sorted = _logEventCollection.OrderBy(log => log.Timestamp).ToList();
-        _logEventCollection.Clear();
+        var sorted = LogEventCollection.OrderBy(log => log.Timestamp).ToList();
+        LogEventCollection.Clear();
         foreach (var logEvent in sorted)
         {
-            _logEventCollection.Add(logEvent);
+            LogEventCollection.Add(logEvent);
         }
         sorted.Clear();
     }

@@ -14,4 +14,6 @@ public class EveSystem
     public string SecurityClass { get; set; }
     
     public double SecurityStatus { get; set; }
+    
+    
 }

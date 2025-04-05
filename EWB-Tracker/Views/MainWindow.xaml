@@ -4,13 +4,52 @@
         xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
         xmlns:views="clr-namespace:EWB_Tracker.Views"
         xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
-        Title="EVE Journal - EWB" Height="600" Width="1024"
+        Title="EVE Journal - EWB" Height="700" Width="1240"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent">
     <Window.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
         <converters:CharacterIdToImageSourceConverter x:Key="CharacterIdToImageSourceConverter" />
+
+        <!-- ToggleButton Style -->
+        <Style x:Key="SwitchToggleButton" TargetType="ToggleButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid Width="50" Height="25">
+                            <Border x:Name="Background" CornerRadius="12.5" Background="LightGray" />
+                            <Border x:Name="Switch" Width="23" Height="23" CornerRadius="11.5" Background="White"
+                                    HorizontalAlignment="Left" Margin="1,1,0,1" />
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup>
+                                    <VisualState x:Name="Unchecked">
+                                        <Storyboard>
+                                            <ThicknessAnimation Storyboard.TargetName="Switch"
+                                                                Storyboard.TargetProperty="Margin"
+                                                                To="1,1,0,1" Duration="0:0:0.2" />
+                                            <ColorAnimation Storyboard.TargetName="Background"
+                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                            To="LightGray" Duration="0:0:0.2" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Checked">
+                                        <Storyboard>
+                                            <ThicknessAnimation Storyboard.TargetName="Switch"
+                                                                Storyboard.TargetProperty="Margin"
+                                                                To="26,1,1,1" Duration="0:0:0.2" />
+                                            <ColorAnimation Storyboard.TargetName="Background"
+                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                            To="Green" Duration="0:0:0.2" />
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Border Background="{DynamicResource WindowBackground}" BorderBrush="{DynamicResource WindowBorder}"
@@ -67,18 +106,18 @@
                         Background="{DynamicResource PanelBackground}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock
-                            Text="{Binding TotalIsk, 
-                                    Converter={StaticResource BountyConverter},
-                                    FallbackValue=0}"
+                            Text="{Binding TotalIsk,
+                                                                              Converter={StaticResource BountyConverter},
+                                                                              FallbackValue=0}"
                             HorizontalAlignment="Center" FontSize="30"
                             Foreground="{DynamicResource AccentColor}" />
                         <TextBlock HorizontalAlignment="Center" FontSize="20"
                                    Foreground="{DynamicResource AccentColor}">
                             +
-                            <TextBlock 
-                                Text="{Binding IskChange, 
-                                    Converter={StaticResource BountyConverter},
-                                    FallbackValue=0}" />
+                            <TextBlock
+                                Text="{Binding IskChange,
+                                                                              Converter={StaticResource BountyConverter},
+                                                                              FallbackValue=0}" />
                         </TextBlock>
                     </StackPanel>
                 </Border>
@@ -87,7 +126,7 @@
 
                 <!-- Character List -->
                 <ListBox Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
-                         ItemsSource="{Binding Characters}" Margin="10 0 10 10"
+                         ItemsSource="{Binding FilteredCharacters}" Margin="10 0 10 10"
                          Background="{DynamicResource PanelBackground}"
                          Foreground="{DynamicResource TextColor}"
                          MinWidth="200">
@@ -138,12 +177,12 @@
                 <!-- Toolbar -->
                 <Border Grid.Column="2" Grid.Row="0" Grid.RowSpan="2"
                         Background="{DynamicResource PanelBackground}"
-                        Width="140"
+                        Width="160"
                         CornerRadius="0,0,10,0"
                         Margin="0 0 10 10">
                     <StackPanel Orientation="Vertical">
                         <Image Source="pack://application:,,,/EWB-Tracker;component/assets/ewb-journal-logo.png"
-                               Width="120" Height="120" Margin="10 10" />
+                               Width="140" Height="140" Margin="10 10" />
                         <TextBlock Text="Menu" VerticalAlignment="Center" HorizontalAlignment="Center"
                                    Foreground="{DynamicResource TextColor}" />
                         <Button Content="Bounties" Margin="5" Command="{Binding ShowViewCommand}">
@@ -172,6 +211,13 @@
                         <Button Content="New Lap" />
                         <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
                         <Button Content="Exit" Click="Close_Click" />
+                        
+                        <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
+                        <TextBlock Text="Show Offline Characters" Margin="10 10 10 0" Foreground="{DynamicResource TextColor}" />
+                        <ToggleButton Content="Show Offline Characters"
+                                      IsChecked="{Binding ShowOfflineCharacters}"
+                                      Style="{StaticResource SwitchToggleButton}"
+                                      Margin="10" />
                     </StackPanel>
                 </Border>
 

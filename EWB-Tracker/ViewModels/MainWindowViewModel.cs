@@ -16,6 +16,7 @@ namespace EWB_Tracker.ViewModels
         private readonly CharacterCache _characterCache;
         private object _currentView;
         private ObservableCollection<Character> _characters;
+        private bool _showOfflineCharacters = true;
 
         public ObservableCollection<Character> Characters
         {
@@ -24,8 +25,11 @@ namespace EWB_Tracker.ViewModels
             {
                 _characters = value;
                 OnPropertyChanged(nameof(Characters));
+                FilterCharacters();
             }
         }
+
+        public ObservableCollection<Character> FilteredCharacters { get; set; }
 
         public ObservableCollection<Sprint> Sprints { get; set; }
 
@@ -61,9 +65,19 @@ namespace EWB_Tracker.ViewModels
             }
         }
 
+        public bool ShowOfflineCharacters
+        {
+            get => _showOfflineCharacters;
+            set
+            {
+                _showOfflineCharacters = value;
+                OnPropertyChanged(nameof(ShowOfflineCharacters));
+                FilterCharacters();
+            }
+        }
+
         public ICommand ShowViewCommand { get; }
 
-        // FileWatcherService wordt nu via DI geïnjecteerd
         public MainWindowViewModel(FileWatcherService fileWatcherService, CharacterCache characterCache)
         {
             _fileWatcherService = fileWatcherService;
@@ -77,14 +91,14 @@ namespace EWB_Tracker.ViewModels
 
             var characters = _characterCache.GetAllCharacters();
             _characters = new ObservableCollection<Character>(characters);
+            FilteredCharacters = new ObservableCollection<Character>(_characters);
 
             Sprints = new ObservableCollection<Sprint>();
 
-            CurrentView = new DefaultView(); 
+            CurrentView = new DefaultView();
 
             ShowViewCommand = new RelayCommand(ShowView);
 
-            // Subscriben op ISK updates
             _fileWatcherService.OnISKUpdated += (sender, iskValues) =>
             {
                 TotalIsk = iskValues.TotalISK;
@@ -95,6 +109,19 @@ namespace EWB_Tracker.ViewModels
         private void ShowView(object view)
         {
             CurrentView = view;
+        }
+
+        private void FilterCharacters()
+        {
+            if (ShowOfflineCharacters)
+            {
+                FilteredCharacters = new ObservableCollection<Character>(Characters);
+            }
+            else
+            {
+                FilteredCharacters = new ObservableCollection<Character>(Characters.Where(c => c.Online));
+            }
+            OnPropertyChanged(nameof(FilteredCharacters));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

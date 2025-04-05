@@ -121,35 +121,6 @@ public class FileWatcherService
         }
     }
 
-    /*private void OnLogFileChanged(object sender, FileSystemEventArgs e)
-    {
-        try
-        {
-            var lines = File.ReadAllLines(e.FullPath);
-            var lastLine = lines[^1];
-            var characterId = Convert.ToInt32(ExtractCharacterIdFromFileName(e.Name!));
-            var character = GetOrCreateCharacter(characterId);
-
-            var logEvent = ParseLogLine(lastLine, character);
-
-            if (logEvent != null)
-            {
-                _logEvents.Add(logEvent);
-
-                OnNewLogEvent?.Invoke(this, logEvent);
-                // Update ISK values
-                var totalIsk = _logEvents.Sum(log => log.BountyValue) ?? 0;
-                var lastBountyEvent = _logEvents.LastOrDefault(log => log.Type == LogEventType.Bounty);
-                var iskChange = lastBountyEvent?.BountyValue ?? 0;
-                OnISKUpdated?.Invoke(this, (totalIsk, iskChange));
-            }
-        }
-        catch (IOException)
-        {
-            // Ignore for now
-        }
-    }*/
-
 
     private string? ExtractCharacterIdFromFileName(string fileName)
     {

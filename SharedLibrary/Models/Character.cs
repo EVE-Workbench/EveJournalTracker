@@ -10,7 +10,7 @@ namespace SharedLibrary.Models
         private string _name;
         private bool _online;
         private int _bounty;
-        private EveSystem? _eveSystem;
+        private EveSystemDto? _eveSystem;
 
         public string Name
         {
@@ -51,7 +51,7 @@ namespace SharedLibrary.Models
             }
         }
 
-        public EveSystem? EveSystem
+        public EveSystemDto? EveSystem
         {
             get => _eveSystem;
             set

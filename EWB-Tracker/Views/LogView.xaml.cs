@@ -39,9 +39,16 @@ public partial class LogView
     {
         Dispatcher.Invoke(() =>
         {
-            if (e.Type == LogEventType.Combat) return;
+            //if (e.Type == LogEventType.Combat) return;
             
             LogEventCollection.Add(e);     
+            
+            // only keep the last xxx log events to keep things fast
+            if (LogEventCollection.Count > 250)
+            {
+                LogEventCollection.RemoveAt(0);
+            }
+            
             //SortLogEvents();
             LogListBox.ScrollIntoView(e);
         });

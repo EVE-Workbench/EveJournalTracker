@@ -208,9 +208,7 @@
                         <!-- Delimiter -->
                         <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
                         <Button Content="Stop Watching" Click="StopWatching_Click" />
-                        <Button Content="New Lap" />
-                        <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
-                        <Button Content="Exit" Click="Close_Click" />
+                        <Button Content="New Event/Mission" />
                         
                         <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
                         <TextBlock Text="Show Offline Characters" Margin="10 10 10 0" Foreground="{DynamicResource TextColor}" />

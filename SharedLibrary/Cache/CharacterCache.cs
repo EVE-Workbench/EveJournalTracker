@@ -33,6 +33,8 @@ public class CharacterCache
         foreach (var character in charactersFromDb)
         {
             _characters[character.CharacterId] = Character.FromDto(character);
+            // reset bounty value for the new session.
+            _characters[character.CharacterId].Bounty = 0;
         }
     }
 

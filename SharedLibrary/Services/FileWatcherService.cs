@@ -2,8 +2,10 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using SharedLibrary.Cache;
+using SharedLibrary.Data;
 using SharedLibrary.Enums;
 using SharedLibrary.Models;
+using SharedLibrary.Models.Database;
 
 namespace SharedLibrary.Services;
 
@@ -11,6 +13,7 @@ public class FileWatcherService
 {
     private readonly string _logDirectory;
     private readonly CharacterCache _characterCache;
+    private readonly AppDbContext _context;
     private readonly List<LogEvent> _logEvents;
     private readonly List<FileSystemWatcher> _fileWatchers;
     private readonly ConcurrentQueue<string> _fileChangeQueue;
@@ -19,11 +22,14 @@ public class FileWatcherService
 
     public event EventHandler<LogEvent> OnNewLogEvent;
     public event EventHandler<(int TotalISK, int ISKChange)> OnISKUpdated;
+    
+    public List<EveSystemDto> EveSystems { get; set; } = [];
 
-    public FileWatcherService(string logDirectory, CharacterCache characterCache)
+    public FileWatcherService(string logDirectory, CharacterCache characterCache, AppDbContext context)
     {
         _logDirectory = logDirectory;
         _characterCache = characterCache;
+        _context = context;
         _logEvents = new List<LogEvent>();
         _fileWatchers = new List<FileSystemWatcher>();
         _fileChangeQueue = new ConcurrentQueue<string>();
@@ -32,7 +38,9 @@ public class FileWatcherService
     }
 
     public void StartWatching()
-    {
+    {   
+        EveSystems = _context.EveSystems.ToList();
+        
         var watcher = new FileSystemWatcher
         {
             Path = _logDirectory,
@@ -182,7 +190,7 @@ public class FileWatcherService
                 var from = match.Groups[1].Value;
                 var to = match.Groups[2].Value;
 
-                character.EveSystem = new EveSystem { Name = to };
+                character.EveSystem = EveSystems.FirstOrDefault(x => x.Name == to);
 
                 logEvent.Type = LogEventType.Jump;
                 logEvent.Value = $"{from} > {to}";

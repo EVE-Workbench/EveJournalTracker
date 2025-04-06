@@ -61,8 +61,9 @@ namespace EWB_Tracker
                     {
                         var logFolderLocation = EveUtils.GetDefaultLogFolderLocation();
                         var characterCache = provider.GetRequiredService<CharacterCache>();
+                        var context = provider.GetRequiredService<AppDbContext>();
 
-                        return new FileWatcherService(logFolderLocation, characterCache);
+                        return new FileWatcherService(logFolderLocation, characterCache, context);
                     });
 
                     services.AddSingleton(provider =>
@@ -110,6 +111,7 @@ namespace EWB_Tracker
 
             base.OnStartup(e);
 
+            var dbContext = _host.Services.GetRequiredService<AppDbContext>();
             var watcherService = _host.Services.GetRequiredService<FileWatcherService>();
             watcherService.StartWatching();
 

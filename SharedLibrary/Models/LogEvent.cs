@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using SharedLibrary.Enums;
+using SharedLibrary.Models.Database;
 
 namespace SharedLibrary.Models;
 
@@ -16,6 +17,6 @@ public class LogEvent
     
     public int? SprintId { get; set; }
     public virtual Sprint? Sprint { get; set; }
-    public EveSystem? EveSystem { get; set; }
+    public EveSystemDto? EveSystem { get; set; }
     public DateTime Timestamp { get; set; }
 }

@@ -19,6 +19,7 @@
     </Style>
 
     <Style TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="{StaticResource TextColor}" />
         <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
     </Style>

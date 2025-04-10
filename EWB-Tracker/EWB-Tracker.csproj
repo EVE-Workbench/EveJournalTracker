@@ -26,6 +26,8 @@
       <Resource Include="assets\Shentox-Regular2.ttf">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Resource>
+      <None Remove="assets\ewb-journal-logo.ico" />
+      <Resource Include="assets\ewb-journal-logo.ico" />
     </ItemGroup>
 
 </Project>

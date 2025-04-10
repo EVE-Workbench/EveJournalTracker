@@ -7,7 +7,8 @@
         Title="EVE Journal - EWB" Height="700" Width="1240"
         WindowStyle="None"
         AllowsTransparency="True"
-        Background="Transparent">
+        Background="Transparent"
+        Icon="/assets/ewb-journal-logo.ico">
     <Window.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
         <converters:CharacterIdToImageSourceConverter x:Key="CharacterIdToImageSourceConverter" />

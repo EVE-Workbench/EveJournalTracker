@@ -178,12 +178,12 @@
                 <!-- Toolbar -->
                 <Border Grid.Column="2" Grid.Row="0" Grid.RowSpan="2"
                         Background="{DynamicResource PanelBackground}"
-                        Width="160"
+                        Width="170"
                         CornerRadius="0,0,10,0"
                         Margin="0 0 10 10">
                     <StackPanel Orientation="Vertical">
                         <Image Source="pack://application:,,,/EWB-Tracker;component/assets/ewb-journal-logo.png"
-                               Width="140" Height="140" Margin="10 10" />
+                               Width="150" Height="150" Margin="10" />
                         <TextBlock Text="Menu" VerticalAlignment="Center" HorizontalAlignment="Center"
                                    Foreground="{DynamicResource TextColor}" />
                         <Button Content="Bounties" Margin="5" Command="{Binding ShowViewCommand}">

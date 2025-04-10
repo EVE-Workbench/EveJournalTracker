@@ -24,6 +24,7 @@ public class FileWatcherService
     public event EventHandler<(int TotalISK, int ISKChange)> OnISKUpdated;
     
     public List<EveSystemDto> EveSystems { get; set; } = [];
+    public List<EveSystem> EveSystemsList { get; set; } = [];
 
     public FileWatcherService(string logDirectory, CharacterCache characterCache, AppDbContext context)
     {
@@ -216,26 +217,61 @@ public class FileWatcherService
                         .Sum(log => log.BountyValue);
 
                     character.Bounty = totalCharacterBounty + value ?? value;
-                    return logEvent;
                 }
             }
 
             logEvent.Type = LogEventType.Bounty;
             logEvent.Value = line;
+            
+            UpdateEveSystemsList(logEvent);
+            
             return logEvent;
         }
 
         if (line.Contains("(combat)"))
         {
             logEvent.Type = LogEventType.Combat;
+            logEvent.Value = line;
             return logEvent;
         }
 
         return null;
     }
 
+    private void UpdateEveSystemsList(LogEvent logEvent)
+    {
+        // ignore if logEvent.EveSystem is null
+        if (logEvent.EveSystem == null)
+        {
+            return;
+        }
+        
+        var eveSystem = EveSystemsList.FirstOrDefault(x => x.EveSystemDto == logEvent.EveSystem);
+        if (eveSystem != null)
+        {
+            eveSystem.Bounty += logEvent.BountyValue ?? 0;
+            eveSystem.LastUpdated = logEvent.Timestamp;
+        }
+        else
+        {
+            EveSystemsList.Add(new EveSystem
+            {
+                EveSystemDto = logEvent.EveSystem,
+                Bounty = logEvent.BountyValue ?? 0,
+                LastUpdated = logEvent.Timestamp
+            });
+        }
+    }
+
     public List<LogEvent> GetLogEvents()
     {
         return _logEvents;
+    }
+    
+    public List<EveSystem> GetEveSystemsList()
+    {
+        EveSystemsList = EveSystemsList.OrderByDescending(x => x.LastUpdated).ToList();
+        
+        return EveSystemsList;
     }
 }

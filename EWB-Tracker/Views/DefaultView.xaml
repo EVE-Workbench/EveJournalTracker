@@ -3,16 +3,47 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:EWB_Tracker.Views"
+             xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
+             xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignInstance }">
+    <UserControl.Resources>
+        <converters:BountyConverter x:Key="BountyConverter" />
+    </UserControl.Resources>
     <StackPanel Margin="10">
         <!-- Sprints Section -->
         <TextBlock Text="Sprints" FontSize="16" Margin="5 0" FontWeight="Bold" />
         
-
         <!-- Systems Section -->
         <TextBlock Text="Systems" FontSize="16" Margin="5 0" FontWeight="Bold" />
+        <ItemsControl ItemsSource="{Binding EveSystemCollection}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="3" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:EveSystem}">
+                    <Border BorderBrush="#cccccc" BorderThickness="1" Padding="5" Margin="5">
+                        <StackPanel>
+                            <TextBlock>
+                                <Run Text="{Binding EveSystemDto.Name}" />
+                                <Run Text=" (" />
+                                <Run 
+                                    Text="{Binding EveSystemDto.SecurityStatus, StringFormat={}{0:F1}}"
+                                    Foreground="{Binding EveSystemDto.SecurityColor}"
+                                    />
+                                <Run Text=")" />
+                            </TextBlock>
+                            <TextBlock Text="Bounty:" />
+                            <TextBlock Text="{Binding Bounty,
+                                                                              Converter={StaticResource BountyConverter},
+                                                                              FallbackValue=0}" Foreground="Green" FontWeight="Bold" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
         
     </StackPanel>
 </UserControl>

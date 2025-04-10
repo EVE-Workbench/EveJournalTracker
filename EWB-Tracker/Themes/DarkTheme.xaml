@@ -1,7 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Kleuren voor Dark Mode -->
+    <FontFamily x:Key="AppFont">pack://application:,,,/EWB-Tracker;assets/#Shentox 13</FontFamily>
+    
     <SolidColorBrush x:Key="WindowBackground" Color="#1E1E1E"/>
     <SolidColorBrush x:Key="PanelBackground" Color="#2E2E2E"/>
     <SolidColorBrush x:Key="TextColor" Color="#FFFFFF"/>
@@ -13,20 +14,19 @@
     <SolidColorBrush x:Key="ButtonHoverBackground" Color="#4E4E4E"/>
     <SolidColorBrush x:Key="ButtonClickBackground" Color="#606060"/>
 
-    <!-- Globale Stijlen -->
     <Style TargetType="Window">
         <Setter Property="Background" Value="{StaticResource WindowBackground}" />
     </Style>
 
     <Style TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource TextColor}" />
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
     </Style>
 
     <Style TargetType="Border">
         <Setter Property="Background" Value="{StaticResource PanelBackground}" />
     </Style>
 
-    <!-- Globale Button Style -->
     <Style TargetType="Button">
         <Setter Property="Background" Value="{StaticResource ButtonBackground}" />
         <Setter Property="Foreground" Value="{StaticResource ButtonTextColor}" />

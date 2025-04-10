@@ -1,19 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SharedLibrary.Models.Database;
 
 namespace SharedLibrary.Models;
 
 public class EveSystem
 {
-    [Key]
-    public int SystemId { get; set; }
+    public EveSystemDto EveSystemDto { get; set; }
     
-    public int ConstellationId { get; set; }
+    public int Bounty { get; set; }
     
-    public string Name { get; set; }
-    
-    public string SecurityClass { get; set; }
-    
-    public double SecurityStatus { get; set; }
-    
-    
+    public DateTime LastUpdated { get; set; }
 }

@@ -5,6 +5,8 @@ using System.Windows.Input;
 using EWB_Tracker.Commands;
 using EWB_Tracker.Views;
 using SharedLibrary.Cache;
+using SharedLibrary.Events;
+using SharedLibrary.Jobs;
 using SharedLibrary.Models;
 using SharedLibrary.Services;
 
@@ -14,6 +16,7 @@ namespace EWB_Tracker.ViewModels
     {
         private readonly FileWatcherService _fileWatcherService;
         private readonly CharacterCache _characterCache;
+        private readonly CheckOnlineJob _checkOnlineJob;
         private object _currentView;
         private ObservableCollection<Character> _characters;
         private bool _showOfflineCharacters = true;
@@ -78,16 +81,18 @@ namespace EWB_Tracker.ViewModels
 
         public ICommand ShowViewCommand { get; }
 
-        public MainWindowViewModel(FileWatcherService fileWatcherService, CharacterCache characterCache)
+        public MainWindowViewModel(FileWatcherService fileWatcherService, CharacterCache characterCache, CheckOnlineJob checkOnlineJob)
         {
             _fileWatcherService = fileWatcherService;
             _characterCache = characterCache;
+            _checkOnlineJob = checkOnlineJob;
             _characterCache.CharacterAdded += (sender, e) =>
             {
                 var characters = Characters.ToList();
                 characters.Add(e);
                 Characters = new ObservableCollection<Character>(characters);
             };
+            
 
             var characters = _characterCache.GetAllCharacters();
             _characters = new ObservableCollection<Character>(characters);
@@ -104,6 +109,8 @@ namespace EWB_Tracker.ViewModels
                 TotalIsk = iskValues.TotalISK;
                 IskChange = iskValues.ISKChange;
             };
+            
+            _checkOnlineJob.CharacterStatusChanged += OnCharacterStatusChanged;
         }
 
         private void ShowView(object view)
@@ -122,6 +129,16 @@ namespace EWB_Tracker.ViewModels
                 FilteredCharacters = new ObservableCollection<Character>(Characters.Where(c => c.Online));
             }
             OnPropertyChanged(nameof(FilteredCharacters));
+        }
+        
+        private void OnCharacterStatusChanged(object? sender, CharacterStatusChangedEventArgs e)
+        {
+            var character = Characters.FirstOrDefault(c => c.CharacterId == e.CharacterId);
+            if (character != null)
+            {
+                character.Online = e.IsOnline;
+                FilterCharacters();
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

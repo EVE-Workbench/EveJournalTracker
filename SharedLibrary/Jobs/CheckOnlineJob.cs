@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Timers;
 using SharedLibrary.Cache;
+using SharedLibrary.Events;
 using Timer = System.Timers.Timer;
 
 namespace SharedLibrary.Jobs;
@@ -9,7 +10,8 @@ public class CheckOnlineJob
 {
     private readonly Timer _timer;
     private readonly CharacterCache _characterCache;
-
+    public event EventHandler<CharacterStatusChangedEventArgs>? CharacterStatusChanged;
+    
     public CheckOnlineJob(double interval, CharacterCache characterCache)
     {
         _characterCache = characterCache ?? throw new ArgumentNullException(nameof(characterCache));
@@ -46,9 +48,22 @@ public class CheckOnlineJob
         foreach (var character in allCharacters)
         {
             var characterForUpdate = _characterCache.GetCharacter(character.CharacterId);
-            if(characterForUpdate != null)
+            if (characterForUpdate != null)
             {
-                characterForUpdate.Online = onlineCharacterNames.Contains(character.Name);
+                bool wasOnline = characterForUpdate.Online;
+                bool isOnline = onlineCharacterNames.Contains(character.Name);
+
+                if (wasOnline != isOnline)
+                {
+                    characterForUpdate.Online = isOnline;
+
+                    // Fire the event
+                    CharacterStatusChanged?.Invoke(this, new CharacterStatusChangedEventArgs(
+                        character.CharacterId,
+                        character.Name,
+                        isOnline
+                    ));
+                }
             }
         }
     }

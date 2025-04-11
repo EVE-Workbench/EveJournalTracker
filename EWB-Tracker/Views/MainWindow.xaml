@@ -12,6 +12,8 @@
     <Window.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
         <converters:CharacterIdToImageSourceConverter x:Key="CharacterIdToImageSourceConverter" />
+        <converters:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
+        <converters:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
 
         <!-- ToggleButton Style -->
         <Style x:Key="SwitchToggleButton" TargetType="ToggleButton">
@@ -61,7 +63,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Custom Titelbalk -->
+            <!-- Custom titlebar -->
             <DockPanel Grid.Row="0"
                        Background="{DynamicResource TitleBarBackground}"
                        MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
@@ -77,7 +79,7 @@
                             Background="{DynamicResource TitleBarButtonBackground}"
                             Foreground="{DynamicResource TitleBarButtonTextColor}" />
 
-                    <Button Content="🗖" Width="30" Height="30" Margin="5"
+                    <Button Content="🗖" Width="40" Height="30" Margin="5"
                             Click="Maximize_Click"
                             Background="{DynamicResource TitleBarButtonBackground}"
                             Foreground="{DynamicResource TitleBarButtonTextColor}" />
@@ -107,18 +109,18 @@
                         Background="{DynamicResource PanelBackground}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock
-                            Text="{Binding TotalIsk,
-                                                                              Converter={StaticResource BountyConverter},
-                                                                              FallbackValue=0}"
+                            Text="{Binding TotalIsk, 
+                                Converter={StaticResource BountyConverter}, 
+                                FallbackValue=0}"
                             HorizontalAlignment="Center" FontSize="30"
                             Foreground="{DynamicResource AccentColor}" />
                         <TextBlock HorizontalAlignment="Center" FontSize="20"
                                    Foreground="{DynamicResource AccentColor}">
                             +
                             <TextBlock
-                                Text="{Binding IskChange,
-                                                                              Converter={StaticResource BountyConverter},
-                                                                              FallbackValue=0}" />
+                                Text="{Binding IskChange, 
+                                Converter={StaticResource BountyConverter}, 
+                                FallbackValue=0}" />
                         </TextBlock>
                     </StackPanel>
                 </Border>
@@ -126,54 +128,82 @@
                 <ContentControl Grid.Column="0" Grid.Row="1" Content="{Binding CurrentView}" />
 
                 <!-- Character List -->
-                <ListBox Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
-                         ItemsSource="{Binding FilteredCharacters}" Margin="10 0 10 10"
-                         Background="{DynamicResource PanelBackground}"
-                         Foreground="{DynamicResource TextColor}"
-                         MinWidth="200">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate DataType="{x:Type models:Character}">
-                            <StackPanel Orientation="Horizontal">
-                                <Grid Width="54" Height="54" Margin="5">
-                                    <Ellipse StrokeThickness="2" Fill="Transparent">
-                                        <Ellipse.Style>
-                                            <Style TargetType="Ellipse">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Online}" Value="True">
-                                                        <Setter Property="Stroke" Value="Green" />
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Online}" Value="False">
-                                                        <Setter Property="Stroke" Value="Red" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Ellipse.Style>
-                                    </Ellipse>
-                                    <Ellipse Fill="White" Margin="2" />
-                                    <Image
-                                        Source="{Binding CharacterId, Converter={StaticResource CharacterIdToImageSourceConverter}}"
-                                        Width="50" Height="50" ClipToBounds="True" Margin="2">
-                                        <Image.Clip>
-                                            <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25" />
-                                        </Image.Clip>
-                                    </Image>
-                                </Grid>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Name}" FontWeight="Bold"
-                                               Foreground="{DynamicResource TextColor}" />
-                                    <TextBlock Foreground="{DynamicResource TextColor}">
-                                        Bounty:
-                                        <TextBlock Text="{Binding Bounty, Converter={StaticResource BountyConverter}}" />
-                                    </TextBlock>
-                                    <TextBlock Foreground="{DynamicResource TextColor}">
-                                        System:
-                                        <TextBlock Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
-                                    </TextBlock>
-                                </StackPanel>
+                <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
+                    <!-- Empty placeholder box -->
+                    <Border Background="{DynamicResource PanelBackground}"
+                            BorderBrush="Gray"
+                            BorderThickness="1"
+                            Width="225"
+                            Margin="10 0 10 10"
+                            Visibility="{Binding FilteredCharacters.Count, Converter={StaticResource ZeroToVisibleConverter}}">
+                        <Grid>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                                <TextBlock Text="🚫 No characters online"
+                                           FontSize="16"
+                                           Foreground="Gray"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center" />
+
+                                <TextBlock
+                                    Text="What are you doing? Not playing EvE? Are you really an EvE player if there are no alts online?"
+                                    TextWrapping="Wrap"
+                                    FontSize="12"
+                                    Foreground="DarkGray"
+                                    HorizontalAlignment="Center"
+                                    TextAlignment="Center" />
                             </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                        </Grid>
+                    </Border>
+                    <ListBox ItemsSource="{Binding FilteredCharacters}" Margin="10 0 10 10"
+                             Visibility="{Binding FilteredCharacters.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
+                             Background="{DynamicResource PanelBackground}"
+                             Foreground="{DynamicResource TextColor}"
+                             MinWidth="225">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:Character}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Grid Width="54" Height="54" Margin="5">
+                                        <Ellipse StrokeThickness="2" Fill="Transparent">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Online}" Value="True">
+                                                            <Setter Property="Stroke" Value="Green" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Online}" Value="False">
+                                                            <Setter Property="Stroke" Value="Red" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+                                        <Ellipse Fill="White" Margin="2" />
+                                        <Image
+                                            Source="{Binding CharacterId, Converter={StaticResource CharacterIdToImageSourceConverter}}"
+                                            Width="50" Height="50" ClipToBounds="True" Margin="2">
+                                            <Image.Clip>
+                                                <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25" />
+                                            </Image.Clip>
+                                        </Image>
+                                    </Grid>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextColor}" />
+                                        <TextBlock Foreground="{DynamicResource TextColor}">
+                                            Bounty:
+                                            <TextBlock
+                                                Text="{Binding Bounty, Converter={StaticResource BountyConverter}}" />
+                                        </TextBlock>
+                                        <TextBlock Foreground="{DynamicResource TextColor}">
+                                            System:
+                                            <TextBlock Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
 
                 <!-- Toolbar -->
                 <Border Grid.Column="2" Grid.Row="0" Grid.RowSpan="2"
@@ -210,9 +240,10 @@
                         <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
                         <Button Content="Stop Watching" Click="StopWatching_Click" />
                         <Button Content="New Event/Mission" />
-                        
+
                         <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
-                        <TextBlock Text="Show Offline Characters" Margin="10 10 10 0" Foreground="{DynamicResource TextColor}" />
+                        <TextBlock Text="Show Offline Characters" Margin="10 10 10 0"
+                                   Foreground="{DynamicResource TextColor}" />
                         <ToggleButton Content="Show Offline Characters"
                                       IsChecked="{Binding ShowOfflineCharacters}"
                                       Style="{StaticResource SwitchToggleButton}"

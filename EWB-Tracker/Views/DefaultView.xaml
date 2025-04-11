@@ -9,36 +9,47 @@
              d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignInstance }">
     <UserControl.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
+        <converters:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
     </UserControl.Resources>
     <StackPanel Margin="10">
         <!-- Sprints Section -->
-        <TextBlock Text="Sprints" FontSize="16" Margin="5 0" FontWeight="Bold" />
+        <TextBlock Text="Sprints" FontSize="20" Margin="5 0" FontWeight="Bold" />
+        <ContentControl>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                <TextBlock Text="🚫 Currently there are no events being tracked" FontSize="16" Foreground="Gray" HorizontalAlignment="Center" />
+                <TextBlock Text="You can track events/missions etc from the menu on the right." FontSize="12" Foreground="DarkGray" HorizontalAlignment="Center" />
+            </StackPanel>
+        </ContentControl>
         
         <!-- Systems Section -->
-        <TextBlock Text="Systems" FontSize="16" Margin="5 0" FontWeight="Bold" />
+        <TextBlock Text="Systems" FontSize="20" Margin="5 0" FontWeight="Bold" />
+        <ContentControl Visibility="{Binding EveSystemCollection.Count, Converter={StaticResource ZeroToVisibleConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                <TextBlock Text="🚫 No active bounty in systems" FontSize="16" Foreground="Gray" HorizontalAlignment="Center" />
+                <TextBlock Text="When you receive bounty in known systems, you'll see it here." FontSize="12" Foreground="DarkGray" HorizontalAlignment="Center" />
+            </StackPanel>
+        </ContentControl>
         <ItemsControl ItemsSource="{Binding EveSystemCollection}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <UniformGrid Columns="3" />
+                    <WrapPanel IsItemsHost="True" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:EveSystem}">
-                    <Border BorderBrush="#cccccc" BorderThickness="1" Padding="5" Margin="5">
+                    <Border BorderBrush="#cccccc" BorderThickness="1" Padding="5" Margin="5"
+                            MinWidth="200" MaxWidth="350" Width="Auto">
                         <StackPanel>
                             <TextBlock>
                                 <Run Text="{Binding EveSystemDto.Name}" />
                                 <Run Text=" (" />
-                                <Run 
-                                    Text="{Binding EveSystemDto.SecurityStatus, StringFormat={}{0:F1}}"
-                                    Foreground="{Binding EveSystemDto.SecurityColor}"
-                                    />
+                                <Run Text="{Binding EveSystemDto.SecurityStatus, StringFormat={}{0:F1}}"
+                                     Foreground="{Binding EveSystemDto.SecurityColor}" />
                                 <Run Text=")" />
                             </TextBlock>
                             <TextBlock Text="Bounty:" />
-                            <TextBlock Text="{Binding Bounty,
-                                                                              Converter={StaticResource BountyConverter},
-                                                                              FallbackValue=0}" Foreground="Green" FontWeight="Bold" />
+                            <TextBlock Text="{Binding Bounty, Converter={StaticResource BountyConverter}, FallbackValue=0}"
+                                       Foreground="Green" FontWeight="Bold" />
                         </StackPanel>
                     </Border>
                 </DataTemplate>

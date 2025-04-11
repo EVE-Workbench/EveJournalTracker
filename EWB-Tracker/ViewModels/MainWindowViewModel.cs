@@ -19,7 +19,7 @@ namespace EWB_Tracker.ViewModels
         private readonly CheckOnlineJob _checkOnlineJob;
         private object _currentView;
         private ObservableCollection<Character> _characters;
-        private bool _showOfflineCharacters = true;
+        private bool _showOfflineCharacters = false;
 
         public ObservableCollection<Character> Characters
         {
@@ -103,6 +103,8 @@ namespace EWB_Tracker.ViewModels
             CurrentView = new DefaultView();
 
             ShowViewCommand = new RelayCommand(ShowView);
+
+            ShowOfflineCharacters = _showOfflineCharacters;
 
             _fileWatcherService.OnISKUpdated += (sender, iskValues) =>
             {

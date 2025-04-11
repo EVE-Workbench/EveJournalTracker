@@ -197,6 +197,10 @@
                                         <TextBlock Foreground="{DynamicResource TextColor}">
                                             System:
                                             <TextBlock Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
+                                            <Run Text=" (" />
+                                            <Run Text="{Binding EveSystem.SecurityStatus, StringFormat={}{0:F1}}"
+                                                 Foreground="{Binding EveSystem.SecurityColor}" />
+                                            <Run Text=")" />
                                         </TextBlock>
                                     </StackPanel>
                                 </StackPanel>

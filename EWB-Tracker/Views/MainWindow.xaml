@@ -217,7 +217,7 @@
                         Margin="0 0 10 10">
                     <StackPanel Orientation="Vertical">
                         <Image Source="pack://application:,,,/EWB-Tracker;component/assets/ewb-journal-logo.png"
-                               Width="150" Height="150" Margin="10" />
+                               Width="150" Height="150" Margin="10 10 10 20" />
                         <TextBlock Text="Menu" VerticalAlignment="Center" HorizontalAlignment="Center"
                                    Foreground="{DynamicResource TextColor}" />
                         <Button Content="Bounties" Margin="5" Command="{Binding ShowViewCommand}">

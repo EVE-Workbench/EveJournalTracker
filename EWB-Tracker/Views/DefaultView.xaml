@@ -32,13 +32,12 @@
         <ItemsControl ItemsSource="{Binding EveSystemCollection}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel IsItemsHost="True" />
+                    <UniformGrid Columns="3" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:EveSystem}">
-                    <Border BorderBrush="#cccccc" BorderThickness="1" Padding="5" Margin="5"
-                            MinWidth="200" MaxWidth="350" Width="Auto">
+                    <Border BorderBrush="#cccccc" BorderThickness="1" Padding="5" Margin="5">
                         <StackPanel>
                             <TextBlock>
                                 <Run Text="{Binding EveSystemDto.Name}" />

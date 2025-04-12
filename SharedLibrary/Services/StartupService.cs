@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using SharedLibrary.Data;
+using SharedLibrary.Enums;
 using SharedLibrary.Models.Database;
 
 namespace SharedLibrary.Services;
@@ -37,6 +38,18 @@ public class StartupService
         {
             _logger.LogInformation("Eve systems already exist in the database.");
         }
+        
+        if (!_dbContext.Dungeons.Any())
+        {
+            var result = await ImportDungeons();
+            _logger.LogInformation(result
+                ? "Dungeons imported successfully."
+                : "Failed to import dungeons.");
+        }
+        else
+        {
+            _logger.LogInformation("Dungeons already exist in the database.");
+        }
     }
     
     private async Task<bool> ImportEveSystems()
@@ -61,6 +74,49 @@ public class StartupService
         catch (Exception e)
         {
             _logger.LogError(e.Message);
+            return false;
+        }
+    }
+    
+    private async Task<bool> ImportDungeons()
+    {
+        try
+        {
+            foreach (DungeonType type in Enum.GetValues(typeof(DungeonType)))
+            {
+                var apiDungeons = await _ewbApiClientService.GetDungeonsByType(type);
+                if (apiDungeons == null) continue;
+
+                foreach (var apiDungeon in apiDungeons)
+                {
+                    var dungeon = new DungeonDto
+                    {
+                        Id = apiDungeon.Id,
+                        Name = apiDungeon.Name,
+                        Type = type,
+                        Rating = apiDungeon.Rating,
+                        Levels = apiDungeon.Levels.Select(level => new DungeonLevelDto()
+                        {
+                            Level = level,
+                        }).ToList(),
+                        Factions = apiDungeon.Factions.Select(f => 
+                        {
+                            var faction = _dbContext.Factions.Find(int.Parse(f.Key)) ?? new FactionDto() { Id = int.Parse(f.Key), Name = f.Value };
+                            return new DungeonFactionDto() { Faction = faction };
+                        }).ToList()
+                    };
+
+                    _dbContext.Dungeons.Add(dungeon);
+                }
+            }
+            _logger.LogInformation("Dungeons imported successfully.");
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception occurred while importing dungeons.");
             return false;
         }
     }

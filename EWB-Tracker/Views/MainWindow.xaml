@@ -198,7 +198,7 @@
                                             System:
                                             <TextBlock Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
                                             <Run Text=" (" />
-                                            <Run Text="{Binding EveSystem.SecurityStatus, StringFormat={}{0:F1}}"
+                                            <Run Text="{Binding EveSystem.SecurityStatus, StringFormat={}{0:F1}, FallbackValue='?'}"
                                                  Foreground="{Binding EveSystem.SecurityColor}" />
                                             <Run Text=")" />
                                         </TextBlock>

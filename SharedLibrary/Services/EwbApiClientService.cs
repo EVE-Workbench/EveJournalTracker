@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Enums;
-using SharedLibrary.Models;
+using SharedLibrary.Models.Api;
 using SharedLibrary.Models.Database;
 
 namespace SharedLibrary.Services;
@@ -31,12 +31,12 @@ public class EwbApiClientService
         return JsonSerializer.Deserialize<List<EveSystemDto>>(content);
     }
     
-    public async Task<IEnumerable<Dungeon>?> GetDungeons(DungeonType type)
+    public async Task<IEnumerable<DungeonResponse>?> GetDungeonsByType(DungeonType type)
     {
         var response = await HttpClient.GetAsync($"/v1/dungeons?type={type}");
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<IEnumerable<Dungeon>>(content);
+        return JsonSerializer.Deserialize<IEnumerable<DungeonResponse>>(content);
     }
 }
 

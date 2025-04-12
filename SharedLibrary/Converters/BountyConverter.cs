@@ -9,7 +9,7 @@ namespace SharedLibrary.Converters
         {
             if (value is int bounty)
             {
-                return $"{bounty:N0} isk";
+                return $"{bounty:N0} ISK";
             }
             return value;
         }

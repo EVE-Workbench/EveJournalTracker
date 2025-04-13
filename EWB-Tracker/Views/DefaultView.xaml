@@ -48,7 +48,7 @@
                             </TextBlock>
                             <TextBlock Text="Bounty:" />
                             <TextBlock Text="{Binding Bounty, Converter={StaticResource BountyConverter}, FallbackValue=0}"
-                                       Foreground="Green" FontWeight="Bold" />
+                                       Foreground="{DynamicResource AccentColor}" FontWeight="Bold" />
                         </StackPanel>
                     </Border>
                 </DataTemplate>

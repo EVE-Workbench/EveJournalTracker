@@ -56,9 +56,8 @@ public class StartupService
     {
         try
         {
-            var ewbResponse = await _ewbApiClientService.GetEveSystems();
             // fetch eveSystems from ewb api
-
+            var ewbResponse = await _ewbApiClientService.GetEveSystems();
             if (ewbResponse == null) return true;
             
             var idCounter = 1;
@@ -68,7 +67,7 @@ public class StartupService
             }
                 
             _dbContext.EveSystems.AddRange(ewbResponse);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
             return true;
         }
         catch (Exception e)
@@ -82,8 +81,17 @@ public class StartupService
     {
         try
         {
-            foreach (DungeonType type in Enum.GetValues(typeof(DungeonType)))
+            foreach (var type in Enum.GetValues<DungeonType>())
             {
+                
+                // check if we have any dungeons of this type in the database, if so clean them up
+                var existingDungeons = _dbContext.Dungeons.Where(d => d.Type == type).ToList();
+                if (existingDungeons.Count != 0)
+                {
+                    _dbContext.Dungeons.RemoveRange(existingDungeons);
+                    await _dbContext.SaveChangesAsync();
+                }
+                
                 var apiDungeons = await _ewbApiClientService.GetDungeonsByType(type);
                 if (apiDungeons == null) continue;
 
@@ -109,9 +117,10 @@ public class StartupService
                     _dbContext.Dungeons.Add(dungeon);
                 }
             }
-            _logger.LogInformation("Dungeons imported successfully.");
 
             await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Dungeons imported successfully.");
+            
             return true;
         }
         catch (Exception e)

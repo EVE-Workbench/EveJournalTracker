@@ -8,6 +8,7 @@
     <SolidColorBrush x:Key="TextColor" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="TitleBarTextColor" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="AccentColor" Color="#00FF00"/>
+    <SolidColorBrush x:Key="CtaColor" Color="#3c7845"/>
     <SolidColorBrush x:Key="WindowBorder" Color="#3E3E3E"/>
     <SolidColorBrush x:Key="ButtonBackground" Color="#3E3E3E"/>
     <SolidColorBrush x:Key="ButtonTextColor" Color="#FFFFFF"/>

@@ -5,6 +5,7 @@
         <TargetFramework>net9.0-windows7.0</TargetFramework>
         <RootNamespace>EWB_Tracker</RootNamespace>
         <UseWPF>true</UseWPF>
+        <ApplicationIcon>assets\ewb-journal-logo.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>

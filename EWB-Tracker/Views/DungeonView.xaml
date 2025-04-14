@@ -3,28 +3,45 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:EWB_Tracker.Views"
+             xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
              mc:Ignorable="d"
-             d:DesignHeight="200" d:DesignWidth="300">
+             d:DesignHeight="400" 
+             d:DesignWidth="600">
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
-            <TextBlock Text="New Event/Mission View" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" />
+            <TextBlock Text="New Event/Mission View" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       FontSize="20" />
             <TextBlock Text="🚫 Currently there are no events being tracked" FontSize="16" Foreground="Gray"
                        HorizontalAlignment="Center" />
             <TextBlock Text="Find your activity in the menu's below." FontSize="12"
                        Foreground="DarkGray" HorizontalAlignment="Center" />
         </StackPanel>
-        <StackPanel Grid.Row="1">
+        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top">
             <ComboBox ItemsSource="{Binding DungeonTypes}"
                       SelectedItem="{Binding SelectedDungeonType}"
-                      Width="200"
-                      Margin="20"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center" />
+                      Width="200" />
+
+            <!-- Voor Custom: -->
+            <TextBox Width="200"
+                     Margin="10"
+                     Visibility="{Binding IsCustomSelected, Converter={StaticResource BoolToVisibilityConverter}}"
+                      />
+
+            <!-- Voor Standaard DungeonType: -->
+            <ComboBox Background="Red"
+                      ItemsSource="{Binding DungeonNames}"
+                      Visibility="{Binding IsStandardSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <ComboBox ItemsSource="{Binding Factions}"
+                      Visibility="{Binding IsStandardSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <ComboBox ItemsSource="{Binding Levels}"
+                      Visibility="{Binding IsStandardSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
         </StackPanel>
     </Grid>
 </UserControl>

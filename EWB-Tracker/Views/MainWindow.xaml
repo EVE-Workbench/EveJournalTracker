@@ -14,45 +14,6 @@
         <converters:CharacterIdToImageSourceConverter x:Key="CharacterIdToImageSourceConverter" />
         <converters:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
         <converters:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
-
-        <!-- ToggleButton Style -->
-        <Style x:Key="SwitchToggleButton" TargetType="ToggleButton">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Grid Width="50" Height="25">
-                            <Border x:Name="Background" CornerRadius="12.5" Background="LightGray" />
-                            <Border x:Name="Switch" Width="23" Height="23" CornerRadius="11.5" Background="White"
-                                    HorizontalAlignment="Left" Margin="1,1,0,1" />
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup>
-                                    <VisualState x:Name="Unchecked">
-                                        <Storyboard>
-                                            <ThicknessAnimation Storyboard.TargetName="Switch"
-                                                                Storyboard.TargetProperty="Margin"
-                                                                To="1,1,0,1" Duration="0:0:0.2" />
-                                            <ColorAnimation Storyboard.TargetName="Background"
-                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                            To="LightGray" Duration="0:0:0.2" />
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name="Checked">
-                                        <Storyboard>
-                                            <ThicknessAnimation Storyboard.TargetName="Switch"
-                                                                Storyboard.TargetProperty="Margin"
-                                                                To="26,1,1,1" Duration="0:0:0.2" />
-                                            <ColorAnimation Storyboard.TargetName="Background"
-                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                            To="Green" Duration="0:0:0.2" />
-                                        </Storyboard>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Window.Resources>
 
     <Border Background="{DynamicResource WindowBackground}" BorderBrush="{DynamicResource WindowBorder}"

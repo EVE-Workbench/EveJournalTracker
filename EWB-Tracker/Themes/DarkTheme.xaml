@@ -2,63 +2,48 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <FontFamily x:Key="AppFont">pack://application:,,,/assets/#Shentox 2</FontFamily>
-    
-    <SolidColorBrush x:Key="WindowBackground" Color="#1E1E1E"/>
-    <SolidColorBrush x:Key="PanelBackground" Color="#2E2E2E"/>
-    <SolidColorBrush x:Key="TextColor" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="TitleBarTextColor" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="AccentColor" Color="#00FF00"/>
-    <SolidColorBrush x:Key="CtaColor" Color="#3c7845"/>
-    <SolidColorBrush x:Key="WindowBorder" Color="#3E3E3E"/>
-    <SolidColorBrush x:Key="ButtonBackground" Color="#3E3E3E"/>
-    <SolidColorBrush x:Key="ButtonTextColor" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="ButtonHoverBackground" Color="#4E4E4E"/>
-    <SolidColorBrush x:Key="ButtonClickBackground" Color="#606060"/>
 
     <Style TargetType="Window">
         <Setter Property="Background" Value="{StaticResource WindowBackground}" />
-    </Style>
-
-    <Style TargetType="TextBlock">
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="Foreground" Value="{StaticResource TextColor}" />
-        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
     </Style>
 
     <Style TargetType="Border">
         <Setter Property="Background" Value="{StaticResource PanelBackground}" />
     </Style>
 
-    <Style TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource ButtonBackground}" />
-        <Setter Property="Foreground" Value="{StaticResource ButtonTextColor}" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Padding" Value="10 8" />
-        <Setter Property="Margin" Value="5 5 5 5" />
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Cursor" Value="Hand" />
+    <Style x:Key="SwitchToggleButton" TargetType="ToggleButton">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}" 
-                            BorderBrush="{TemplateBinding BorderBrush}" 
-                            BorderThickness="{TemplateBinding BorderThickness}" 
-                            CornerRadius="4"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter HorizontalAlignment="Center" 
-                                          VerticalAlignment="Center" 
-                                          TextElement.Foreground="{TemplateBinding Foreground}" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{StaticResource ButtonHoverBackground}" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{StaticResource ButtonClickBackground}" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid Width="50" Height="25">
+                        <Border x:Name="Background" CornerRadius="12.5" Background="LightGray" />
+                        <Border x:Name="Switch" Width="23" Height="23" CornerRadius="11.5" Background="White"
+                                HorizontalAlignment="Left" Margin="1,1,0,1" />
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup>
+                                <VisualState x:Name="Unchecked">
+                                    <Storyboard>
+                                        <ThicknessAnimation Storyboard.TargetName="Switch"
+                                                            Storyboard.TargetProperty="Margin"
+                                                            To="1,1,0,1" Duration="0:0:0.2" />
+                                        <ColorAnimation Storyboard.TargetName="Background"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="LightGray" Duration="0:0:0.2" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Checked">
+                                    <Storyboard>
+                                        <ThicknessAnimation Storyboard.TargetName="Switch"
+                                                            Storyboard.TargetProperty="Margin"
+                                                            To="26,1,1,1" Duration="0:0:0.2" />
+                                        <ColorAnimation Storyboard.TargetName="Background"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#3c7845" Duration="0:0:0.2" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

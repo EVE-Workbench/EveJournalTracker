@@ -8,4 +8,5 @@ public enum DungeonType
     DedSite,
     Expedition,
     EventSite,
+    Custom,
 }

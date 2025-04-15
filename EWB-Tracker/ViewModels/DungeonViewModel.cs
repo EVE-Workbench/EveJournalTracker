@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using SharedLibrary.Enums;
 
 namespace EWB_Tracker.ViewModels;
@@ -20,6 +18,13 @@ public class DungeonViewModel : INotifyPropertyChanged
         get => _selectedDungeonType;
         set
         {
+            if (_selectedDungeonType != DungeonType.Custom.ToString())
+            {
+                // fill DungeonNames with the selected type
+                //DungeonNames.Clear();
+                
+            }
+            
             _selectedDungeonType = value;
             OnPropertyChanged(nameof(SelectedDungeonType));
             OnPropertyChanged(nameof(IsCustomSelected));

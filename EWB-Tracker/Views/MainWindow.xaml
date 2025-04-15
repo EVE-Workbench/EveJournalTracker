@@ -4,11 +4,17 @@
         xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
         xmlns:views="clr-namespace:EWB_Tracker.Views"
         xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
-        Title="EVE Journal - EWB" Height="700" Width="1240"
+        Title="EVE Journal - EWB" 
+        Width="1240" Height="700"
+        MinWidth="980" MinHeight="650"
         WindowStyle="None"
-        AllowsTransparency="True"
+        ResizeMode="CanResize"
+        AllowsTransparency="False"
         Background="Transparent"
         Icon="/assets/ewb-journal-logo.ico">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0"/>
+    </WindowChrome.WindowChrome>
     <Window.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
         <converters:CharacterIdToImageSourceConverter x:Key="CharacterIdToImageSourceConverter" />
@@ -17,16 +23,16 @@
     </Window.Resources>
 
     <Border Background="{DynamicResource WindowBackground}" BorderBrush="{DynamicResource WindowBorder}"
-            BorderThickness="1" CornerRadius="10">
+            BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="40" />
+                <RowDefinition Height="45" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <!-- Custom titlebar -->
             <DockPanel Grid.Row="0"
-                       Background="{DynamicResource TitleBarBackground}"
+                       Background="Transparent"
                        MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
                 <TextBlock Text="EVE Journal - EWB"
                            VerticalAlignment="Center"
@@ -35,17 +41,17 @@
                            Foreground="{DynamicResource TitleBarTextColor}" />
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button Content="—" Width="30" Height="30" Margin="5"
+                    <Button Content="—" Width="35" Height="35" Margin="5"
                             Click="Minimize_Click"
                             Background="{DynamicResource TitleBarButtonBackground}"
                             Foreground="{DynamicResource TitleBarButtonTextColor}" />
 
-                    <Button Content="🗖" Width="40" Height="30" Margin="5"
+                    <Button Content="🗖" Width="35" Height="35" Margin="5"
                             Click="Maximize_Click"
                             Background="{DynamicResource TitleBarButtonBackground}"
                             Foreground="{DynamicResource TitleBarButtonTextColor}" />
 
-                    <Button Content="X" Width="30" Height="30" Margin="5"
+                    <Button Content="X" Width="35" Height="35" Margin="5"
                             Click="Close_Click"
                             Background="{DynamicResource CloseButtonBackground}"
                             Foreground="{DynamicResource CloseButtonTextColor}" />
@@ -174,7 +180,6 @@
                 <Border Grid.Column="2" Grid.Row="0" Grid.RowSpan="2"
                         Background="{DynamicResource PanelBackground}"
                         Width="170"
-                        CornerRadius="0,0,10,0"
                         Margin="0 0 10 10">
                     <StackPanel Orientation="Vertical">
                         <Image Source="pack://application:,,,/EWB-Tracker;component/assets/ewb-journal-logo.png"

@@ -6,7 +6,8 @@
              xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
              mc:Ignorable="d"
              d:DesignHeight="400" 
-             d:DesignWidth="600">
+             d:DesignWidth="600"
+             Background="Transparent">
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
@@ -15,6 +16,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" MinWidth="200" />
+        </Grid.ColumnDefinitions>
         <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
             <TextBlock Text="New Event/Mission View" HorizontalAlignment="Center" VerticalAlignment="Center"
                        FontSize="20" />
@@ -43,5 +48,16 @@
             <ComboBox ItemsSource="{Binding Levels}"
                       Visibility="{Binding IsStandardSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
         </StackPanel>
+        <Border Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" 
+                Background="Transparent" BorderBrush="DarkGray" BorderThickness="0" 
+                Margin="10" Padding="10">
+                
+            <StackPanel>
+                <TextBlock Text="Active Events" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" />
+                <TextBlock Text="No active tracker" HorizontalAlignment="Center" Foreground="Gray" />
+                
+            </StackPanel>
+            
+        </Border>
     </Grid>
 </UserControl>

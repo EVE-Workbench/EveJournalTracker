@@ -6,17 +6,8 @@
         <Setter Property="Foreground" Value="{StaticResource TextColor}" />
         <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
     </Style>
-
-    <Style TargetType="ComboBox">
-        <Setter Property="Foreground" Value="{StaticResource TextColor}" />
-        <Setter Property="Background" Value="{StaticResource ButtonBackground}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WindowBorder}" />
-        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-        <Setter Property="Padding" Value="5" />
-        <Setter Property="Margin" Value="10" />
-        <Setter Property="HorizontalAlignment" Value="Center" />
-        <Setter Property="Width" Value="200" />
-    </Style>
+    
+    
     
     <Style TargetType="Button">
         <Setter Property="Background" Value="{StaticResource ButtonBackground}" />

@@ -13,7 +13,7 @@
         Background="Transparent"
         Icon="/assets/ewb-journal-logo.ico">
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="0"/>
+        <WindowChrome CaptionHeight="0" GlassFrameThickness="0" CornerRadius="0" />
     </WindowChrome.WindowChrome>
     <Window.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
@@ -41,17 +41,17 @@
                            Foreground="{DynamicResource TitleBarTextColor}" />
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button Content="—" Width="35" Height="35" Margin="5"
+                    <Button Content="—" Width="28" Height="35" Margin="0 5" Padding="0"
                             Click="Minimize_Click"
                             Background="{DynamicResource TitleBarButtonBackground}"
                             Foreground="{DynamicResource TitleBarButtonTextColor}" />
 
-                    <Button Content="🗖" Width="35" Height="35" Margin="5"
+                    <Button Content="🗖" Width="28" Height="35" Margin="0 5" Padding="0"
                             Click="Maximize_Click"
                             Background="{DynamicResource TitleBarButtonBackground}"
                             Foreground="{DynamicResource TitleBarButtonTextColor}" />
 
-                    <Button Content="X" Width="35" Height="35" Margin="5"
+                    <Button Content="X" Width="28" Height="35" Margin="0 5 5 5" Padding="0"
                             Click="Close_Click"
                             Background="{DynamicResource CloseButtonBackground}"
                             Foreground="{DynamicResource CloseButtonTextColor}" />
@@ -100,7 +100,7 @@
                     <Border Background="{DynamicResource PanelBackground}"
                             BorderBrush="Gray"
                             BorderThickness="1"
-                            Width="225"
+                            Width="265"
                             Margin="10 0 10 10"
                             Visibility="{Binding FilteredCharacters.Count, Converter={StaticResource ZeroToVisibleConverter}}">
                         <Grid>
@@ -125,7 +125,7 @@
                              Visibility="{Binding FilteredCharacters.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
                              Background="{DynamicResource PanelBackground}"
                              Foreground="{DynamicResource TextColor}"
-                             MinWidth="225">
+                             MinWidth="265">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:Character}">
                                 <StackPanel Orientation="Horizontal">
@@ -184,34 +184,32 @@
                     <StackPanel Orientation="Vertical">
                         <Image Source="pack://application:,,,/EWB-Tracker;component/assets/ewb-journal-logo.png"
                                Width="150" Height="150" Margin="10 10 10 20" />
-                        <TextBlock Text="Menu" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                   Foreground="{DynamicResource TextColor}" />
-                        <Button Content="Bounties" Margin="5" Command="{Binding ShowViewCommand}">
+                        <Button Style="{DynamicResource EveBtn}" Content="Bounties" Command="{Binding ShowViewCommand}">
                             <Button.CommandParameter>
                                 <views:DefaultView />
                             </Button.CommandParameter>
                         </Button>
-                        <Button Content="Account" Margin="5" Command="{Binding ShowViewCommand}">
+                        <Button Style="{DynamicResource EveBtn}" Content="Account" Command="{Binding ShowViewCommand}">
                             <Button.CommandParameter>
                                 <views:AccountView />
                             </Button.CommandParameter>
                         </Button>
-                        <Button Content="Settings" Margin="5" Command="{Binding ShowViewCommand}">
+                        <Button Style="{DynamicResource EveBtn}" Content="Settings" Command="{Binding ShowViewCommand}">
                             <Button.CommandParameter>
                                 <views:SettingsView />
                             </Button.CommandParameter>
                         </Button>
-                        <Button Content="Log viewer" Margin="5" Command="{Binding ShowViewCommand}">
+                        <Button Style="{DynamicResource EveBtn}" Content="Log viewer" Command="{Binding ShowViewCommand}">
                             <Button.CommandParameter>
                                 <views:LogView />
                             </Button.CommandParameter>
                         </Button>
                         <!-- Delimiter -->
-                        <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
-                        <Button Content="Stop Watching" Click="StopWatching_Click" />
-                        <Button Content="New Event/Mission" Background="{DynamicResource CtaColor}" Click="DungeonWindow_Click" />
+                        <Border BorderBrush="{DynamicResource WindowBackground}" BorderThickness="0 1 0 0" Margin="5" />
+                        <Button Content="Stop Watching" Style="{DynamicResource EveBtn}" Click="StopWatching_Click" />
+                        <Button Content="New Event/Mission" Style="{DynamicResource EveBtn}" Background="{DynamicResource CtaColor}" Click="DungeonWindow_Click" />
 
-                        <Border BorderBrush="Black" BorderThickness="0 1 0 0" Margin="5" />
+                        <Border BorderBrush="{DynamicResource WindowBackground}" BorderThickness="0 1 0 0" Margin="5" />
                         <TextBlock Text="Show Offline Characters" Margin="10 10 10 0"
                                    Foreground="{DynamicResource TextColor}" />
                         <ToggleButton Content="Show Offline Characters"

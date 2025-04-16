@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using SharedLibrary.Enums;
-using SharedLibrary.Repositories;
 using SharedLibrary.Repositories.Interfaces;
 
 namespace EWB_Tracker.ViewModels;
@@ -31,6 +30,7 @@ public class DungeonViewModel : INotifyPropertyChanged
 
             if (_selectedDungeonType != "Custom")
             {
+                // todo: create a dungeon service that handles the user input and returns a dictionary of possible field values based on the input.
                 var dungeonType = Enum.Parse<DungeonType>(value);
 
                 var dungeons = dungeonRepository.GetBaseQuery();

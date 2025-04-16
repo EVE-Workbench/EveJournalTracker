@@ -1,17 +1,13 @@
-﻿using System;
-using EWB_Tracker.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
-using SharedLibrary.Repositories.Interfaces;
+﻿using EWB_Tracker.ViewModels;
 
 namespace EWB_Tracker.Views;
 
 public partial class DungeonView
 {
-    public DungeonView(IDungeonRepository dungeonRepository, IServiceProvider serviceProvider)
+    public DungeonView(DungeonViewModel viewModel)
     {
         InitializeComponent();
 
-
-        DataContext = new DungeonViewModel(dungeonRepository);
+        DataContext = viewModel;
     }
 }

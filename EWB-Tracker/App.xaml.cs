@@ -43,23 +43,33 @@ namespace EWB_Tracker
                 .ConfigureServices((_, services) =>
                 {
                     services.AddSingleton(Configuration);
-                    
                     services.AddDbContext<AppDbContext>();
-
                     services.AddHostedService<BackgroundSaveService>();
                     
 
+                    #region Views
                     services.AddTransient<MainWindow>();
                     services.AddTransient<MainWindowViewModel>();
                     services.AddTransient<LogView>();
                     services.AddTransient<DefaultView>();
                     services.AddTransient<DungeonView>();
+                    #endregion
                     
+                    #region Services
                     services.AddTransient<HttpClient>();
                     services.AddTransient<EwbApiClientService>();
                     services.AddTransient<StartupService>();
+                    #endregion
 
+                    #region ViewModels
+                    services.AddTransient<MainWindowViewModel>();
+                    services.AddTransient<LogViewModel>();
+                    services.AddTransient<DungeonViewModel>();
+                    #endregion
+                    
+                    #region Repositories
                     services.AddTransient<IDungeonRepository, DungeonRepository>();
+                    #endregion
 
                     services.AddSingleton<CharacterCache>();
                     services.AddSingleton(provider =>

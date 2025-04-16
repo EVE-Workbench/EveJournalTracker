@@ -11,6 +11,8 @@ using Microsoft.Extensions.Hosting;
 using SharedLibrary.Cache;
 using SharedLibrary.Data;
 using SharedLibrary.Jobs;
+using SharedLibrary.Repositories;
+using SharedLibrary.Repositories.Interfaces;
 using SharedLibrary.Services;
 using SharedLibrary.Utils;
 
@@ -51,11 +53,14 @@ namespace EWB_Tracker
                     services.AddTransient<MainWindowViewModel>();
                     services.AddTransient<LogView>();
                     services.AddTransient<DefaultView>();
+                    services.AddTransient<DungeonView>();
                     
                     services.AddTransient<HttpClient>();
                     services.AddTransient<EwbApiClientService>();
                     services.AddTransient<StartupService>();
-                    
+
+                    services.AddTransient<IDungeonRepository, DungeonRepository>();
+
                     services.AddSingleton<CharacterCache>();
                     services.AddSingleton(provider =>
                     {

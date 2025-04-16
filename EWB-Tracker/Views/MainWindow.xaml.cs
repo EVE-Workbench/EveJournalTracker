@@ -5,6 +5,8 @@ using System.Windows.Input;
 using SharedLibrary.Services;
 using EWB_Tracker.ViewModels;
 using EWB_Tracker.Views;
+using Microsoft.Extensions.DependencyInjection;
+using SharedLibrary.Repositories.Interfaces;
 
 namespace EWB_Tracker
 {
@@ -13,12 +15,15 @@ namespace EWB_Tracker
         private readonly FileWatcherService _fileWatcherService;
         private bool _isWatching = true;
 
-        public MainWindow(MainWindowViewModel viewModel, FileWatcherService fileWatcherService)
+        private readonly IServiceProvider _serviceProvider;
+
+        public MainWindow(MainWindowViewModel viewModel, FileWatcherService fileWatcherService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
             DataContext = viewModel;
 
             _fileWatcherService = fileWatcherService;
+            _serviceProvider = serviceProvider;
 
             Loaded += (s, e) => _fileWatcherService.StartWatching();
             Closing += (s, e) => _fileWatcherService.StopWatching();
@@ -32,7 +37,7 @@ namespace EWB_Tracker
 
         private void DungeonWindow_Click(Object sender, RoutedEventArgs e)
         {
-            var view = new DungeonView(); 
+            var view = _serviceProvider.GetService<DungeonView>();
             ModalContent.Content = view;
             ModalOverlay.Visibility = Visibility.Visible;
         }

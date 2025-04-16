@@ -83,8 +83,8 @@ public class StartupService
         {
             foreach (var type in Enum.GetValues<DungeonType>())
             {
-                // if it is custom type, skip it, it is not in the api
-                if (type == DungeonType.Custom) continue;
+                /*// if it is custom type, skip it, it is not in the api
+                if (type == DungeonType.Custom) continue;*/
                 
                 // check if we have any dungeons of this type in the database, if so clean them up
                 var existingDungeons = _dbContext.Dungeons.Where(d => d.Type == type).ToList();

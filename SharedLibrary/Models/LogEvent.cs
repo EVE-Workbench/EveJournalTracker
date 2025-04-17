@@ -10,6 +10,8 @@ public class LogEvent
     public LogEventType Type { get; set; }
     public int? BountyValue { get; set; }
     public string? Value { get; set; }
+    public string? DamageType { get; set; }
+    public string? DamageQuality { get; set; }
     public string Raw { get; set; } = null!;
     
     public int CharacterId { get; set; }

@@ -61,6 +61,10 @@
                                 <Run Text="{Binding Type}" />
                                 <Run Text=" - " />
                                 <Run Text="{Binding Value}" />
+                                <Run Text=" - " />
+                                <Run Text="{Binding DamageType}" />
+                                <Run Text=" - " />
+                                <Run Text="{Binding DamageQuality}" />
                                 <Run Text="{Binding BountyValue, Converter={StaticResource BountyConverter}}" />
                             </TextBlock>
                         </StackPanel>

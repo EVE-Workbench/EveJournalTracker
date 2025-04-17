@@ -22,17 +22,17 @@ public class FileWatcherService
 
     public event EventHandler<LogEvent> OnNewLogEvent;
     public event EventHandler<(int TotalISK, int ISKChange)> OnISKUpdated;
-    
-    public List<EveSystemDto> EveSystems { get; set; } = [];
-    public List<EveSystem> EveSystemsList { get; set; } = [];
+
+    private List<EveSystemDto> EveSystems { get; set; } = [];
+    private List<EveSystem> EveSystemsList { get; set; } = [];
 
     public FileWatcherService(string logDirectory, CharacterCache characterCache, AppDbContext context)
     {
         _logDirectory = logDirectory;
         _characterCache = characterCache;
         _context = context;
-        _logEvents = new List<LogEvent>();
-        _fileWatchers = new List<FileSystemWatcher>();
+        _logEvents = [];
+        _fileWatchers = [];
         _fileChangeQueue = new ConcurrentQueue<string>();
         _cancellationTokenSource = new CancellationTokenSource();
         Task.Run(() => ProcessFileChanges(_cancellationTokenSource.Token));
@@ -86,34 +86,30 @@ public class FileWatcherService
             {
                 try
                 {
-                    if (!_filePositions.ContainsKey(filePath))
-                    {
-                        _filePositions[filePath] = 0;
-                    }
+                    _filePositions.TryAdd(filePath, 0);
 
-                    using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     stream.Seek(_filePositions[filePath], SeekOrigin.Begin);
 
                     using var reader = new StreamReader(stream);
-                    string? line;
-                    while ((line = await reader.ReadLineAsync()) != null)
+                    while (await reader.ReadLineAsync(token) is { } line)
                     {
                         var characterId = Convert.ToInt32(ExtractCharacterIdFromFileName(Path.GetFileName(filePath)));
                         var character = GetOrCreateCharacter(characterId);
 
                         var logEvent = ParseLogLine(line, character);
 
-                        if (logEvent != null)
-                        {
-                            _logEvents.Add(logEvent);
+                        // Ignore empty log events
+                        if (logEvent == null) continue;
+                        
+                        _logEvents.Add(logEvent);
 
-                            OnNewLogEvent?.Invoke(this, logEvent);
-                            // Update ISK values
-                            var totalIsk = _logEvents.Sum(log => log.BountyValue) ?? 0;
-                            var lastBountyEvent = _logEvents.LastOrDefault(log => log.Type == LogEventType.Bounty);
-                            var iskChange = lastBountyEvent?.BountyValue ?? 0;
-                            OnISKUpdated?.Invoke(this, (totalIsk, iskChange));
-                        }
+                        OnNewLogEvent?.Invoke(this, logEvent);
+                        // Update ISK values
+                        var totalIsk = _logEvents.Sum(log => log.BountyValue) ?? 0;
+                        var lastBountyEvent = _logEvents.LastOrDefault(log => log.Type == LogEventType.Bounty);
+                        var iskChange = lastBountyEvent?.BountyValue ?? 0;
+                        OnISKUpdated?.Invoke(this, (totalIsk, iskChange));
                     }
 
                     _filePositions[filePath] = stream.Position;
@@ -125,13 +121,13 @@ public class FileWatcherService
             }
             else
             {
-                await Task.Delay(100);
+                await Task.Delay(100, token);
             }
         }
     }
 
 
-    private string? ExtractCharacterIdFromFileName(string fileName)
+    private static string? ExtractCharacterIdFromFileName(string fileName)
     {
         // Format: YYYYMMDD_HHMMSS_CharacterId.log
         var parts = fileName.Split('_');
@@ -171,7 +167,7 @@ public class FileWatcherService
         };
 
         // get the system time for the log line
-        var timePattern = @"\[ ([\d\.: ]+) \]";
+        const string timePattern = @"\[ ([\d\.: ]+) \]";
         var timeMatch = Regex.Match(line, timePattern);
         if (timeMatch.Success)
         {
@@ -221,7 +217,7 @@ public class FileWatcherService
             }
 
             logEvent.Type = LogEventType.Bounty;
-            logEvent.Value = line;
+            //logEvent.Value = line;
             
             UpdateEveSystemsList(logEvent);
             
@@ -230,7 +226,64 @@ public class FileWatcherService
 
         if (line.Contains("(combat)"))
         {
+            var damageTakenRegex = new Regex(@"<b>(\d+)</b>.*?<font size=10>from</font>.*?<b><color=.*?>(.*?)</b><font size=10>.*?(?: - (.*?))? - (Grazes|Glances Off|Hits|Penetrates|Smashes|Wrecks)");
+            var damageDoneRegex = new Regex(@"<b>(\d+)</b> <color=.*>to</font> <b><color=.*>(.*?)</b><font size=\d+>.*? - (.*?) - (Grazes|Glances Off|Hits|Penetrates|Smashes|Wrecks)");
+            var damageOutMissRegex = new Regex(@"Your (.*?) misses (.*?) completely - (.*?)");
+            var damageInMissRegex = new Regex(@"misses you completely");
+            var capOutRegex = new Regex(@"<b>(\d+)</b><color=0x77ffffff><font size=10> remote capacitor transmitted to");
+            var neutInRegex = new Regex(@"<color=0xffe57f7f><b>(\d+)\sGJ</b><color=0x77ffffff><font size=10> energy neutralized ");
+            var neutOutRegex = new Regex(@"<color=0xff7fffff><b>(\d+)\sGJ</b><color=0x77ffffff><font size=10> energy neutralized ");
+            var repOutRegex = new Regex(@"<b>(\d+)</b><color=0x77ffffff><font size=10> remote (?:armor repaired|shield boosted) to");
+            
             logEvent.Type = LogEventType.Combat;
+            
+            
+            if (damageTakenRegex.IsMatch(line))
+            {
+                var match = damageTakenRegex.Match(line);
+                if (!match.Success) return logEvent;
+                logEvent.DamageType = "DpsIn";
+                logEvent.DamageQuality = match.Groups[4].Value;
+                logEvent.Value = match.Groups[1].Value;
+                return logEvent;
+            }
+            
+            if (damageDoneRegex.IsMatch(line))
+            {
+                var match = damageDoneRegex.Match(line);
+                if (!match.Success) return logEvent;
+                logEvent.DamageType = "DpsOut";
+                logEvent.DamageQuality = match.Groups[4].Value;
+                logEvent.Value = match.Groups[1].Value;
+                return logEvent;
+            }
+            
+            if (damageOutMissRegex.IsMatch(line))
+            {
+                var match = damageOutMissRegex.Match(line);
+                if (!match.Success) return logEvent;
+                logEvent.DamageType = "DpsOutMiss";
+                logEvent.DamageQuality = "Miss";
+                return logEvent;
+            }
+            
+            if (damageInMissRegex.IsMatch(line))
+            {
+                var match = damageInMissRegex.Match(line);
+                if (!match.Success) return logEvent;
+                logEvent.DamageType = "DpsInMiss";
+                logEvent.DamageQuality = "Miss";
+                return logEvent;
+            }
+            
+            if (capOutRegex.IsMatch(line))
+            {
+                var match = capOutRegex.Match(line);
+                if (!match.Success) return logEvent;
+                logEvent.DamageType = "CapOut";
+                return logEvent;
+            }
+
             logEvent.Value = line;
             return logEvent;
         }

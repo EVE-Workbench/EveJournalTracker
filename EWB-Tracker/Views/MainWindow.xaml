@@ -4,6 +4,7 @@
         xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
         xmlns:views="clr-namespace:EWB_Tracker.Views"
         xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
+        xmlns:components="clr-namespace:EWB_Tracker.Views.Components"
         Title="EVE Journal - EWB" 
         Width="1240" Height="700"
         MinWidth="980" MinHeight="650"
@@ -96,84 +97,103 @@
 
                 <!-- Character List -->
                 <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
-                    <!-- Empty placeholder box -->
-                    <Border Background="{DynamicResource PanelBackground}"
-                            BorderBrush="Gray"
-                            BorderThickness="1"
-                            Width="265"
-                            Margin="10 0 10 10"
-                            Visibility="{Binding FilteredCharacters.Count, Converter={StaticResource ZeroToVisibleConverter}}">
-                        <Grid>
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
-                                <TextBlock Text="🚫 No characters online"
-                                           FontSize="16"
-                                           Foreground="Gray"
-                                           HorizontalAlignment="Center"
-                                           TextAlignment="Center" />
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="250" />
+                    </Grid.RowDefinitions>
+                    
+                    <Grid Grid.Row="0">
+                        <!-- Empty placeholder box -->
+                        <Border Background="{DynamicResource PanelBackground}"
+                                BorderBrush="Gray"
+                                BorderThickness="1"
+                                Width="265"
+                                Margin="10 0 10 10"
+                                Visibility="{Binding FilteredCharacters.Count, Converter={StaticResource ZeroToVisibleConverter}}">
+                            <Grid>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                                    <TextBlock Text="🚫 No characters online"
+                                               FontSize="16"
+                                               Foreground="Gray"
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center" />
 
-                                <TextBlock
-                                    Text="What are you doing? Not playing EvE? Are you really an EvE player if there are no alts online?"
-                                    TextWrapping="Wrap"
-                                    FontSize="12"
-                                    Foreground="DarkGray"
-                                    HorizontalAlignment="Center"
-                                    TextAlignment="Center" />
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                    <ListBox ItemsSource="{Binding FilteredCharacters}" Margin="10 0 10 10"
-                             Visibility="{Binding FilteredCharacters.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
-                             Background="{DynamicResource PanelBackground}"
-                             Foreground="{DynamicResource TextColor}"
-                             MinWidth="265">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type models:Character}">
-                                <StackPanel Orientation="Horizontal">
-                                    <Grid Width="54" Height="54" Margin="5">
-                                        <Ellipse StrokeThickness="2" Fill="Transparent">
-                                            <Ellipse.Style>
-                                                <Style TargetType="Ellipse">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Online}" Value="True">
-                                                            <Setter Property="Stroke" Value="Green" />
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Online}" Value="False">
-                                                            <Setter Property="Stroke" Value="Red" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Ellipse.Style>
-                                        </Ellipse>
-                                        <Ellipse Fill="White" Margin="2" />
-                                        <Image
-                                            Source="{Binding CharacterId, Converter={StaticResource CharacterIdToImageSourceConverter}}"
-                                            Width="50" Height="50" ClipToBounds="True" Margin="2">
-                                            <Image.Clip>
-                                                <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25" />
-                                            </Image.Clip>
-                                        </Image>
-                                    </Grid>
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Name}" FontWeight="Bold"
-                                                   Foreground="{DynamicResource TextColor}" />
-                                        <TextBlock Foreground="{DynamicResource TextColor}">
-                                            Bounty:
-                                            <TextBlock
-                                                Text="{Binding Bounty, Converter={StaticResource BountyConverter}}" />
-                                        </TextBlock>
-                                        <TextBlock Foreground="{DynamicResource TextColor}">
-                                            System:
-                                            <TextBlock Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
-                                            <Run Text=" (" />
-                                            <Run Text="{Binding EveSystem.SecurityStatus, StringFormat={}{0:F1}, FallbackValue='?'}"
-                                                 Foreground="{Binding EveSystem.SecurityColor}" />
-                                            <Run Text=")" />
-                                        </TextBlock>
-                                    </StackPanel>
+                                    <TextBlock
+                                        Text="What are you doing? Not playing EvE? Are you really an EvE player if there are no alts online?"
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        Foreground="DarkGray"
+                                        HorizontalAlignment="Center"
+                                        TextAlignment="Center" />
                                 </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                            </Grid>
+                        </Border>
+                        <ListBox ItemsSource="{Binding FilteredCharacters}" Margin="10 0 10 10"
+                                 Visibility="{Binding FilteredCharacters.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
+                                 Background="{DynamicResource PanelBackground}"
+                                 Foreground="{DynamicResource TextColor}"
+                                 MinWidth="265">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:Character}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Grid Width="54" Height="54" Margin="5">
+                                            <Ellipse StrokeThickness="2" Fill="Transparent">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Online}" Value="True">
+                                                                <Setter Property="Stroke" Value="Green" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Online}" Value="False">
+                                                                <Setter Property="Stroke" Value="Red" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <Ellipse Fill="White" Margin="2" />
+                                            <Image
+                                                Source="{Binding CharacterId, Converter={StaticResource CharacterIdToImageSourceConverter}}"
+                                                Width="50" Height="50" ClipToBounds="True" Margin="2">
+                                                <Image.Clip>
+                                                    <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25" />
+                                                </Image.Clip>
+                                            </Image>
+                                        </Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold"
+                                                       Foreground="{DynamicResource TextColor}" />
+                                            <TextBlock Foreground="{DynamicResource TextColor}">
+                                                Bounty:
+                                                <TextBlock
+                                                    Text="{Binding Bounty, Converter={StaticResource BountyConverter}}" />
+                                            </TextBlock>
+                                            <TextBlock Foreground="{DynamicResource TextColor}">
+                                                System:
+                                                <TextBlock Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
+                                                <Run Text=" (" />
+                                                <Run Text="{Binding EveSystem.SecurityStatus, StringFormat={}{0:F1}, FallbackValue='?'}"
+                                                     Foreground="{Binding EveSystem.SecurityColor}" />
+                                                <Run Text=")" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                    <Border Grid.Row="1"
+                          VerticalAlignment="Stretch" 
+                          HorizontalAlignment="Stretch"
+                          Background="{DynamicResource PanelBackground}"
+                          BorderBrush="Gray"
+                          BorderThickness="1"
+                          Margin="10 0 10 10">
+                        
+                        <components:DpsChart
+                                             HorizontalAlignment="Stretch"
+                                             VerticalAlignment="Stretch" />
+                    </Border>
                 </Grid>
 
                 <!-- Toolbar -->

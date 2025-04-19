@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Windows;
 using EWB_Tracker.ViewModels;
 using EWB_Tracker.Views;
+using EWB_Tracker.Views.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +54,7 @@ namespace EWB_Tracker
                     services.AddTransient<LogView>();
                     services.AddTransient<DefaultView>();
                     services.AddTransient<DungeonView>();
+                    services.AddTransient<DpsChart>();
                     #endregion
                     
                     #region Services
@@ -65,6 +67,7 @@ namespace EWB_Tracker
                     services.AddTransient<MainWindowViewModel>();
                     services.AddTransient<LogViewModel>();
                     services.AddTransient<DungeonViewModel>();
+                    services.AddTransient<DpsChartViewModel>();
                     #endregion
                     
                     #region Repositories

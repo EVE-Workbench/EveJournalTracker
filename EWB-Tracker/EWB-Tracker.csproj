@@ -29,6 +29,12 @@
       </Resource>
       <None Remove="assets\ewb-journal-logo.ico" />
       <Resource Include="assets\ewb-journal-logo.ico" />
+      <None Remove="assets\eveworkbench-logo.png" />
+      <Resource Include="assets\eveworkbench-logo.png" />
+      <None Remove="assets\eveworkbench-logo.svg" />
+      <Resource Include="assets\eveworkbench-logo.svg" />
+      <None Remove="assets\eveworkbench-logo.ico" />
+      <Resource Include="assets\eveworkbench-logo.ico" />
     </ItemGroup>
 
     <ItemGroup>

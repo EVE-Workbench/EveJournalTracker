@@ -5,14 +5,14 @@
         xmlns:views="clr-namespace:EWB_Tracker.Views"
         xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
         xmlns:components="clr-namespace:EWB_Tracker.Views.Components"
-        Title="EVE Journal - EWB" 
+        Title="EVE Workbench Desktop Agent" 
         Width="1240" Height="700"
         MinWidth="980" MinHeight="650"
         WindowStyle="None"
         ResizeMode="CanResize"
         AllowsTransparency="False"
         Background="Transparent"
-        Icon="/assets/ewb-journal-logo.ico">
+        Icon="/assets/eveworkbench-logo.ico">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" GlassFrameThickness="0" CornerRadius="0" />
     </WindowChrome.WindowChrome>
@@ -35,7 +35,7 @@
             <DockPanel Grid.Row="0"
                        Background="Transparent"
                        MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-                <TextBlock Text="EVE Journal - EWB"
+                <TextBlock Text="EVE Workbench Desktop Agent"
                            VerticalAlignment="Center"
                            Margin="10 0"
                            FontSize="16"
@@ -202,7 +202,7 @@
                         Width="170"
                         Margin="0 0 10 10">
                     <StackPanel Orientation="Vertical">
-                        <Image Source="pack://application:,,,/EWB-Tracker;component/assets/ewb-journal-logo.png"
+                        <Image Source="pack://application:,,,/EWB-Tracker;component/assets/eveworkbench-logo.png"
                                Width="150" Height="150" Margin="10 10 10 20" />
                         <Button Style="{DynamicResource EveBtn}" Content="Bounties" Command="{Binding ShowViewCommand}">
                             <Button.CommandParameter>

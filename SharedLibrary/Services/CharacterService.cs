@@ -12,7 +12,7 @@ public class CharacterService
         client.BaseAddress = new Uri("https://esi.evetech.net/latest/");
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        client.DefaultRequestHeaders.Add("User-Agent", "Eve Workbench - Journal");
+        client.DefaultRequestHeaders.Add("User-Agent", "Eve Workbench - Agent");
 
         try
         {

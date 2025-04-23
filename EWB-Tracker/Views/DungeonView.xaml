@@ -34,27 +34,17 @@
                       Margin="0 5"/>
 
             <!-- for dungeon type Custom: -->
-            <TextBlock Visibility="{Binding IsCustomSelected, Converter={StaticResource BoolToVisibilityConverter}}" 
-                       Text="Give your session a name:" Margin="0 5" />
             <TextBox Margin="0 5" Height="25"
                      Visibility="{Binding IsCustomSelected, Converter={StaticResource BoolToVisibilityConverter}}"
                       />
 
             <!-- for other DungeonTypes -->
-            <TextBlock Visibility="{Binding IsStandardSelected, Converter={StaticResource BoolToVisibilityConverter}}" 
-                       Text="Select Dungeon Name:" Margin="0 5" />
             <ComboBox ItemsSource="{Binding DungeonNames}"
                       Visibility="{Binding IsStandardSelected, Converter={StaticResource BoolToVisibilityConverter}}" 
                       Margin="0 5"/>
-
-            <TextBlock Visibility="{Binding IsStandardSelected, Converter={StaticResource BoolToVisibilityConverter}}" 
-                       Text="Select Faction:" Margin="0 5" />
             <ComboBox ItemsSource="{Binding Factions}"
                       Visibility="{Binding IsStandardSelected, Converter={StaticResource BoolToVisibilityConverter}}"  
                       Margin="0 5"/>
-
-            <TextBlock Visibility="{Binding IsStandardSelected, Converter={StaticResource BoolToVisibilityConverter}}" 
-                       Text="Select Level:" Margin="0 5" />
             <ComboBox ItemsSource="{Binding Levels}"
                       Visibility="{Binding IsStandardSelected, Converter={StaticResource BoolToVisibilityConverter}}"  
                       Margin="0 5"/>
@@ -65,8 +55,7 @@
         </StackPanel>
         <Border Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" 
                 Background="Transparent" BorderBrush="DarkGray" BorderThickness="0" 
-                Margin="10" Padding="10"
-                MinWidth="300">
+                Margin="10" Padding="10">
                 
             <StackPanel>
                 <TextBlock Text="Active Events" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" />

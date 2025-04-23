@@ -4,9 +4,11 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.Defaults;
 using SkiaSharp;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -26,22 +28,27 @@ public sealed class DpsChartViewModel : INotifyPropertyChanged, IDisposable
 
     #endregion
 
-    private readonly TimeSpan _window = TimeSpan.FromSeconds(30);
-    private readonly Dispatcher _ui = Application.Current.Dispatcher;
-    private readonly CultureInfo _ci = CultureInfo.InvariantCulture;
+    private readonly TimeSpan _calculationWindow = TimeSpan.FromSeconds(2); // Time window over which DPS is calculated
+    private readonly TimeSpan _decayRate = TimeSpan.FromMilliseconds(500); // Rate at which the DPS value decreases when no new data arrives
+    private readonly TimeSpan _displayWindow = TimeSpan.FromSeconds(30); // Time window shown on the chart
+    private readonly Dispatcher _ui = Application.Current.Dispatcher; // Dispatcher for UI thread operations
+    private readonly CultureInfo _ci = CultureInfo.InvariantCulture; // Culture info for parsing numbers
 
-    private readonly ObservableCollection<ObservablePoint> _dpsIn = new();
-    private readonly ObservableCollection<ObservablePoint> _dpsOut = new();
+    private readonly ConcurrentQueue<LogEvent> _dpsInQueue = new(); // queue for incoming damage logs
+    private readonly ConcurrentQueue<LogEvent> _dpsOutQueue = new(); // queue for outgoing damage logs
 
-    public ISeries[] Series { get; }
-    private readonly DateTimeAxis _customAxis;
-    public Axis[] XAxes { get; set; }
-    public Axis[] YAxes { get; }
+    private readonly ObservableCollection<ObservablePoint> _dpsInValues = new(); // Collection to store DPS In values for the chart
+    private readonly ObservableCollection<ObservablePoint> _dpsOutValues = new(); // Collection to store DPS Out values for the chart
 
-    public object Sync { get; } = new object();
+    public ISeries[] Series { get; } // Array of series to display on the chart
+    private readonly DateTimeAxis _customAxis; // Custom X-axis for displaying time
+    public Axis[] XAxes { get; set; } // Array of X-axes for the chart
+    public Axis[] YAxes { get; } // Array of Y-axes for the chart
 
-    public bool IsReading { get; set; } = true;
-    
+    public object Sync { get; } = new object(); // Object for thread synchronization
+
+    public bool IsReading { get; set; } = true; // Flag to control the data processing loops
+
     public SolidColorPaint LegendTextPaint { get; set; } =
         new SolidColorPaint
         {
@@ -50,24 +57,26 @@ public sealed class DpsChartViewModel : INotifyPropertyChanged, IDisposable
 
     public DpsChartViewModel()
     {
+        // Initialize the series for DPS In and DPS Out
         Series =
         [
             new LineSeries<ObservablePoint>
             {
-                Values = _dpsIn,
+                Values = _dpsInValues,
                 Name = "DPS In",
                 GeometrySize = 0,
                 Stroke = new SolidColorPaint { Color = SKColors.OrangeRed, StrokeThickness = 2 }
             },
             new LineSeries<ObservablePoint>
             {
-                Values = _dpsOut,
+                Values = _dpsOutValues,
                 Name = "DPS Out",
                 GeometrySize = 0,
                 Stroke = new SolidColorPaint { Color = SKColors.DodgerBlue, StrokeThickness = 2 }
             }
         ];
 
+        // Initialize the custom X-axis to display time
         _customAxis = new DateTimeAxis(TimeSpan.FromSeconds(1), Formatter)
         {
             CustomSeparators = GetSeparators(),
@@ -76,6 +85,7 @@ public sealed class DpsChartViewModel : INotifyPropertyChanged, IDisposable
         };
         XAxes = [_customAxis];
 
+        // Initialize the Y-axis for DPS values
         YAxes =
         [
             new Axis
@@ -85,68 +95,159 @@ public sealed class DpsChartViewModel : INotifyPropertyChanged, IDisposable
             }
         ];
 
-        _ = ReadData();
+        // Start the background tasks for processing DPS and updating the chart
+        _ = ProcessDps();
+        _ = UpdateChart();
     }
 
-    private async Task ReadData()
+    private async Task ProcessDps()
+    {
+        double lastDpsIn = 0; // Stores the last calculated DPS In value for smooth decay
+        DateTime lastDpsInTime = DateTime.MinValue; // Stores the last time DPS In was updated
+        double lastDpsOut = 0; // Stores the last calculated DPS Out value for smooth decay
+        DateTime lastDpsOutTime = DateTime.MinValue; // Stores the last time DPS Out was updated
+
+        while (IsReading)
+        {
+            await Task.Delay(50); // Check more frequently for smoother decay
+
+            var now = DateTime.Now;
+            double currentDpsIn = 0;
+            double currentDpsOut = 0;
+
+            // Calculate DPS In over the calculation window
+            var inEvents = _dpsInQueue.Where(log =>
+                now - TimeZoneInfo.ConvertTimeFromUtc(log.Timestamp, TimeZoneInfo.Local) < _calculationWindow).ToList();
+            double totalDamageIn = 0;
+            foreach (var log in inEvents)
+            {
+                if (double.TryParse(log.Value, NumberStyles.Float, _ci, out double val))
+                {
+                    totalDamageIn += val;
+                }
+            }
+
+            // Calculate current DPS In
+            currentDpsIn = inEvents.Any() ? totalDamageIn / _calculationWindow.TotalSeconds : 0;
+            // Remove logs that are older than the calculation window from the queue
+            while (_dpsInQueue.TryPeek(out var peeked) &&
+                   now - TimeZoneInfo.ConvertTimeFromUtc(peeked.Timestamp, TimeZoneInfo.Local) >= _calculationWindow)
+            {
+                _dpsInQueue.TryDequeue(out _);
+            }
+
+            // Calculate DPS Out over the calculation window
+            var outEvents = _dpsOutQueue.Where(log =>
+                now - TimeZoneInfo.ConvertTimeFromUtc(log.Timestamp, TimeZoneInfo.Local) < _calculationWindow).ToList();
+            double totalDamageOut = 0;
+            foreach (var log in outEvents)
+            {
+                if (double.TryParse(log.Value, NumberStyles.Float, _ci, out double val))
+                {
+                    totalDamageOut += val;
+                }
+            }
+
+            // Calculate current DPS Out
+            currentDpsOut = outEvents.Any() ? totalDamageOut / _calculationWindow.TotalSeconds : 0;
+            // Remove logs that are older than the calculation window from the queue
+            while (_dpsOutQueue.TryPeek(out var peeked) &&
+                   now - TimeZoneInfo.ConvertTimeFromUtc(peeked.Timestamp, TimeZoneInfo.Local) >= _calculationWindow)
+            {
+                _dpsOutQueue.TryDequeue(out _);
+            }
+
+            _ui.InvokeAsync(() =>
+            {
+                lock (Sync)
+                {
+                    // Gradually decrease DPS In if no new damage and some time has passed
+                    if (currentDpsIn == 0 && lastDpsIn > 0 && (now - lastDpsInTime) > _decayRate)
+                    {
+                        lastDpsIn -= lastDpsIn / (_decayRate.TotalMilliseconds / 50); // Slow decay
+                        if (lastDpsIn < 0) lastDpsIn = 0;
+                    }
+                    else if (currentDpsIn > 0)
+                    {
+                        lastDpsIn = currentDpsIn;
+                        lastDpsInTime = now;
+                    }
+
+                    _dpsInValues.Add(new ObservablePoint(now.Ticks, lastDpsIn));
+
+                    // Gradually decrease DPS Out if no new damage and some time has passed
+                    if (currentDpsOut == 0 && lastDpsOut > 0 && (now - lastDpsOutTime) > _decayRate)
+                    {
+                        lastDpsOut -= lastDpsOut / (_decayRate.TotalMilliseconds / 50); // Slow decay
+                        if (lastDpsOut < 0) lastDpsOut = 0;
+                    }
+                    else if (currentDpsOut > 0)
+                    {
+                        lastDpsOut = currentDpsOut;
+                        lastDpsOutTime = now;
+                    }
+
+                    _dpsOutValues.Add(new ObservablePoint(now.Ticks, lastDpsOut));
+
+                    // Trim the data points to keep only those within the display window
+                    Trim(_dpsInValues, now, _displayWindow);
+                    Trim(_dpsOutValues, now, _displayWindow);
+                }
+            });
+        }
+    }
+
+    private async Task UpdateChart()
     {
         while (IsReading)
         {
-            await Task.Delay(100);
+            await Task.Delay(200); // Periodically update the chart
 
-            lock (Sync)
+            var now = DateTime.Now;
+
+            _ui.InvokeAsync(() =>
             {
-                var now = DateTime.Now;
+                lock (Sync)
+                {
+                    // Update the X-axis limits to show the data within the display window
+                    var axis = XAxes[0];
+                    axis.MinLimit = now.Subtract(_displayWindow).Ticks;
+                    axis.MaxLimit = now.Ticks;
 
-                Trim(_dpsIn, now);
-                Trim(_dpsOut, now);
-
-                var axis = XAxes[0];
-                axis.MinLimit = now.Subtract(_window).Ticks;
-                axis.MaxLimit = now.Ticks;
-
-                // update the Seperators position every update 
-                _customAxis.CustomSeparators = GetSeparators();
-            }
+                    // Update the separators on the X-axis
+                    _customAxis.CustomSeparators = GetSeparators();
+                }
+            });
         }
     }
 
     public void ProcessLog(LogEvent log)
     {
         if (log.Value is null) return;
-        if (!double.TryParse(log.Value, NumberStyles.Float, _ci, out double val)) return;
 
-        // transform the log time to the current time zone (logs are UTC+0)
+        // Transform the log time to the current time zone (logs are UTC+0)
         var now = TimeZoneInfo.ConvertTimeFromUtc(log.Timestamp, TimeZoneInfo.Local);
 
-        // If the entries are older than the time window, ignore them.
-        if (now < DateTime.Now.Subtract(_window)) return;
-
-        _ui.InvokeAsync(() =>
+        // If the entry is within the display window, add it to the appropriate queue for DPS calculation
+        if (now >= DateTime.Now.Subtract(_displayWindow))
         {
-            ObservableCollection<ObservablePoint>? target = log.DamageType switch
+            switch (log.DamageType)
             {
-                "DpsIn" => _dpsIn,
-                "DpsOut" => _dpsOut,
-                _ => null
-            };
-            if (target is null) return;
-
-            target.Add(new ObservablePoint(now.Ticks, val));
-
-            Trim(_dpsIn, now);
-            Trim(_dpsOut, now);
-
-            // move X‑axis window
-            var axis = (Axis)XAxes[0];
-            axis.MinLimit = now.Subtract(_window).Ticks;
-            axis.MaxLimit = now.Ticks;
-        });
+                case "DpsIn":
+                    _dpsInQueue.Enqueue(log);
+                    break;
+                case "DpsOut":
+                    _dpsOutQueue.Enqueue(log);
+                    break;
+            }
+        }
     }
 
-    private void Trim(ObservableCollection<ObservablePoint> col, DateTime now)
+    private void Trim(ObservableCollection<ObservablePoint> col, DateTime now, TimeSpan window)
     {
-        while (col.Count > 0 && col[0].X != null && (now - new DateTime((long)col[0].X)) > _window + TimeSpan.FromSeconds(5))
+        // Remove data points that are older than the display window plus a small buffer
+        while (col.Count > 0 && col[0].X != null &&
+               (now - new DateTime((long)col[0].X)) > window + TimeSpan.FromSeconds(1))
             col.RemoveAt(0);
     }
 
@@ -176,5 +277,6 @@ public sealed class DpsChartViewModel : INotifyPropertyChanged, IDisposable
 
     public void Dispose()
     {
+        IsReading = false; // Stop the background processing loops
     }
 }

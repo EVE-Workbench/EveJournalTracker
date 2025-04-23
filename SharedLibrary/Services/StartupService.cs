@@ -18,7 +18,7 @@ public class StartupService
         _logger = logger;
     }
     
-    public async void Initialize()
+    public async Task Initialize()
     {
         // check if we have any eveSystems in the database
         if (!_dbContext.EveSystems.Any())

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
 using EWB_Tracker.ViewModels;
 using EWB_Tracker.Views;
@@ -121,7 +122,7 @@ namespace EWB_Tracker
             _host.Start();
             
             var initService = _host.Services.GetRequiredService<StartupService>();
-            initService.Initialize();
+            Task.Run(async () => await initService.Initialize()).Wait();
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Show();

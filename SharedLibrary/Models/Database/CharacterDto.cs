@@ -19,4 +19,6 @@ public class CharacterDto
     public int? EveSystemId { get; set; }
     
     public bool Active { get; set; } = true;
+    
+    public int Position { get; set; } = 0;
 }

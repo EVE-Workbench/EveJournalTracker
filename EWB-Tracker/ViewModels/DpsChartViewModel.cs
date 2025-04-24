@@ -20,24 +20,25 @@ namespace EWB_Tracker.ViewModels;
 public sealed class DpsChartViewModel : INotifyPropertyChanged, IDisposable
 {
     #region INotifyPropertyChanged
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged([CallerMemberName] string? n = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
+
     #endregion
 
-    private readonly TimeSpan _calculationWindow = TimeSpan.FromSeconds(1); // Time window over which DPS is calculated
+    private readonly TimeSpan _calculationWindow = TimeSpan.FromSeconds(2); // Time window over which DPS is calculated
     private readonly TimeSpan _decayRate = TimeSpan.FromMilliseconds(500); // Rate at which the DPS value decreases when no new data arrives
     private readonly TimeSpan _displayWindow = TimeSpan.FromSeconds(30); // Time window shown on the chart
-    
     private readonly Dispatcher _ui = Application.Current.Dispatcher; // Dispatcher for UI thread operations
     private readonly CultureInfo _ci = CultureInfo.InvariantCulture; // Culture info for parsing numbers
 
-    private readonly ConcurrentQueue<LogEvent> _dpsInQueue = new(); 
-    private readonly ConcurrentQueue<LogEvent> _dpsOutQueue = new(); 
+    private readonly ConcurrentQueue<LogEvent> _dpsInQueue = new(); // queue for incoming damage logs
+    private readonly ConcurrentQueue<LogEvent> _dpsOutQueue = new(); // queue for outgoing damage logs
 
-    private readonly ObservableCollection<ObservablePoint> _dpsInValues = new(); 
-    private readonly ObservableCollection<ObservablePoint> _dpsOutValues = [];
+    private readonly ObservableCollection<ObservablePoint> _dpsInValues = new(); // Collection to store DPS In values for the chart
+    private readonly ObservableCollection<ObservablePoint> _dpsOutValues = new(); // Collection to store DPS Out values for the chart
 
     public ISeries[] Series { get; } // Array of series to display on the chart
     private readonly DateTimeAxis _customAxis; // Custom X-axis for displaying time
@@ -103,27 +104,18 @@ public sealed class DpsChartViewModel : INotifyPropertyChanged, IDisposable
     {
         double lastDpsIn = 0;
         DateTime lastDpsInTime = DateTime.MinValue;
-        double lastTargetDpsIn = 0; // The calculated DPS value
-        double currentRampUpDpsIn = 0; // The currently displayed DPS value during ramp-up
-
         double lastDpsOut = 0;
         DateTime lastDpsOutTime = DateTime.MinValue;
-        double lastTargetDpsOut = 0; // The calculated DPS value
-        double currentRampUpDpsOut = 0; // The currently displayed DPS value during ramp-up
-
-        int rampUpFrames = 5; // Number of frames for the ramp-up effect
-        int currentRampUpInFrame = 0;
-        int currentRampUpOutFrame = 0;
 
         while (IsReading)
         {
             await Task.Delay(50);
 
             var now = DateTime.Now;
-            double currentDpsInCalculation = 0;
-            double currentDpsOutCalculation = 0;
+            double currentDpsIn = 0;
+            double currentDpsOut = 0;
 
-            // Calculate DPS In
+            // Bereken DPS In
             var inEvents = _dpsInQueue.Where(log =>
                 now - TimeZoneInfo.ConvertTimeFromUtc(log.Timestamp, TimeZoneInfo.Local) < _calculationWindow).ToList();
             double totalDamageIn = 0;
@@ -134,14 +126,14 @@ public sealed class DpsChartViewModel : INotifyPropertyChanged, IDisposable
                     totalDamageIn += val;
                 }
             }
-            currentDpsInCalculation = inEvents.Any() ? totalDamageIn / _calculationWindow.TotalSeconds : 0;
+            currentDpsIn = inEvents.Any() ? totalDamageIn / _calculationWindow.TotalSeconds : 0;
             while (_dpsInQueue.TryPeek(out var peeked) &&
                    now - TimeZoneInfo.ConvertTimeFromUtc(peeked.Timestamp, TimeZoneInfo.Local) >= _calculationWindow)
             {
                 _dpsInQueue.TryDequeue(out _);
             }
 
-            // Calculate DPS Out
+            // Bereken DPS Out
             var outEvents = _dpsOutQueue.Where(log =>
                 now - TimeZoneInfo.ConvertTimeFromUtc(log.Timestamp, TimeZoneInfo.Local) < _calculationWindow).ToList();
             double totalDamageOut = 0;
@@ -152,7 +144,7 @@ public sealed class DpsChartViewModel : INotifyPropertyChanged, IDisposable
                     totalDamageOut += val;
                 }
             }
-            currentDpsOutCalculation = outEvents.Any() ? totalDamageOut / _calculationWindow.TotalSeconds : 0;
+            currentDpsOut = outEvents.Any() ? totalDamageOut / _calculationWindow.TotalSeconds : 0;
             while (_dpsOutQueue.TryPeek(out var peeked) &&
                    now - TimeZoneInfo.ConvertTimeFromUtc(peeked.Timestamp, TimeZoneInfo.Local) >= _calculationWindow)
             {
@@ -163,64 +155,34 @@ public sealed class DpsChartViewModel : INotifyPropertyChanged, IDisposable
             {
                 lock (Sync)
                 {
-                    // Handle DPS In with ramp-up
-                    if (currentDpsInCalculation > 0)
+                    // Afhandeling van DPS In
+                    if (currentDpsIn == 0 && lastDpsIn > 0 && (now - lastDpsInTime) > _decayRate)
                     {
-                        lastTargetDpsIn = currentDpsInCalculation;
+                        lastDpsIn -= lastDpsIn / (_decayRate.TotalMilliseconds / 50);
+                        if (lastDpsIn < 2) lastDpsIn = 0; // Direct naar 0 als onder de 1
+                    }
+                    else if (currentDpsIn > 0)
+                    {
+                        lastDpsIn = currentDpsIn;
                         lastDpsInTime = now;
-                        if (currentRampUpInFrame < rampUpFrames)
-                        {
-                            currentRampUpInFrame++;
-                            currentRampUpDpsIn = lastTargetDpsIn * currentRampUpInFrame / (double)rampUpFrames;
-                        }
-                        else
-                        {
-                            currentRampUpDpsIn = lastTargetDpsIn;
-                        }
-                    }
-                    else if (lastTargetDpsIn > 0 && (now - lastDpsInTime) > _decayRate)
-                    {
-                        currentRampUpInFrame = 0; // Reset ramp-up
-                        currentRampUpDpsIn -= currentRampUpDpsIn / (_decayRate.TotalMilliseconds / 50);
-                        if (currentRampUpDpsIn < 1) currentRampUpDpsIn = 0;
-                    }
-                    else if (lastTargetDpsIn == 0)
-                    {
-                        currentRampUpDpsIn = 0;
                     }
 
-                    if (currentRampUpDpsIn < 0) currentRampUpDpsIn = 0;
-                    lastDpsIn = currentRampUpDpsIn;
+                    if (lastDpsIn < 0) lastDpsIn = 0; // Voorkom negatieve waarden
                     _dpsInValues.Add(new ObservablePoint(now.Ticks, lastDpsIn));
 
-                    // Handle DPS Out with ramp-up
-                    if (currentDpsOutCalculation > 0)
+                    // Afhandeling van DPS Out
+                    if (currentDpsOut == 0 && lastDpsOut > 0 && (now - lastDpsOutTime) > _decayRate)
                     {
-                        lastTargetDpsOut = currentDpsOutCalculation;
+                        lastDpsOut -= lastDpsOut / (_decayRate.TotalMilliseconds / 50);
+                        if (lastDpsOut < 2) lastDpsOut = 0; // Direct naar 0 als onder de 1
+                    }
+                    else if (currentDpsOut > 0)
+                    {
+                        lastDpsOut = currentDpsOut;
                         lastDpsOutTime = now;
-                        if (currentRampUpOutFrame < rampUpFrames)
-                        {
-                            currentRampUpOutFrame++;
-                            currentRampUpDpsOut = lastTargetDpsOut * currentRampUpOutFrame / (double)rampUpFrames;
-                        }
-                        else
-                        {
-                            currentRampUpDpsOut = lastTargetDpsOut;
-                        }
-                    }
-                    else if (lastTargetDpsOut > 0 && (now - lastDpsOutTime) > _decayRate)
-                    {
-                        currentRampUpOutFrame = 0; // Reset ramp-up
-                        currentRampUpDpsOut -= currentRampUpDpsOut / (_decayRate.TotalMilliseconds / 50);
-                        if (currentRampUpDpsOut < 1) currentRampUpDpsOut = 0;
-                    }
-                    else if (lastTargetDpsOut == 0)
-                    {
-                        currentRampUpDpsOut = 0;
                     }
 
-                    if (currentRampUpDpsOut < 0) currentRampUpDpsOut = 0;
-                    lastDpsOut = currentRampUpDpsOut;
+                    if (lastDpsOut < 0) lastDpsOut = 0; // Voorkom negatieve waarden
                     _dpsOutValues.Add(new ObservablePoint(now.Ticks, lastDpsOut));
 
                     Trim(_dpsInValues, now, _displayWindow);

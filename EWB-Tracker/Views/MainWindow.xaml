@@ -18,7 +18,6 @@
     </WindowChrome.WindowChrome>
     <Window.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
-        <converters:CharacterIdToImageSourceConverter x:Key="CharacterIdToImageSourceConverter" />
         <converters:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
         <converters:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
     </Window.Resources>
@@ -136,30 +135,7 @@
                             <ListBox.ItemTemplate>
                                 <DataTemplate DataType="{x:Type models:Character}">
                                     <StackPanel Orientation="Horizontal">
-                                        <Grid Width="54" Height="54" Margin="5">
-                                            <Ellipse StrokeThickness="2" Fill="Transparent">
-                                                <Ellipse.Style>
-                                                    <Style TargetType="Ellipse">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Online}" Value="True">
-                                                                <Setter Property="Stroke" Value="Green" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Online}" Value="False">
-                                                                <Setter Property="Stroke" Value="Red" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Ellipse.Style>
-                                            </Ellipse>
-                                            <Ellipse Fill="White" Margin="2" />
-                                            <Image
-                                                Source="{Binding CharacterId, Converter={StaticResource CharacterIdToImageSourceConverter}}"
-                                                Width="50" Height="50" ClipToBounds="True" Margin="2">
-                                                <Image.Clip>
-                                                    <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25" />
-                                                </Image.Clip>
-                                            </Image>
-                                        </Grid>
+                                        <components:CharacterAvatarControl Character="{Binding}" AvatarSize="54" />
                                         <StackPanel>
                                             <TextBlock Text="{Binding Name}" FontWeight="Bold"
                                                        Foreground="{DynamicResource TextColor}" />

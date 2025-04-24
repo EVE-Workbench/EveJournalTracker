@@ -55,6 +55,8 @@ namespace EWB_Tracker
                     services.AddTransient<LogView>();
                     services.AddTransient<DefaultView>();
                     services.AddTransient<DungeonView>();
+                    services.AddTransient<AccountView>();
+                    
                     services.AddTransient<DpsChart>();
                     #endregion
                     
@@ -69,6 +71,7 @@ namespace EWB_Tracker
                     services.AddTransient<LogViewModel>();
                     services.AddTransient<DungeonViewModel>();
                     services.AddTransient<DpsChartViewModel>();
+                    services.AddTransient<AccountViewModel>();
                     #endregion
                     
                     #region Repositories

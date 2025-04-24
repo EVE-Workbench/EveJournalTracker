@@ -11,6 +11,8 @@ namespace SharedLibrary.Models
         private bool _online;
         private int _bounty;
         private EveSystemDto? _eveSystem;
+        private bool _active = true;
+        private int _position;
 
         public string Name
         {
@@ -64,6 +66,32 @@ namespace SharedLibrary.Models
             }
         }
         
+        public bool Active
+        {
+            get => _active;
+            set
+            {
+                if (_active != value)
+                {
+                    _active = value;
+                    OnPropertyChanged(nameof(Active));
+                }
+            }
+        }
+        
+        public int Position
+        {
+            get => _position;
+            set
+            {
+                if (_position != value)
+                {
+                    _position = value;
+                    OnPropertyChanged(nameof(Position));
+                }
+            }
+        }
+        
         public ICollection<LogEvent> LogEvents { get; set; } = new List<LogEvent>();
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -80,7 +108,9 @@ namespace SharedLibrary.Models
                 Name = dto.Name,
                 Online = dto.Online,
                 Bounty = dto.Bounty,
-                EveSystem = null, // TODO: Link to eveSystem from memory (on startup, load all eve systems from the database into memory and link the eve system to the character in memory)
+                Active = dto.Active,
+                Position = dto.Position,
+                EveSystem = null, // TODO: Link to eveSystem from memory
             };
         }
         
@@ -96,9 +126,10 @@ namespace SharedLibrary.Models
             dto.Online = Online;
             dto.Bounty = Bounty;
             dto.EveSystemId = EveSystem?.SystemId;
+            dto.Active = Active;
+            dto.Position = Position;
             
             return dto;
         }
-            
     }
 }

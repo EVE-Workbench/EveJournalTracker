@@ -42,6 +42,9 @@ namespace SharedLibrary.Migrations
                     b.Property<bool>("Online")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Position")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("CharacterId");
 
                     b.ToTable("Characters");

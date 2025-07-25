@@ -8,4 +8,11 @@ public enum DungeonType
     DedSite,
     Expedition,
     EventSite,
+    DataRelic, 
+    Cosmos, 
+    CombatBeacon, 
+    HomeFront, 
+    OreSite, 
+    GasSite, 
+    IceSite,
 }

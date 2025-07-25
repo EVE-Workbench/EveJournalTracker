@@ -27,6 +27,7 @@ namespace EWB_Tracker
     {
         private readonly IHost _host;
         private CheckOnlineJob _checkOnlineJob;
+        private ClipboardMonitorService _clipboardMonitor;
 
         public static IServiceProvider ServiceProvider { get; private set; }
         public static IConfiguration Configuration { get; private set; }
@@ -64,6 +65,10 @@ namespace EWB_Tracker
                     services.AddTransient<HttpClient>();
                     services.AddTransient<EwbApiClientService>();
                     services.AddTransient<StartupService>();
+                    
+                    
+                    services.AddSingleton<ClipboardMonitorService>();
+                    services.AddSingleton<ClipboardHandlerService>();
                     #endregion
 
                     #region ViewModels
@@ -139,6 +144,31 @@ namespace EWB_Tracker
 
             _checkOnlineJob = _host.Services.GetRequiredService<CheckOnlineJob>();
             _checkOnlineJob.Start();
+            
+            // Start clipboard monitoring
+            StartClipboardMonitoring(mainWindow);
+        }
+        
+        private void StartClipboardMonitoring(MainWindow mainWindow)
+        {
+            _clipboardMonitor = _host.Services.GetRequiredService<ClipboardMonitorService>();
+            var clipboardHandler = _host.Services.GetRequiredService<ClipboardHandlerService>();
+
+            // Subscribe to clipboard changes
+            _clipboardMonitor.ClipboardChanged += async (content) =>
+            {
+                try
+                {
+                    await clipboardHandler.ProcessClipboardContent(content);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing clipboard content: {ex.Message}");
+                }
+            };
+
+            // Start monitoring
+            _clipboardMonitor.StartMonitoring(mainWindow);
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -147,6 +177,12 @@ namespace EWB_Tracker
             watcherService.StopWatching();
 
             _checkOnlineJob.Stop();
+            
+            // Stop clipboard monitoring
+            _clipboardMonitor?.StopMonitoring();
+            _clipboardMonitor?.Dispose();
+
+            
             base.OnExit(e);
         }
     }

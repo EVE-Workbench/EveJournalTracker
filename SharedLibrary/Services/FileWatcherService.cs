@@ -21,7 +21,7 @@ public class FileWatcherService
     private readonly Dictionary<string, long> _filePositions = new();
 
     public event EventHandler<LogEvent> OnNewLogEvent;
-    public event EventHandler<(int TotalISK, int ISKChange)> OnISKUpdated;
+    public event EventHandler<(int TotalISK, int ISKChange, Character Character)> OnISKUpdated;
 
     private List<EveSystemDto> EveSystems { get; set; } = [];
     private List<EveSystem> EveSystemsList { get; set; } = [];
@@ -109,7 +109,10 @@ public class FileWatcherService
                         var totalIsk = _logEvents.Sum(log => log.BountyValue) ?? 0;
                         var lastBountyEvent = _logEvents.LastOrDefault(log => log.Type == LogEventType.Bounty);
                         var iskChange = lastBountyEvent?.BountyValue ?? 0;
-                        OnISKUpdated?.Invoke(this, (totalIsk, iskChange));
+                        if (logEvent.Type == LogEventType.Bounty)
+                        {
+                            OnISKUpdated?.Invoke(this, (totalIsk, iskChange, character));
+                        }
                     }
 
                     _filePositions[filePath] = stream.Position;

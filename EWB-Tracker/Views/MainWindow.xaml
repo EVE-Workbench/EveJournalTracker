@@ -20,6 +20,9 @@
         <converters:BountyConverter x:Key="BountyConverter" />
         <converters:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
         <converters:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
+        <converters:BountyRunButtonTextConverter x:Key="BountyRunButtonTextConverter" />
+        <converters:BountyRunButtonColorConverter x:Key="BountyRunButtonColorConverter" />
+        <converters:BoolToVisibilityConverter  x:Key="BoolToVisibilityConverter" />
     </Window.Resources>
 
     <Border Background="{DynamicResource WindowBackground}" BorderBrush="{DynamicResource WindowBorder}"
@@ -92,7 +95,9 @@
                     </StackPanel>
                 </Border>
 
-                <ContentControl Grid.Column="0" Grid.Row="1" Content="{Binding CurrentView}" />
+                <ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ContentControl Content="{Binding CurrentView}" />
+                </ScrollViewer>
 
                 <!-- Character List -->
                 <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="2">
@@ -202,8 +207,13 @@
                         </Button>
                         <!-- Delimiter -->
                         <Border BorderBrush="{DynamicResource WindowBackground}" BorderThickness="0 1 0 0" Margin="5" />
+                        
                         <Button Content="Stop Watching" Style="{DynamicResource EveBtn}" Click="StopWatching_Click" />
-                        <Button Content="New Event/Mission" Style="{DynamicResource EveBtn}" Background="{DynamicResource CtaColor}" Click="DungeonWindow_Click" />
+                        <!--<Button Content="New Event/Mission" Style="{DynamicResource EveBtn}" Background="{DynamicResource CtaColor}" Click="DungeonWindow_Click" />-->
+                        <Button Content="{Binding IsBountyRunActive, Converter={StaticResource BountyRunButtonTextConverter}}" 
+                                Style="{DynamicResource EveBtn}" 
+                                Background="{Binding IsBountyRunActive, Converter={StaticResource BountyRunButtonColorConverter}}" 
+                                Click="BountyRunButton_Click" />
 
                         <Border BorderBrush="{DynamicResource WindowBackground}" BorderThickness="0 1 0 0" Margin="5" />
                         <TextBlock Text="Show Offline Characters" Margin="10 10 10 0"

@@ -39,7 +39,7 @@ public class StartupService
             _logger.LogInformation("Eve systems already exist in the database.");
         }
         
-        if (!_dbContext.Dungeons.Any())
+        /*if (!_dbContext.Dungeons.Any())
         {
             var result = await ImportDungeons();
             _logger.LogInformation(result
@@ -49,7 +49,7 @@ public class StartupService
         else
         {
             _logger.LogInformation("Dungeons already exist in the database.");
-        }
+        }*/
     }
     
     private async Task<bool> ImportEveSystems()

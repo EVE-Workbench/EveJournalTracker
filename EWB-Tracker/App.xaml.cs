@@ -52,11 +52,12 @@ namespace EWB_Tracker
 
                     #region Views
                     services.AddTransient<MainWindow>();
-                    services.AddTransient<MainWindowViewModel>();
                     services.AddTransient<LogView>();
                     services.AddTransient<DefaultView>();
                     services.AddTransient<DungeonView>();
+                    services.AddTransient<BountyRunView>();
                     services.AddTransient<AccountView>();
+                    services.AddTransient<SettingsView>();
                     
                     services.AddTransient<DpsChart>();
                     #endregion
@@ -72,15 +73,18 @@ namespace EWB_Tracker
                     #endregion
 
                     #region ViewModels
-                    services.AddTransient<MainWindowViewModel>();
+                    services.AddSingleton<MainWindowViewModel>();
                     services.AddTransient<LogViewModel>();
                     services.AddTransient<DungeonViewModel>();
+                    services.AddTransient<BountyRunViewModel>();
                     services.AddTransient<DpsChartViewModel>();
                     services.AddTransient<AccountViewModel>();
+                    services.AddTransient<SettingsViewModel>();
                     #endregion
                     
                     #region Repositories
                     services.AddTransient<IDungeonRepository, DungeonRepository>();
+                    services.AddTransient<ISettingRepository, SettingRepository>();
                     #endregion
 
                     services.AddSingleton<CharacterCache>();

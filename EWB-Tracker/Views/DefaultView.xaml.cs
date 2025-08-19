@@ -1,29 +1,36 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows.Controls;
+using EWB_Tracker.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using SharedLibrary.Models;
 using SharedLibrary.Services;
 
 namespace EWB_Tracker.Views;
 
-public partial class DefaultView : UserControl
+public partial class DefaultView : UserControl, INotifyPropertyChanged
 {
     private readonly FileWatcherService _fileWatcherService;
+    private readonly MainWindowViewModel _mainWindowViewModel;
 
     public ObservableCollection<EveSystem> EveSystemCollection { get; set; } = new();
+    public ObservableCollection<BountyRun> BountyRuns => _mainWindowViewModel.BountyRuns;
 
     public DefaultView()
     {
         InitializeComponent();
 
         _fileWatcherService = App.ServiceProvider.GetRequiredService<FileWatcherService>();
+        _mainWindowViewModel = App.ServiceProvider.GetRequiredService<MainWindowViewModel>();
+        
         _fileWatcherService.OnISKUpdated += OnNewLogEvent;
 
         DataContext = this;
     }
 
-    private void OnNewLogEvent(object sender, (int TotalISK, int ISKChange) e)
+    private void OnNewLogEvent(object sender, (int TotalISK, int ISKChange, Character Character) e)
     {
         Dispatcher.Invoke(() =>
         {
@@ -64,6 +71,12 @@ public partial class DefaultView : UserControl
                 }
             }
         });
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
 }

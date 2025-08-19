@@ -15,6 +15,8 @@ public class AppDbContext : DbContext
     public DbSet<FactionDto> Factions { get; set; }
     public DbSet<DungeonFactionDto> DungeonFactions { get; set; }
     
+    public DbSet<SettingDto> Settings { get; set; }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlite("Data Source=eve_tracker.db");
@@ -29,6 +31,15 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<EveSystemDto>()
             .HasKey(e => e.SystemId);
         modelBuilder.Entity<EveSystemDto>().Property(x => x.SystemId).ValueGeneratedNever();
+        
+        // Settings
+        modelBuilder.Entity<SettingDto>(entity =>
+        {
+            entity.HasKey(e => e.Key);
+            entity.Property(e => e.Key).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Value).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.LastUpdated).IsRequired(false);
+        });
         
         // DUNGEON
         modelBuilder.Entity<DungeonDto>(entity =>

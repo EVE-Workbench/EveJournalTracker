@@ -24,12 +24,18 @@ namespace EWB_Tracker
 
             _fileWatcherService = fileWatcherService;
             _serviceProvider = serviceProvider;
+            viewModel.CurrentView = _serviceProvider.GetService<DefaultView>();
+            
+            _fileWatcherService.OnISKUpdated += async (sender, e) =>
+            {
+                viewModel.UpdateCurrentBountyRunIsk(e.ISKChange, e.Character);
+            };
 
             Loaded += (s, e) => _fileWatcherService.StartWatching();
             Closing += (s, e) => _fileWatcherService.StopWatching();
         }
-        
-        private void CloseModal()
+
+        public void CloseModal()
         {
             ModalOverlay.Visibility = Visibility.Collapsed;
             ModalContent.Content = null;
@@ -40,6 +46,24 @@ namespace EWB_Tracker
             var view = _serviceProvider.GetService<DungeonView>();
             ModalContent.Content = view;
             ModalOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void BountyRunButton_Click(Object sender, RoutedEventArgs e)
+        {
+            var mainViewModel = (MainWindowViewModel)DataContext;
+    
+            if (mainViewModel.IsBountyRunActive)
+            {
+                // Stop current bounty run
+                mainViewModel.StopCurrentBountyRun();
+            }
+            else
+            {
+                // Start new bounty run
+                var view = _serviceProvider.GetService<BountyRunView>();
+                ModalContent.Content = view;
+                ModalOverlay.Visibility = Visibility.Visible;
+            }
         }
 
         private void ModalOverlay_MouseDown(object sender, MouseButtonEventArgs e)

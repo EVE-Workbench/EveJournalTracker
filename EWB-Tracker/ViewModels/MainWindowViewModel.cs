@@ -1,14 +1,18 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using EWB_Tracker.Commands;
-using EWB_Tracker.Views;
 using SharedLibrary.Cache;
 using SharedLibrary.Events;
 using SharedLibrary.Jobs;
 using SharedLibrary.Models;
 using SharedLibrary.Services;
+using SharedLibrary.Repositories.Interfaces;
 
 namespace EWB_Tracker.ViewModels
 {
@@ -17,9 +21,16 @@ namespace EWB_Tracker.ViewModels
         private readonly FileWatcherService _fileWatcherService;
         private readonly CharacterCache _characterCache;
         private readonly CheckOnlineJob _checkOnlineJob;
+        private readonly ISettingRepository _settingRepository;
         private object _currentView;
         private ObservableCollection<Character> _characters;
         private bool _showOfflineCharacters = false;
+        
+        private BountyRun _currentBountyRun;
+        private bool _isBountyRunActive = false;
+
+        public ObservableCollection<Character> FilteredCharacters { get; set; }
+        public ObservableCollection<BountyRun> BountyRuns { get; set; }
 
         public ObservableCollection<Character> Characters
         {
@@ -31,10 +42,26 @@ namespace EWB_Tracker.ViewModels
                 FilterCharacters();
             }
         }
-
-        public ObservableCollection<Character> FilteredCharacters { get; set; }
-
-        public ObservableCollection<Sprint> Sprints { get; set; }
+        
+        public BountyRun CurrentBountyRun
+        {
+            get => _currentBountyRun;
+            set
+            {
+                _currentBountyRun = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        public bool IsBountyRunActive
+        {
+            get => _isBountyRunActive;
+            set
+            {
+                _isBountyRunActive = value;
+                OnPropertyChanged();
+            }
+        }
 
         private int _totalIsk;
         public int TotalIsk
@@ -81,26 +108,25 @@ namespace EWB_Tracker.ViewModels
 
         public ICommand ShowViewCommand { get; }
 
-        public MainWindowViewModel(FileWatcherService fileWatcherService, CharacterCache characterCache, CheckOnlineJob checkOnlineJob)
+        public MainWindowViewModel(FileWatcherService fileWatcherService, CharacterCache characterCache, CheckOnlineJob checkOnlineJob, ISettingRepository settingRepository)
         {
             _fileWatcherService = fileWatcherService;
             _characterCache = characterCache;
             _checkOnlineJob = checkOnlineJob;
+            _settingRepository = settingRepository;
+            
             _characterCache.CharacterAdded += (sender, e) =>
             {
                 var characters = Characters.ToList();
                 characters.Add(e);
                 Characters = new ObservableCollection<Character>(characters);
             };
-            
 
             var characters = _characterCache.GetAllCharacters();
             _characters = new ObservableCollection<Character>(characters);
             FilteredCharacters = new ObservableCollection<Character>(_characters);
 
-            Sprints = new ObservableCollection<Sprint>();
-
-            CurrentView = new DefaultView();
+            BountyRuns = new ObservableCollection<BountyRun>();
 
             ShowViewCommand = new RelayCommand(ShowView);
 
@@ -114,6 +140,121 @@ namespace EWB_Tracker.ViewModels
             
             _checkOnlineJob.CharacterStatusChanged += OnCharacterStatusChanged;
         }
+
+        #region Bounty Run Methods
+
+        public void SetCurrentBountyRun(BountyRun bountyRun)
+        {
+            CurrentBountyRun = bountyRun;
+            IsBountyRunActive = true;
+            
+            // Add to the beginning of the collection
+            BountyRuns.Insert(0, bountyRun);
+        }
+
+        public void StopCurrentBountyRun()
+        {
+            if (CurrentBountyRun != null && !CurrentBountyRun.IsCompleted)
+            {
+                CurrentBountyRun.IsCompleted = true;
+                CurrentBountyRun.EndTime = DateTime.Now;
+                
+                // Reset current run
+                CurrentBountyRun = null;
+                IsBountyRunActive = false;
+            }
+        }
+
+        public void UpdateCurrentBountyRunIsk(int iskChange, Character character)
+        {
+            if (CurrentBountyRun != null && !CurrentBountyRun.IsCompleted)
+            {
+                CurrentBountyRun.TotalIsk += iskChange;
+                
+                // Fire-and-forget API call with settings integration
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await SendBountyToJournalApi(iskChange, character);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log error but don't crash the UI
+                        System.Diagnostics.Debug.WriteLine($"Error sending bounty to journal API: {ex.Message}");
+                    }
+                });
+            }
+        }
+
+        private async Task SendBountyToJournalApi(int iskChange, Character character)
+        {
+            try
+            {
+                // Get API key from settings
+                var apiKeySetting = await _settingRepository.GetByKeyAsync("ApiKey");
+                if (string.IsNullOrEmpty(apiKeySetting?.Value))
+                {
+                    System.Diagnostics.Debug.WriteLine("No API key configured for journal API");
+                    return;
+                }
+
+                // Check if force bounty to one user is enabled
+                var forceBountySetting = await _settingRepository.GetByKeyAsync("ForceBountyToOneUser");
+                var shouldForce = bool.TryParse(forceBountySetting?.Value, out var forceValue) && forceValue;
+                
+                Character targetCharacter = character;
+                
+                if (shouldForce)
+                {
+                    var selectedCharacterSetting = await _settingRepository.GetByKeyAsync("SelectedCharacterId");
+                    if (int.TryParse(selectedCharacterSetting?.Value, out var characterId))
+                    {
+                        targetCharacter = Characters.FirstOrDefault(c => c.CharacterId == characterId) ?? character;
+                    }
+                }
+
+                // Send to journal API - Keep original format
+                var eveJournalApiUrl = $"https://api.eveworkbench.com/v1/eve-journal/realtime-bounty-update/{targetCharacter.CharacterId}";
+                
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("X-API-KEY", apiKeySetting.Value);
+                
+                // Keep original content format - just send total ISK as plain text
+                var content = new StringContent(CurrentBountyRun.TotalIsk.ToString(), System.Text.Encoding.UTF8, "text/plain");
+                var response = await httpClient.PostAsync(eveJournalApiUrl, content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Successfully sent total ISK ({CurrentBountyRun.TotalIsk:N0}) to journal API for character {targetCharacter.Name}");
+                    if (shouldForce && targetCharacter.CharacterId != character.CharacterId)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Bounty redirected from {character.Name} to {targetCharacter.Name}");
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"Failed to send to journal API: {response.StatusCode} - {errorContent}");
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"HTTP error sending to journal API: {httpEx.Message}");
+            }
+            catch (TaskCanceledException tcEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"Timeout sending to journal API: {tcEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Unexpected error sending to journal API: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Private Methods
 
         private void ShowView(object view)
         {
@@ -143,10 +284,16 @@ namespace EWB_Tracker.ViewModels
             }
         }
 
+        #endregion
+
+        #region INotifyPropertyChanged
+
         public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        #endregion
     }
 }

@@ -1,11 +1,16 @@
 ﻿using System.Windows.Controls;
+using EWB_Tracker.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace EWB_Tracker.Views;
-
-public partial class SettingsView : UserControl
+namespace EWB_Tracker.Views
 {
-    public SettingsView()
+    public partial class SettingsView : UserControl
     {
-        InitializeComponent();
+        public SettingsView()
+        {
+            
+            InitializeComponent();
+            DataContext = App.ServiceProvider.GetRequiredService<SettingsViewModel>();
+        }
     }
 }

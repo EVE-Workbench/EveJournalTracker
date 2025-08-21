@@ -13,6 +13,7 @@ public class FileWatcherService
 {
     private readonly string _logDirectory;
     private readonly CharacterCache _characterCache;
+    private readonly CharacterService _characterService;
     private readonly AppDbContext _context;
     private readonly List<LogEvent> _logEvents;
     private readonly List<FileSystemWatcher> _fileWatchers;
@@ -26,10 +27,11 @@ public class FileWatcherService
     private List<EveSystemDto> EveSystems { get; set; } = [];
     private List<EveSystem> EveSystemsList { get; set; } = [];
 
-    public FileWatcherService(string logDirectory, CharacterCache characterCache, AppDbContext context)
+    public FileWatcherService(string logDirectory, CharacterCache characterCache, CharacterService characterService, AppDbContext context)
     {
         _logDirectory = logDirectory;
         _characterCache = characterCache;
+        _characterService = characterService;
         _context = context;
         _logEvents = [];
         _fileWatchers = [];
@@ -95,7 +97,7 @@ public class FileWatcherService
                     while (await reader.ReadLineAsync(token) is { } line)
                     {
                         var characterId = Convert.ToInt32(ExtractCharacterIdFromFileName(Path.GetFileName(filePath)));
-                        var character = GetOrCreateCharacter(characterId);
+                        var character = _characterService.GetOrCreateCharacter(characterId);
 
                         var logEvent = ParseLogLine(line, character);
 
@@ -137,27 +139,6 @@ public class FileWatcherService
         return parts.Length >= 3 ? Path.GetFileNameWithoutExtension(parts[2]) : null;
     }
 
-    private Character GetOrCreateCharacter(int characterId)
-    {
-        var character = _characterCache.GetCharacter(characterId);
-        if (character != null)
-        {
-            return character;
-        }
-
-        // Get the character name from the ESI API
-        var characterName = CharacterService.GetCharacterNameAsync(characterId).GetAwaiter().GetResult();
-
-        var newCharacter = new Character
-        {
-            CharacterId = characterId,
-            Name = characterName ?? $"Char-{characterId}"
-        };
-
-        _characterCache.AddCharacter(newCharacter);
-
-        return newCharacter;
-    }
 
 
     private LogEvent? ParseLogLine(string line, Character character)

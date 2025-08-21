@@ -11,6 +11,11 @@ namespace EWB_Tracker.Views
             
             InitializeComponent();
             DataContext = App.ServiceProvider.GetRequiredService<SettingsViewModel>();
+            Loaded += async (s, e) =>
+            {
+                var viewModel = (SettingsViewModel)DataContext;
+                await viewModel.InitializeAsync();
+            };
         }
     }
 }

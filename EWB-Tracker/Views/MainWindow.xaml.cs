@@ -6,7 +6,6 @@ using SharedLibrary.Services;
 using EWB_Tracker.ViewModels;
 using EWB_Tracker.Views;
 using Microsoft.Extensions.DependencyInjection;
-using SharedLibrary.Repositories.Interfaces;
 
 namespace EWB_Tracker
 {

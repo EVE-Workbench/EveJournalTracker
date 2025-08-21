@@ -51,14 +51,14 @@ namespace EWB_Tracker
                     
 
                     #region Views
-                    services.AddTransient<MainWindow>();
-                    services.AddTransient<LogView>();
-                    services.AddTransient<DefaultView>();
-                    services.AddTransient<DungeonView>();
-                    services.AddTransient<BountyRunView>();
-                    services.AddTransient<AccountView>();
-                    services.AddTransient<SettingsView>();
+                    services.AddSingleton<MainWindow>();
+                    services.AddSingleton<LogView>();
+                    services.AddSingleton<DefaultView>();
+                    services.AddSingleton<DungeonView>();
+                    services.AddSingleton<AccountView>();
+                    services.AddSingleton<SettingsView>();
                     
+                    services.AddTransient<BountyRunView>();
                     services.AddTransient<DpsChart>();
                     #endregion
                     
@@ -66,20 +66,23 @@ namespace EWB_Tracker
                     services.AddTransient<HttpClient>();
                     services.AddTransient<EwbApiClientService>();
                     services.AddTransient<StartupService>();
-                    
+                    services.AddTransient<CharacterService>();
                     
                     services.AddSingleton<ClipboardMonitorService>();
                     services.AddSingleton<ClipboardHandlerService>();
                     #endregion
 
                     #region ViewModels
+                    // page view models
                     services.AddSingleton<MainWindowViewModel>();
-                    services.AddTransient<LogViewModel>();
+                    services.AddSingleton<LogViewModel>();
+                    services.AddSingleton<AccountViewModel>();
+                    services.AddSingleton<SettingsViewModel>();
+                    
+                    // misc view models
                     services.AddTransient<DungeonViewModel>();
                     services.AddTransient<BountyRunViewModel>();
                     services.AddTransient<DpsChartViewModel>();
-                    services.AddTransient<AccountViewModel>();
-                    services.AddTransient<SettingsViewModel>();
                     #endregion
                     
                     #region Repositories
@@ -93,14 +96,16 @@ namespace EWB_Tracker
                         var logFolderLocation = EveUtils.GetDefaultLogFolderLocation();
                         var characterCache = provider.GetRequiredService<CharacterCache>();
                         var context = provider.GetRequiredService<AppDbContext>();
+                        var characterService = provider.GetRequiredService<CharacterService>();
 
-                        return new FileWatcherService(logFolderLocation, characterCache, context);
+                        return new FileWatcherService(logFolderLocation, characterCache, characterService, context);
                     });
 
                     services.AddSingleton(provider =>
                     {
                         var characterCache = provider.GetRequiredService<CharacterCache>();
-                        return new CheckOnlineJob(5000, characterCache);
+                        var characterService = provider.GetRequiredService<CharacterService>();
+                        return new CheckOnlineJob(5000, characterCache, characterService);
                     });
                 })
                 .Build();
@@ -136,21 +141,32 @@ namespace EWB_Tracker
             var initService = _host.Services.GetRequiredService<StartupService>();
             Task.Run(async () => await initService.Initialize()).Wait();
 
-            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+            try
+            {
+                var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+                mainWindow.Show();
+                
+                base.OnStartup(e);
 
+                var watcherService = _host.Services.GetRequiredService<FileWatcherService>();
+                watcherService.StartWatching();
 
-            base.OnStartup(e);
-
-            var dbContext = _host.Services.GetRequiredService<AppDbContext>();
-            var watcherService = _host.Services.GetRequiredService<FileWatcherService>();
-            watcherService.StartWatching();
-
-            _checkOnlineJob = _host.Services.GetRequiredService<CheckOnlineJob>();
-            _checkOnlineJob.Start();
+                _checkOnlineJob = _host.Services.GetRequiredService<CheckOnlineJob>();
+                _checkOnlineJob.Start();
             
-            // Start clipboard monitoring
-            StartClipboardMonitoring(mainWindow);
+                // Start clipboard monitoring
+                StartClipboardMonitoring(mainWindow);
+            }
+            catch
+(Exception ex)
+            {
+                Console.WriteLine($"Error while starting main window: {ex.Message}");
+                MessageBox.Show("An error occurred while starting the application. Please check the logs for more details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+
+            
         }
         
         private void StartClipboardMonitoring(MainWindow mainWindow)

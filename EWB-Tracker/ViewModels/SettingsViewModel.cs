@@ -10,205 +10,233 @@ using SharedLibrary.Cache;
 using SharedLibrary.Models;
 using SharedLibrary.Repositories.Interfaces;
 
-namespace EWB_Tracker.ViewModels
+namespace EWB_Tracker.ViewModels;
+public class SettingsViewModel : INotifyPropertyChanged
 {
-    public class SettingsViewModel : INotifyPropertyChanged
+    private readonly ISettingRepository _settingRepository;
+    private readonly CharacterCache _characterCache;
+    
+    private string _apiKey = string.Empty;
+    private bool _forceBountyToOneUser = false;
+    private Character _selectedCharacter;
+    private bool _isLoading = false;
+    
+    public ObservableCollection<Character> Characters { get; }
+    
+    #region Commands
+
+    public ICommand SaveCommand { get; }
+    public ICommand LoadCommand { get; }
+
+    #endregion
+
+
+    public SettingsViewModel(ISettingRepository settingRepository, CharacterCache characterCache)
     {
-        private readonly ISettingRepository _settingRepository;
-        private readonly CharacterCache _characterCache;
+        SaveCommand = new RelayCommand(() => _ = SaveSettings(), () => !IsLoading);
+        LoadCommand = new RelayCommand(() => _ = LoadSettings(), () => !IsLoading);
+
+        _settingRepository = settingRepository;
+        _characterCache = characterCache;
         
-        private string _apiKey = string.Empty;
-        private bool _forceBountyToOneUser = false;
-        private Character _selectedCharacter;
-        private bool _isLoading = false;
-
-        public SettingsViewModel(ISettingRepository settingRepository, CharacterCache characterCache)
+        Characters = [];
+        
+        _characterCache.CharacterAdded += OnCharacterAddedAsync;
+        
+    }
+    
+    public async Task InitializeAsync() {
+        
+        // Load initial data
+        await LoadCharactersAndSettings();
+    }
+    
+    private async void OnCharacterAddedAsync(object sender, Character e)
+    {
+        try
         {
-            _settingRepository = settingRepository;
-            _characterCache = characterCache;
-            
-            Characters = new ObservableCollection<Character>();
-            
-            SaveCommand = new RelayCommand(() => _ = SaveSettings(), () => !IsLoading);
-            LoadCommand = new RelayCommand(() => _ = LoadSettings(), () => !IsLoading);
-            
-            // Load initial data
-            _ = LoadCharactersAndSettings();
-        }
+            // Refresh characters when a new character is added
+            await LoadCharacters();
 
-        #region Properties
-
-        public string ApiKey
-        {
-            get => _apiKey;
-            set
+            if (Characters != null && Characters.All(c => c.CharacterId != e.CharacterId))
             {
-                _apiKey = value;
-                OnPropertyChanged();
+                Characters.Add(e);
             }
         }
-
-        public bool ForceBountyToOneUser
+        catch (Exception ex)
         {
-            get => _forceBountyToOneUser;
-            set
+            System.Diagnostics.Debug.WriteLine($"Error updating characters: {ex.Message}");
+        }
+    }
+
+    #region Properties
+
+    public string ApiKey
+    {
+        get => _apiKey;
+        set
+        {
+            _apiKey = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool ForceBountyToOneUser
+    {
+        get => _forceBountyToOneUser;
+        set
+        {
+            _forceBountyToOneUser = value;
+            OnPropertyChanged();
+            // If disabled, clear selected character
+            if (!value)
             {
-                _forceBountyToOneUser = value;
-                OnPropertyChanged();
-                // If disabled, clear selected character
-                if (!value)
-                {
-                    SelectedCharacter = null;
-                }
+                SelectedCharacter = null;
             }
         }
+    }
 
-        public Character SelectedCharacter
+    public Character SelectedCharacter
+    {
+        get => _selectedCharacter;
+        set
         {
-            get => _selectedCharacter;
-            set
+            _selectedCharacter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsLoading
+    {
+        get => _isLoading;
+        set
+        {
+            _isLoading = value;
+            OnPropertyChanged();
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
+
+    #endregion
+
+    
+
+    private async Task LoadCharactersAndSettings()
+    {
+        IsLoading = true;
+        try
+        {
+            await LoadCharacters();
+            await LoadSettings();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task LoadCharacters()
+    {
+        var characters = _characterCache.GetAllCharacters();
+        
+        Characters.Clear();
+        foreach (var character in characters.OrderBy(c => c.Name))
+        {
+            Characters.Add(character);
+        }
+    }
+
+    private async Task LoadSettings()
+    {
+        try
+        {
+            // Load API Key
+            var apiKeySetting = await _settingRepository.GetByKeyAsync("ApiKey");
+            ApiKey = apiKeySetting?.Value;
+
+            // Load Force Bounty setting
+            var forceBountySetting = await _settingRepository.GetByKeyAsync("ForceBountyToOneUser");
+            ForceBountyToOneUser = bool.TryParse(forceBountySetting?.Value, out var forceValue) && forceValue;
+
+            // Load Selected Character
+            var selectedCharacterSetting = await _settingRepository.GetByKeyAsync("SelectedCharacterId");
+            if (int.TryParse(selectedCharacterSetting?.Value, out var characterId))
             {
-                _selectedCharacter = value;
-                OnPropertyChanged();
+                SelectedCharacter = Characters.FirstOrDefault(c => c.CharacterId == characterId);
             }
         }
-
-        public bool IsLoading
+        catch (Exception ex)
         {
-            get => _isLoading;
-            set
-            {
-                _isLoading = value;
-                OnPropertyChanged();
-                // Force command refresh - your RelayCommand uses CommandManager
-                CommandManager.InvalidateRequerySuggested();
-            }
+            System.Diagnostics.Debug.WriteLine($"Error loading settings: {ex.Message}");
         }
+    }
 
-        public ObservableCollection<Character> Characters { get; }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand SaveCommand { get; }
-        public ICommand LoadCommand { get; }
-
-        #endregion
-
-        #region Private Methods
-
-        private async Task LoadCharactersAndSettings()
+    private async Task SaveSettings()
+    {
+        IsLoading = true;
+        try
         {
-            IsLoading = true;
-            try
-            {
-                await LoadCharacters();
-                await LoadSettings();
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
+            // Save API Key
+            await _settingRepository.UpsertAsync("ApiKey", ApiKey ?? string.Empty);
 
-        private async Task LoadCharacters()
+            // Save Force Bounty setting
+            await _settingRepository.UpsertAsync("ForceBountyToOneUser", ForceBountyToOneUser.ToString());
+
+            // Save Selected Character (only if force bounty is enabled)
+            if (ForceBountyToOneUser && SelectedCharacter != null)
+            {
+                await _settingRepository.UpsertAsync("SelectedCharacterId", SelectedCharacter.CharacterId.ToString());
+            }
+            else
+            {
+                await _settingRepository.UpsertAsync("SelectedCharacterId", string.Empty);
+            }
+
+            System.Diagnostics.Debug.WriteLine("Settings saved successfully!");
+        }
+        catch (Exception ex)
         {
-            var characters = _characterCache.GetAllCharacters();
-            
-            Characters.Clear();
-            foreach (var character in characters.OrderBy(c => c.Name))
-            {
-                Characters.Add(character);
-            }
+            System.Diagnostics.Debug.WriteLine($"Error saving settings: {ex.Message}");
         }
-
-        private async Task LoadSettings()
+        finally
         {
-            try
-            {
-                // Load API Key
-                var apiKeySetting = await _settingRepository.GetByKeyAsync("ApiKey");
-                ApiKey = apiKeySetting?.Value ?? string.Empty;
-
-                // Load Force Bounty setting
-                var forceBountySetting = await _settingRepository.GetByKeyAsync("ForceBountyToOneUser");
-                ForceBountyToOneUser = bool.TryParse(forceBountySetting?.Value, out var forceValue) && forceValue;
-
-                // Load Selected Character
-                var selectedCharacterSetting = await _settingRepository.GetByKeyAsync("SelectedCharacterId");
-                if (int.TryParse(selectedCharacterSetting?.Value, out var characterId))
-                {
-                    SelectedCharacter = Characters.FirstOrDefault(c => c.CharacterId == characterId);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log error or show message to user
-                System.Diagnostics.Debug.WriteLine($"Error loading settings: {ex.Message}");
-            }
+            IsLoading = false;
         }
+    }
 
-        private async Task SaveSettings()
-        {
-            IsLoading = true;
-            try
-            {
-                // Save API Key
-                await _settingRepository.UpsertAsync("ApiKey", ApiKey ?? string.Empty);
 
-                // Save Force Bounty setting
-                await _settingRepository.UpsertAsync("ForceBountyToOneUser", ForceBountyToOneUser.ToString());
-
-                // Save Selected Character (only if force bounty is enabled)
-                if (ForceBountyToOneUser && SelectedCharacter != null)
-                {
-                    await _settingRepository.UpsertAsync("SelectedCharacterId", SelectedCharacter.CharacterId.ToString());
-                }
-                else
-                {
-                    await _settingRepository.UpsertAsync("SelectedCharacterId", string.Empty);
-                }
-
-                // Show success message or notification
-                System.Diagnostics.Debug.WriteLine("Settings saved successfully!");
-            }
-            catch (Exception ex)
-            {
-                // Log error or show error message to user
-                System.Diagnostics.Debug.WriteLine($"Error saving settings: {ex.Message}");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        public async Task RefreshCharacters()
+    public async Task RefreshCharacters()
+    {
+        IsLoading = true;
+        try 
         {
             await LoadCharacters();
         }
-
-        public async Task RefreshSettings()
+        catch (Exception ex)
         {
-            await LoadSettings();
+            System.Diagnostics.Debug.WriteLine($"Error refreshing characters: {ex.Message}");
         }
-
-        #endregion
-
-        #region INotifyPropertyChanged
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        finally
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            IsLoading = false;
         }
-
-        #endregion
+        
     }
+
+    public async Task RefreshSettings()
+    {
+        await LoadSettings();
+    }
+
+
+    #region INotifyPropertyChanged
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    #endregion
 }

@@ -27,7 +27,7 @@ public partial class DefaultView : UserControl, INotifyPropertyChanged
         
         _fileWatcherService.OnISKUpdated += OnNewLogEvent;
 
-        DataContext = this;
+        DataContext = _mainWindowViewModel;
     }
 
     private void OnNewLogEvent(object sender, (int TotalISK, int ISKChange, Character Character) e)

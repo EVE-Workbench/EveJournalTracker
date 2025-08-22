@@ -8,7 +8,8 @@ public class BountyRun : INotifyPropertyChanged
 {
     private int _totalIsk;
     private bool _isCompleted;
-    
+    private DateTime? _endTime;
+
     [Key]
     public int Id { get; set; }
     public string Name { get; set; }
@@ -33,8 +34,17 @@ public class BountyRun : INotifyPropertyChanged
         }
     }
     
+    public DateTime? EndTime 
+    { 
+        get => _endTime;
+        set 
+        {
+            _endTime = value;
+            OnPropertyChanged();
+        }
+    }
+    
     public DateTime StartTime { get; set; }
-    public DateTime? EndTime { get; set; }
     public int? CharacterId { get; set; }
 
     public event PropertyChangedEventHandler PropertyChanged;

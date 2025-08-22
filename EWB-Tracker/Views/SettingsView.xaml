@@ -59,8 +59,7 @@
                         
                         <TextBox Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14"
-                                 Padding="10"
-                                 Height="35"
+                                 Padding="7"
                                  Margin="0,0,0,5"
                                  Background="{DynamicResource WindowBackground}"
                                  Foreground="{DynamicResource TextColor}"

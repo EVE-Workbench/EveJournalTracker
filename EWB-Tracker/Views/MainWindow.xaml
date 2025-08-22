@@ -123,7 +123,7 @@
                                                TextAlignment="Center" />
 
                                     <TextBlock
-                                        Text="What are you doing? Not playing EvE? Are you really an EvE player if there are no alts online?"
+                                        Text="What are you doing? Not playing EvE? Are you really an EvE player if there are no clones online?"
                                         TextWrapping="Wrap"
                                         FontSize="12"
                                         Foreground="DarkGray"

@@ -31,6 +31,16 @@ namespace EWB_Tracker.ViewModels
 
         public ObservableCollection<Character> FilteredCharacters { get; set; }
         public ObservableCollection<BountyRun> BountyRuns { get; set; }
+        private ObservableCollection<BountyRun> _topBountyRuns;
+        public ObservableCollection<BountyRun> TopBountyRuns
+        {
+            get => _topBountyRuns;
+            private set
+            {
+                _topBountyRuns = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ObservableCollection<Character> Characters
         {
@@ -127,6 +137,7 @@ namespace EWB_Tracker.ViewModels
             FilteredCharacters = new ObservableCollection<Character>(_characters);
 
             BountyRuns = new ObservableCollection<BountyRun>();
+            TopBountyRuns = new ObservableCollection<BountyRun>();
 
             ShowViewCommand = new RelayCommand(ShowView);
 
@@ -152,19 +163,23 @@ namespace EWB_Tracker.ViewModels
             
             // Add to the beginning of the collection
             BountyRuns.Insert(0, bountyRun);
+            
+            TopBountyRuns = new ObservableCollection<BountyRun>(BountyRuns.Take(3));
+            Console.WriteLine("Count of BountyRuns: " + BountyRuns.Count);
+            Console.WriteLine("Count of TopBountyRuns: " + TopBountyRuns.Count);
         }
 
         public void StopCurrentBountyRun()
         {
-            if (CurrentBountyRun != null && !CurrentBountyRun.IsCompleted)
-            {
-                CurrentBountyRun.IsCompleted = true;
-                CurrentBountyRun.EndTime = DateTime.Now;
+            if (CurrentBountyRun == null || CurrentBountyRun.IsCompleted) return;
+            
+            CurrentBountyRun.EndTime = DateTime.Now;
+            CurrentBountyRun.IsCompleted = true;
+            
                 
-                // Reset current run
-                CurrentBountyRun = null;
-                IsBountyRunActive = false;
-            }
+            // Reset current run
+            //CurrentBountyRun = null;
+            IsBountyRunActive = false;
         }
 
         public void UpdateCurrentBountyRunIsk(int iskChange, Character character)

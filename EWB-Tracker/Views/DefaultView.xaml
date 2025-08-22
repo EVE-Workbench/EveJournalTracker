@@ -21,11 +21,12 @@
         <!-- Bounty Runs Section -->
         <StackPanel Orientation="Horizontal" Margin="5 0">
             <TextBlock Text="Bounty Runs" FontSize="20" FontWeight="Bold" />
-            <TextBlock Text="(Renew: ctrl+shift+N)" FontSize="12" Foreground="Gray" Margin="5,0,0,0" VerticalAlignment="Center" />
+            <TextBlock Text="- last 3 runs" FontSize="12" Foreground="Gray" Margin="5,0,0,0" VerticalAlignment="Center" />
+            <TextBlock Text="(Add new run: ctrl+shift+N)" FontSize="12" Foreground="Gray" Margin="5,0,0,0" VerticalAlignment="Center" />
         </StackPanel>
         
         <!-- Empty state for bounty runs -->
-        <ContentControl Visibility="{Binding BountyRuns.Count, Converter={StaticResource ZeroToVisibleConverter}}">
+        <ContentControl Visibility="{Binding TopBountyRuns.Count, Converter={StaticResource ZeroToVisibleConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
                 <TextBlock Text="🚫 Currently there are no bounty runs being tracked" FontSize="16" Foreground="Gray" HorizontalAlignment="Center" />
                 <TextBlock Text="You can track your bounty per mission/event from the menu on the right." FontSize="12" Foreground="DarkGray" HorizontalAlignment="Center" />
@@ -33,8 +34,8 @@
         </ContentControl>
         
         <!-- Bounty runs list -->
-        <ItemsControl ItemsSource="{Binding BountyRuns}" 
-                      Visibility="{Binding BountyRuns.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
+        <ItemsControl ItemsSource="{Binding TopBountyRuns}" 
+                      Visibility="{Binding TopBountyRuns.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
                       Margin="0,0,0,20">
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:BountyRun}">

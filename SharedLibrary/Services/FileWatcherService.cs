@@ -44,6 +44,14 @@ public class FileWatcherService
     {   
         EveSystems = _context.EveSystems.ToList();
         
+        // check if the log directory exists
+        if (!Directory.Exists(_logDirectory))
+        {
+            Console.WriteLine("Log directory doesn't exist");
+            return;
+            //throw new DirectoryNotFoundException($"The log directory '{_logDirectory}' does not exist.");
+        }
+        
         var watcher = new FileSystemWatcher
         {
             Path = _logDirectory,

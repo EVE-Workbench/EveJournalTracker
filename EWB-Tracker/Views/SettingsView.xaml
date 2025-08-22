@@ -46,6 +46,41 @@
                         Padding="15" 
                         Margin="0,0,0,15">
                     <StackPanel>
+                        <TextBlock Text="📂 Agent Settings" 
+                                   FontSize="16" 
+                                   FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextColor}"
+                                   Margin="0,0,0,10" />
+                        
+                        <TextBlock Text="Log location:" 
+                                   FontSize="14" 
+                                   Margin="0,0,0,5"
+                                   Foreground="{DynamicResource TextColor}" />
+                        
+                        <TextBox Text="{Binding LogDir, UpdateSourceTrigger=PropertyChanged}"
+                                 FontSize="14"
+                                 Padding="7"
+                                 Margin="0,0,0,5"
+                                 Background="{DynamicResource WindowBackground}"
+                                 Foreground="{DynamicResource TextColor}"
+                                 BorderBrush="{DynamicResource WindowBorder}"
+                                 IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}" />
+                        
+                        <TextBlock Text="When changing the log location, please restart the application to apply changes"
+                                   FontSize="10" 
+                                   Foreground="Gray" 
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                
+                <!-- API Configuration Section -->
+                <Border Background="{DynamicResource PanelBackground}" 
+                        BorderBrush="{DynamicResource WindowBorder}" 
+                        BorderThickness="1" 
+                        CornerRadius="8" 
+                        Padding="15" 
+                        Margin="0,0,0,15">
+                    <StackPanel>
                         <TextBlock Text="🔐 API Configuration" 
                                    FontSize="16" 
                                    FontWeight="Bold" 

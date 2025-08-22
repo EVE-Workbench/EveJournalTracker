@@ -9,6 +9,7 @@ using EWB_Tracker.Commands;
 using SharedLibrary.Cache;
 using SharedLibrary.Models;
 using SharedLibrary.Repositories.Interfaces;
+using SharedLibrary.Utils;
 
 namespace EWB_Tracker.ViewModels;
 public class SettingsViewModel : INotifyPropertyChanged
@@ -16,11 +17,13 @@ public class SettingsViewModel : INotifyPropertyChanged
     private readonly ISettingRepository _settingRepository;
     private readonly CharacterCache _characterCache;
     
+    private string _logDir = EveUtils.GetDefaultLogFolderLocation();
     private string _apiKey = string.Empty;
     private bool _forceBountyToOneUser = false;
     private Character _selectedCharacter;
     private bool _isLoading = false;
     
+
     public ObservableCollection<Character> Characters { get; }
     
     #region Commands
@@ -70,6 +73,16 @@ public class SettingsViewModel : INotifyPropertyChanged
     }
 
     #region Properties
+
+    public string LogDir
+    {
+        get => _logDir;
+        set
+        {
+            _logDir = value;
+            OnPropertyChanged();
+        }
+    }
 
     public string ApiKey
     {
@@ -151,6 +164,14 @@ public class SettingsViewModel : INotifyPropertyChanged
         try
         {
             // Load API Key
+            var logDirSetting = await _settingRepository.GetByKeyAsync("LogDir");
+            LogDir = logDirSetting?.Value;
+            if (string.IsNullOrEmpty(LogDir))
+            {
+                LogDir = EveUtils.GetDefaultLogFolderLocation();
+            }
+            
+            // Load API Key
             var apiKeySetting = await _settingRepository.GetByKeyAsync("ApiKey");
             ApiKey = apiKeySetting?.Value;
 
@@ -176,6 +197,9 @@ public class SettingsViewModel : INotifyPropertyChanged
         IsLoading = true;
         try
         {
+            // Save Log Directory
+            await _settingRepository.UpsertAsync("LogDir", LogDir ?? string.Empty);
+            
             // Save API Key
             await _settingRepository.UpsertAsync("ApiKey", ApiKey ?? string.Empty);
 

@@ -165,8 +165,6 @@ namespace EWB_Tracker.ViewModels
             BountyRuns.Insert(0, bountyRun);
             
             TopBountyRuns = new ObservableCollection<BountyRun>(BountyRuns.Take(3));
-            Console.WriteLine("Count of BountyRuns: " + BountyRuns.Count);
-            Console.WriteLine("Count of TopBountyRuns: " + TopBountyRuns.Count);
         }
 
         public void StopCurrentBountyRun()

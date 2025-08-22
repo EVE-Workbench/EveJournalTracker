@@ -26,7 +26,7 @@
         </StackPanel>
         
         <!-- Empty state for bounty runs -->
-        <ContentControl Visibility="{Binding TopBountyRuns.Count, Converter={StaticResource ZeroToVisibleConverter}}">
+        <ContentControl Visibility="{Binding BountyRuns.Count, Converter={StaticResource ZeroToVisibleConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
                 <TextBlock Text="🚫 Currently there are no bounty runs being tracked" FontSize="16" Foreground="Gray" HorizontalAlignment="Center" />
                 <TextBlock Text="You can track your bounty per mission/event from the menu on the right." FontSize="12" Foreground="DarkGray" HorizontalAlignment="Center" />

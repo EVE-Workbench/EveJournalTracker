@@ -17,6 +17,7 @@ public partial class DefaultView : UserControl, INotifyPropertyChanged
 
     public ObservableCollection<EveSystem> EveSystemCollection { get; set; } = new();
     public ObservableCollection<BountyRun> BountyRuns => _mainWindowViewModel.BountyRuns;
+    public ObservableCollection<BountyRun> TopBountyRuns => _mainWindowViewModel.TopBountyRuns;
 
     public DefaultView()
     {
@@ -25,9 +26,18 @@ public partial class DefaultView : UserControl, INotifyPropertyChanged
         _fileWatcherService = App.ServiceProvider.GetRequiredService<FileWatcherService>();
         _mainWindowViewModel = App.ServiceProvider.GetRequiredService<MainWindowViewModel>();
         
+        _mainWindowViewModel.PropertyChanged += OnMainViewModelPropertyChanged;
         _fileWatcherService.OnISKUpdated += OnNewLogEvent;
 
-        DataContext = _mainWindowViewModel;
+        DataContext = this;
+    }
+    
+    private void OnMainViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(_mainWindowViewModel.TopBountyRuns))
+        {
+            OnPropertyChanged(nameof(TopBountyRuns));
+        }
     }
 
     private void OnNewLogEvent(object sender, (int TotalISK, int ISKChange, Character Character) e)

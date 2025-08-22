@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using EWB_Tracker.Commands;
+using Microsoft.Extensions.Configuration;
 using SharedLibrary.Cache;
 using SharedLibrary.Events;
 using SharedLibrary.Jobs;
@@ -22,6 +23,7 @@ namespace EWB_Tracker.ViewModels
         private readonly CharacterCache _characterCache;
         private readonly CheckOnlineJob _checkOnlineJob;
         private readonly ISettingRepository _settingRepository;
+        private readonly IConfiguration _configuration;
         private object _currentView;
         private ObservableCollection<Character> _characters;
         private bool _showOfflineCharacters = false;
@@ -118,13 +120,14 @@ namespace EWB_Tracker.ViewModels
 
         public ICommand ShowViewCommand { get; }
 
-        public MainWindowViewModel(FileWatcherService fileWatcherService, CharacterCache characterCache, CheckOnlineJob checkOnlineJob, ISettingRepository settingRepository, GlobalHotkeyMonitorService globalHotkeyMonitorService)
+        public MainWindowViewModel(FileWatcherService fileWatcherService, CharacterCache characterCache, CheckOnlineJob checkOnlineJob, ISettingRepository settingRepository, GlobalHotkeyMonitorService globalHotkeyMonitorService, IConfiguration configuration)
         {
             _fileWatcherService = fileWatcherService;
             _characterCache = characterCache;
             _checkOnlineJob = checkOnlineJob;
             _settingRepository = settingRepository;
-            
+            _configuration = configuration;
+
             _characterCache.CharacterAdded += (sender, e) =>
             {
                 var characters = Characters.ToList();
@@ -230,7 +233,8 @@ namespace EWB_Tracker.ViewModels
                 }
 
                 // Send to journal API - Keep original format
-                var eveJournalApiUrl = $"https://api.eveworkbench.com/v1/eve-journal/realtime-bounty-update/{targetCharacter.CharacterId}";
+                var baseAddress = new Uri(_configuration["ApiSettings:BaseUrl"] ?? string.Empty);
+                var eveJournalApiUrl = $"{baseAddress}/v1/eve-journal/realtime-bounty-update/{targetCharacter.CharacterId}";
                 
                 using var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.Add("X-API-KEY", apiKeySetting.Value);

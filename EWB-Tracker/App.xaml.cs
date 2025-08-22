@@ -28,6 +28,7 @@ namespace EWB_Tracker
         private readonly IHost _host;
         private CheckOnlineJob _checkOnlineJob;
         private ClipboardMonitorService _clipboardMonitor;
+        private GlobalHotkeyMonitorService _hotkeyMonitorService; 
 
         public static IServiceProvider ServiceProvider { get; private set; }
         public static IConfiguration Configuration { get; private set; }
@@ -70,6 +71,8 @@ namespace EWB_Tracker
                     
                     services.AddSingleton<ClipboardMonitorService>();
                     services.AddSingleton<ClipboardHandlerService>();
+                    services.AddSingleton<GlobalHotkeyMonitorService>(); 
+                    services.AddSingleton<GlobalHotkeyHandlerService>(); 
                     #endregion
 
                     #region ViewModels
@@ -154,19 +157,15 @@ namespace EWB_Tracker
                 _checkOnlineJob = _host.Services.GetRequiredService<CheckOnlineJob>();
                 _checkOnlineJob.Start();
             
-                // Start clipboard monitoring
                 StartClipboardMonitoring(mainWindow);
+                StartHotkeyMonitoring(mainWindow);
             }
-            catch
-(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error while starting main window: {ex.Message}");
                 MessageBox.Show("An error occurred while starting the application. Please check the logs for more details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-
-
-            
         }
         
         private void StartClipboardMonitoring(MainWindow mainWindow)
@@ -191,6 +190,19 @@ namespace EWB_Tracker
             _clipboardMonitor.StartMonitoring(mainWindow);
         }
 
+        private void StartHotkeyMonitoring(MainWindow mainWindow)
+        {
+            _hotkeyMonitorService = _host.Services.GetRequiredService<GlobalHotkeyMonitorService>();
+            
+            // Initialize the service with the main window
+            _hotkeyMonitorService.Initialize(mainWindow);
+            
+            var hotkeyHandler = _host.Services.GetRequiredService<GlobalHotkeyHandlerService>();
+            hotkeyHandler.Initialize(_hotkeyMonitorService);
+            
+            Console.WriteLine("Hotkey monitoring started");
+        }
+
         protected override void OnExit(ExitEventArgs e)
         {
             var watcherService = _host.Services.GetRequiredService<FileWatcherService>();
@@ -202,6 +214,8 @@ namespace EWB_Tracker
             _clipboardMonitor?.StopMonitoring();
             _clipboardMonitor?.Dispose();
 
+            // Stop hotkey monitoring
+            _hotkeyMonitorService?.Dispose();
             
             base.OnExit(e);
         }

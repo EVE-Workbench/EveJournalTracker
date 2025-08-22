@@ -108,7 +108,7 @@ namespace EWB_Tracker.ViewModels
 
         public ICommand ShowViewCommand { get; }
 
-        public MainWindowViewModel(FileWatcherService fileWatcherService, CharacterCache characterCache, CheckOnlineJob checkOnlineJob, ISettingRepository settingRepository)
+        public MainWindowViewModel(FileWatcherService fileWatcherService, CharacterCache characterCache, CheckOnlineJob checkOnlineJob, ISettingRepository settingRepository, GlobalHotkeyMonitorService globalHotkeyMonitorService)
         {
             _fileWatcherService = fileWatcherService;
             _characterCache = characterCache;
@@ -139,6 +139,8 @@ namespace EWB_Tracker.ViewModels
             };
             
             _checkOnlineJob.CharacterStatusChanged += OnCharacterStatusChanged;
+            
+            globalHotkeyMonitorService.HotkeyPressed += OnHotkeyPressed;
         }
 
         #region Bounty Run Methods
@@ -281,6 +283,39 @@ namespace EWB_Tracker.ViewModels
             {
                 character.Online = e.IsOnline;
                 FilterCharacters();
+            }
+        }
+        
+        private void OnHotkeyPressed(int hotkeyId, string hotkeyName)
+        {
+            try
+            {
+                switch (hotkeyName)
+                {
+                    case "ResetBounty":
+                        StopCurrentBountyRun();
+
+                        var runCount = BountyRuns?.Count + 1 ?? 1;
+                        var currentTime = DateTime.Now.ToString("h:mm tt");
+                        var runName = $"Run #{runCount}, {currentTime}";
+
+                        var bountyRun = new BountyRun
+                        {
+                            Id = DateTime.Now.Ticks.GetHashCode(), // Simple ID generation for in-memory
+                            Name = runName,
+                            StartTime = DateTime.Now,
+                            TotalIsk = 0,
+                            IsCompleted = false
+                        };
+                    
+                        SetCurrentBountyRun(bountyRun);
+                    
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error handling hotkey {hotkeyName}: {ex.Message}");
             }
         }
 

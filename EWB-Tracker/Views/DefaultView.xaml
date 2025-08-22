@@ -19,7 +19,10 @@
     </UserControl.Resources>
     <StackPanel Margin="10">
         <!-- Bounty Runs Section -->
-        <TextBlock Text="Bounty Runs" FontSize="20" Margin="5 0" FontWeight="Bold" />
+        <StackPanel Orientation="Horizontal" Margin="5 0">
+            <TextBlock Text="Bounty Runs" FontSize="20" FontWeight="Bold" />
+            <TextBlock Text="(Renew: ctrl+shift+N)" FontSize="12" Foreground="Gray" Margin="5,0,0,0" VerticalAlignment="Center" />
+        </StackPanel>
         
         <!-- Empty state for bounty runs -->
         <ContentControl Visibility="{Binding BountyRuns.Count, Converter={StaticResource ZeroToVisibleConverter}}">

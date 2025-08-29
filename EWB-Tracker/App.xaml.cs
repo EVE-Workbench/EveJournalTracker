@@ -162,7 +162,8 @@ namespace EWB_Tracker
                 _checkOnlineJob = _host.Services.GetRequiredService<CheckOnlineJob>();
                 _checkOnlineJob.Start();
             
-                StartClipboardMonitoring(mainWindow);
+                // disabled for now, can be used in the feature to auto-detect mission and loot/cargo changes
+                //StartClipboardMonitoring(mainWindow);
                 StartHotkeyMonitoring(mainWindow);
             }
             catch (Exception ex)

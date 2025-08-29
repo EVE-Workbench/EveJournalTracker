@@ -21,8 +21,8 @@ public class FileWatcherService
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly Dictionary<string, long> _filePositions = new();
 
-    public event EventHandler<LogEvent> OnNewLogEvent;
-    public event EventHandler<(int TotalISK, int ISKChange, Character Character)> OnISKUpdated;
+    public event EventHandler<LogEvent>? OnNewLogEvent;
+    public event EventHandler<(int TotalISK, int ISKChange, Character Character)>? OnISKUpdated;
 
     private List<EveSystemDto> EveSystems { get; set; } = [];
     private List<EveSystem> EveSystemsList { get; set; } = [];

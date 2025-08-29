@@ -1,0 +1,124 @@
+﻿name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'tagname e.g. v1.2.3'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      CONFIGURATION: Release
+      RUNTIME_ID: win-x64
+      SOLUTION_PATH: EWB-Tracker-v2.sln
+      PROJECT_PATH: EWB-Tracker/EWB-Tracker.csproj
+      OUTPUT_DIR: publish\win-x64
+      ZIP_NAME: EWBAgent-win-x64.zip
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          cache: false
+
+      - name: Restore dependencies
+        run: dotnet restore $env:SOLUTION_PATH
+
+      - name: Publish WPF (self-contained, single file)
+        run: >
+          dotnet publish $env:PROJECT_PATH
+          -c $env:CONFIGURATION
+          -r $env:RUNTIME_ID
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableWindowsTargeting=true
+          -o $env:OUTPUT_DIR
+
+      - name: Create ZIP
+        shell: pwsh
+        run: |
+          if (Test-Path $env:ZIP_NAME) { Remove-Item $env:ZIP_NAME -Force }
+          Compress-Archive -Path "$env:OUTPUT_DIR\*" -DestinationPath "$env:ZIP_NAME"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EWBAgent-win-x64
+          path: ${{ env.ZIP_NAME }}
+
+  release:
+    needs: build
+    runs-on: windows-latest
+    env:
+      ZIP_NAME: EWBAgent-win-x64.zip
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: EWBAgent-win-x64
+          path: dist
+
+      - name: Determine tag
+        id: vars
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $tag = "${{ github.ref_name }}"
+          } elseif ("${{ github.event.inputs.version }}") {
+            $tag = "${{ github.event.inputs.version }}"
+          } else {
+            $tag = "v0.0.0-untagged-${{ github.run_number }}"
+          }
+          echo "tag_name=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Prepare release notes from CHANGELOG.md
+        id: notes
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.vars.outputs.tag_name }}"
+          $notesFile = "RELEASE_NOTES.md"
+
+          "" | Out-File -Encoding UTF8 $notesFile
+
+          if (Test-Path "CHANGELOG.md") {
+            $content = Get-Content CHANGELOG.md -Raw
+
+            $escaped = [Regex]::Escape($tag)
+            $pattern = "^##\s+$escaped[^\r\n]*\r?\n(.*?)(?=^##\s+|\Z)"
+
+            $options = [System.Text.RegularExpressions.RegexOptions]::Singleline -bor `
+                       [System.Text.RegularExpressions.RegexOptions]::Multiline
+
+            $m = [regex]::Match($content, $pattern, $options)
+            if ($m.Success) {
+              $m.Groups[1].Value.Trim() | Out-File -Encoding UTF8 $notesFile
+            }
+          }
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag_name }}
+          name: ${{ steps.vars.outputs.tag_name }}
+          body_path: RELEASE_NOTES.md
+          generate_release_notes: true
+          files: |
+            dist/${{ env.ZIP_NAME }}

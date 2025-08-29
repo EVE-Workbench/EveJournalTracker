@@ -7,15 +7,15 @@ namespace SharedLibrary.Services;
 
 public class GlobalHotkeyMonitorService : IDisposable
 {
-    private const int WM_HOTKEY = 0x0312;
+    private const int WmHotkey = 0x0312;
     private readonly Dictionary<int, HotkeyInfo> _hotkeys = new Dictionary<int, HotkeyInfo>();
     private int _currentId = 9000; // Start with a high ID to avoid conflicts
     private IntPtr _windowHandle;
-    private HwndSource _source;
+    private HwndSource? _source;
     private bool _disposed = false;
 
     public delegate void HotkeyPressedEventHandler(int hotkeyId, string hotkeyName);
-    public event HotkeyPressedEventHandler HotkeyPressed;
+    public event HotkeyPressedEventHandler? HotkeyPressed;
 
     // Windows API imports
     [DllImport("user32.dll")]
@@ -37,9 +37,9 @@ public class GlobalHotkeyMonitorService : IDisposable
 
     private struct HotkeyInfo
     {
-        public string Name { get; set; }
-        public ModifierKeys Modifiers { get; set; }
-        public Key Key { get; set; }
+        public string Name { get; init; }
+        public ModifierKeys Modifiers { get; init; }
+        public Key Key { get; init; }
     }
 
     public void Initialize(Window window)
@@ -49,7 +49,7 @@ public class GlobalHotkeyMonitorService : IDisposable
 
         _windowHandle = new WindowInteropHelper(window).Handle;
         _source = HwndSource.FromHwnd(_windowHandle);
-        _source.AddHook(HwndHook);
+        _source?.AddHook(HwndHook);
     }
 
     public bool RegisterHotkey(string name, ModifierKeys modifiers, Key key)
@@ -74,42 +74,34 @@ public class GlobalHotkeyMonitorService : IDisposable
             Console.WriteLine($"Successfully registered hotkey: {name} (ID: {id})");
             return true;
         }
-        else
-        {
-            Console.WriteLine($"Failed to register hotkey: {name}");
-            return false;
-        }
+
+        Console.WriteLine($"Failed to register hotkey: {name}");
+        return false;
     }
 
     public bool UnregisterHotkey(string name)
     {
         var hotkeyToRemove = -1;
-        foreach (var kvp in _hotkeys)
+        foreach (var kvp in _hotkeys.Where(kvp => kvp.Value.Name == name))
         {
-            if (kvp.Value.Name == name)
-            {
-                hotkeyToRemove = kvp.Key;
-                break;
-            }
+            hotkeyToRemove = kvp.Key;
+            break;
         }
 
-        if (hotkeyToRemove != -1)
-        {
-            var success = UnregisterHotKey(_windowHandle, hotkeyToRemove);
-            if (success)
-            {
-                _hotkeys.Remove(hotkeyToRemove);
-                Console.WriteLine($"Successfully unregistered hotkey: {name}");
-            }
-            return success;
-        }
+        if (hotkeyToRemove == -1) return false;
+        
+        var success = UnregisterHotKey(_windowHandle, hotkeyToRemove);
+        if (!success) return success;
+            
+        _hotkeys.Remove(hotkeyToRemove);
+        Console.WriteLine($"Successfully unregistered hotkey: {name}");
+        return success;
 
-        return false;
     }
 
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
-        if (msg == WM_HOTKEY)
+        if (msg == WmHotkey)
         {
             var id = wParam.ToInt32();
             if (_hotkeys.TryGetValue(id, out var hotkeyInfo))

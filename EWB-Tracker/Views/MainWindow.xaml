@@ -214,6 +214,11 @@
                                 Style="{DynamicResource EveBtn}" 
                                 Background="{Binding IsBountyRunActive, Converter={StaticResource BountyRunButtonColorConverter}}" 
                                 Click="BountyRunButton_Click" />
+                        <!-- Delimiter -->
+                        <Border BorderBrush="{DynamicResource WindowBackground}" BorderThickness="0 1 0 0" Margin="5" />
+                        
+                        <!-- open evejournal.com in the browser -->
+                        <Button Content="Open EVE Journal" Style="{StaticResource EveBtn}" Click="OpenEveJournal_Click" />
 
                         <Border BorderBrush="{DynamicResource WindowBackground}" BorderThickness="0 1 0 0" Margin="5" />
                         <TextBlock Text="Show Offline Characters" Margin="10 10 10 0"

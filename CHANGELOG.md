@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Add a button to open the Evejournal website directly from the app and assign a hotkey to it (default: Ctrl+Shift+J)
+
 ---
 
 ## v0.1.0 - Initial Release

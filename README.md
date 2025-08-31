@@ -38,6 +38,7 @@ This website allows you to track events, missions, rewards and bounties directly
 - Switch UI from WPF → [Avalonia](https://avaloniaui.net/) for Linux and macOS support  
 - Add mining support  
 - Optional location tracking to map travels  
+- Make keyboard shortcuts configurable
 
 💡 Have ideas? Let us know what you’d like to see in future releases!  
 

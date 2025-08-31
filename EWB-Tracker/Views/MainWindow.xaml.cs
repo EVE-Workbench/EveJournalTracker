@@ -5,6 +5,7 @@ using System.Windows.Input;
 using SharedLibrary.Services;
 using EWB_Tracker.ViewModels;
 using EWB_Tracker.Views;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EWB_Tracker
@@ -134,6 +135,15 @@ namespace EWB_Tracker
             {
                 this.DragMove();
             }
+        }
+
+        private void OpenEveJournal_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = App.ServiceProvider.GetService<IConfiguration>().GetValue<string>("EveJournalUrl"),
+                UseShellExecute = true
+            });
         }
     }
 }

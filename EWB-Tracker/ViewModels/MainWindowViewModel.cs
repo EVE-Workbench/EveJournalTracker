@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using EWB_Tracker.Commands;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using SharedLibrary.Cache;
 using SharedLibrary.Events;
 using SharedLibrary.Jobs;
@@ -327,6 +328,14 @@ namespace EWB_Tracker.ViewModels
                     
                         SetCurrentBountyRun(bountyRun);
                     
+                        break;
+                    case "OpenJournal":
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = App.ServiceProvider.GetService<IConfiguration>().GetValue<string>("EveJournalUrl"),
+                            UseShellExecute = true
+                        });
+
                         break;
                 }
             }

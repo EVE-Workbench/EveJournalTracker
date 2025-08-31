@@ -8,6 +8,7 @@ public class GlobalHotkeyHandlerService
     public void Initialize(GlobalHotkeyMonitorService globalHotkeyMonitorService)
     {
         globalHotkeyMonitorService.RegisterHotkey("ResetBounty", GlobalHotkeyMonitorService.ModifierKeys.Control | GlobalHotkeyMonitorService.ModifierKeys.Shift, Key.N);
+        globalHotkeyMonitorService.RegisterHotkey("OpenJournal", GlobalHotkeyMonitorService.ModifierKeys.Control | GlobalHotkeyMonitorService.ModifierKeys.Shift, Key.J);
         
         // Subscribe to the HotkeyPressed event
         //globalHotkeyMonitorService.HotkeyPressed += OnHotkeyPressed;

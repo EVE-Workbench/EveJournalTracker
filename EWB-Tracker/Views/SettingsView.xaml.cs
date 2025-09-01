@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Navigation;
 using EWB_Tracker.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,16 @@ namespace EWB_Tracker.Views
                 UseShellExecute = true
             });
             e.Handled = true;
+        }
+        
+        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            ScrollViewer scrollViewer = sender as ScrollViewer;
+            if (scrollViewer != null)
+            {
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3.0);
+                e.Handled = true;
+            }
         }
     }
 }

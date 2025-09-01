@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Add a button to open the Evejournal website directly from the app and assign a hotkey to it (default: Ctrl+Shift+J)
+- Add a quicklink in settings to create a new personal access token on the Evejournal website
+
+### Changed
+- Changed settings text to clarify we need an access token, not an API key
 
 ---
 

@@ -1,4 +1,6 @@
-﻿using System.Windows.Controls;
+﻿using System.Diagnostics;
+using System.Windows.Controls;
+using System.Windows.Navigation;
 using EWB_Tracker.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,6 +18,16 @@ namespace EWB_Tracker.Views
                 var viewModel = (SettingsViewModel)DataContext;
                 await viewModel.InitializeAsync();
             };
+        }
+        
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            // Open the URL in the default browser
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri)
+            {
+                UseShellExecute = true
+            });
+            e.Handled = true;
         }
     }
 }

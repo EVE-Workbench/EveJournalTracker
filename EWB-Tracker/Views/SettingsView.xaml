@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:EWB_Tracker.Views"
              xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
+             xmlns:helpers="clr-namespace:EWB_Tracker.Helpers"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="500"
              Background="Transparent">
@@ -98,14 +99,15 @@
                         </Hyperlink>
                     </TextBlock>
                     
-                    <TextBox Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}"
-                             FontSize="14"
-                             Padding="7"
-                             Margin="0,0,0,5"
-                             Background="{DynamicResource WindowBackground}"
-                             Foreground="{DynamicResource TextColor}"
-                             BorderBrush="{DynamicResource WindowBorder}"
-                             IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}" />
+                    <PasswordBox helpers:PasswordHelper.Attach="True"
+                                 helpers:PasswordHelper.Password="{Binding ApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 FontSize="14"
+                                 Padding="7"
+                                 Margin="0,0,0,5"
+                                 Background="{DynamicResource WindowBackground}"
+                                 Foreground="{DynamicResource TextColor}"
+                                 BorderBrush="{DynamicResource WindowBorder}"
+                                 IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}" />
                     
                     <TextBlock Text="Enter your Eve Workbench Personal Access Token to enable website integration." 
                                FontSize="10" 

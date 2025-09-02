@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Made the access token field in settings a password box to hide the token
+
 ---
 
 ## v0.1.1 - Settings and UI Improvements

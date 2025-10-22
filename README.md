@@ -1,6 +1,6 @@
-# Eve Workbench Agent (EWB Tracker)
+# EVE Workbench Agent (EWB Tracker)
 
-EWB Tracker is a companion tool for the [EWB Eve Journal](https://evejournal.com/).  
+EWB Tracker is a companion tool for the [EVE Journal](https://evejournal.com/).  
 This website allows you to track events, missions, rewards and bounties directly from your EVE Online game logs.
 
 > [!IMPORTANT]
@@ -19,7 +19,7 @@ This website allows you to track events, missions, rewards and bounties directly
 2. Extract the ZIP to a folder of your choice.  
 3. Run **`EWB-Tracker.exe`**.  
 4. Open the **Settings** menu:  
-   - Add your Eve Workbench **Access Token** (create one [here](https://evejournal.com/my-account/personal-access-tokens)).  
+   - Add your EVE Workbench **Access Token** (create one [here](https://evejournal.com/my-account/personal-access-tokens)).  
    - Verify your **game log folder** is correct.  
 
 ## 🔄 Updating the Application

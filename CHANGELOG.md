@@ -3,8 +3,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
 ### Changed
 - Made the access token field in settings a password box to hide the token
+- Update dotnet version to 9.0.10
+
+### Fixed
 
 ---
 

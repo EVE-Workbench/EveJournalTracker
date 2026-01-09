@@ -46,21 +46,69 @@
 
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right"
-                            VerticalAlignment="Center">
-                    <Button Content="—" Width="28" Height="35" Margin="0 5" Padding="0"
+                            VerticalAlignment="Stretch">
+                    <Button Width="46" Height="45" Padding="0" Margin="0"
                             Click="Minimize_Click"
-                            Background="{DynamicResource TitleBarButtonBackground}"
-                            Foreground="{DynamicResource TitleBarButtonTextColor}" />
+                            Background="Transparent"
+                            BorderThickness="0"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Background" Value="#1FFFFFFF" />
+                            </Style>
+                            <Style Selector="Button:pressed">
+                                <Setter Property="Background" Value="#2FFFFFFF" />
+                            </Style>
+                        </Button.Styles>
+                        <TextBlock Text="—"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource TitleBarButtonTextColor}" />
+                    </Button>
 
-                    <Button Content="🗖" Width="28" Height="35" Margin="0 5" Padding="0"
+                    <Button Width="46" Height="45" Padding="0" Margin="0"
                             Click="Maximize_Click"
-                            Background="{DynamicResource TitleBarButtonBackground}"
-                            Foreground="{DynamicResource TitleBarButtonTextColor}" />
+                            Background="Transparent"
+                            BorderThickness="0"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Background" Value="#1FFFFFFF" />
+                            </Style>
+                            <Style Selector="Button:pressed">
+                                <Setter Property="Background" Value="#2FFFFFFF" />
+                            </Style>
+                        </Button.Styles>
+                        <TextBlock Text="☐"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource TitleBarButtonTextColor}" />
+                    </Button>
 
-                    <Button Content="X" Width="28" Height="35" Margin="0 5 5 5" Padding="0"
+                    <Button Width="46" Height="45" Padding="0" Margin="0"
                             Click="Close_Click"
-                            Background="{DynamicResource CloseButtonBackground}"
-                            Foreground="{DynamicResource CloseButtonTextColor}" />
+                            Background="Transparent"
+                            BorderThickness="0"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Background" Value="#E81123" />
+                            </Style>
+                            <Style Selector="Button:pressed">
+                                <Setter Property="Background" Value="#C50F1F" />
+                            </Style>
+                        </Button.Styles>
+                        <TextBlock Text="✕"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource TitleBarButtonTextColor}" />
+                    </Button>
                 </StackPanel>
             </Panel>
 

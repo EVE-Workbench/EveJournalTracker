@@ -1,20 +1,236 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:UI.avalonia.ViewModels"
+        xmlns:views="using:UI.avalonia.Views"
+        xmlns:components="using:UI.avalonia.Views.Components"
+        xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
+        xmlns:converters="using:UI.avalonia.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1240" d:DesignHeight="700"
         x:Class="UI.avalonia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="UI.avalonia">
+        Icon="/Assets/eveworkbench-logo.ico"
+        Title="EVE Workbench Desktop Agent"
+        Width="1240" Height="700"
+        MinWidth="980" MinHeight="650"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+    <Window.Resources>
+        <converters:BountyConverter x:Key="BountyConverter" />
+        <converters:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
+        <converters:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
+        <converters:BountyRunButtonTextConverter x:Key="BountyRunButtonTextConverter" />
+        <converters:BountyRunButtonColorConverter x:Key="BountyRunButtonColorConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
+    </Window.Resources>
 
-    <TextBlock Text="Main Window" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Border Background="{DynamicResource WindowBackground}"
+            BorderBrush="{DynamicResource WindowBorder}"
+            BorderThickness="1">
+        <Grid RowDefinitions="45,*">
 
+            <!-- Custom titlebar -->
+            <Panel Grid.Row="0"
+                   Background="Transparent"
+                   PointerPressed="TitleBar_PointerPressed">
+                <TextBlock Text="EVE Workbench Desktop Agent"
+                           VerticalAlignment="Center"
+                           Margin="10 0"
+                           FontSize="16"
+                           Foreground="{DynamicResource TitleBarTextColor}" />
+
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+                    <Button Content="—" Width="28" Height="35" Margin="0 5" Padding="0"
+                            Click="Minimize_Click"
+                            Background="{DynamicResource TitleBarButtonBackground}"
+                            Foreground="{DynamicResource TitleBarButtonTextColor}" />
+
+                    <Button Content="🗖" Width="28" Height="35" Margin="0 5" Padding="0"
+                            Click="Maximize_Click"
+                            Background="{DynamicResource TitleBarButtonBackground}"
+                            Foreground="{DynamicResource TitleBarButtonTextColor}" />
+
+                    <Button Content="X" Width="28" Height="35" Margin="0 5 5 5" Padding="0"
+                            Click="Close_Click"
+                            Background="{DynamicResource CloseButtonBackground}"
+                            Foreground="{DynamicResource CloseButtonTextColor}" />
+                </StackPanel>
+            </Panel>
+
+            <!-- Main Content -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,*">
+
+                <!-- ISK Display -->
+                <Border Grid.Column="0" Grid.Row="0" Margin="10 0 0 10" Padding="10 20"
+                        Background="{DynamicResource PanelBackground}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding TotalIsk, Converter={StaticResource BountyConverter}, FallbackValue=0}"
+                                   HorizontalAlignment="Center" FontSize="30"
+                                   Foreground="{DynamicResource AccentColor}" />
+                        <TextBlock HorizontalAlignment="Center" FontSize="20"
+                                   Foreground="{DynamicResource AccentColor}">
+                            <Run Text="+" />
+                            <Run Text="{Binding IskChange, Converter={StaticResource BountyConverter}, FallbackValue=0}" />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ContentControl Content="{Binding CurrentView}" />
+                </ScrollViewer>
+
+                <!-- Character List -->
+                <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" RowDefinitions="*,250">
+
+                    <Panel Grid.Row="0">
+                        <!-- Empty placeholder box -->
+                        <Border Background="{DynamicResource PanelBackground}"
+                                BorderBrush="Gray"
+                                BorderThickness="1"
+                                Width="265"
+                                Margin="10 0 10 10"
+                                IsVisible="{Binding FilteredCharacters.Count, Converter={StaticResource ZeroToVisibleConverter}}">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                                <TextBlock Text="No characters online"
+                                           FontSize="16"
+                                           Foreground="Gray"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center" />
+
+                                <TextBlock Text="What are you doing? Not playing EvE? Are you really an EvE player if there are no clones online?"
+                                           TextWrapping="Wrap"
+                                           FontSize="12"
+                                           Foreground="DarkGray"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <ListBox ItemsSource="{Binding FilteredCharacters}" Margin="10 0 10 10"
+                                 IsVisible="{Binding FilteredCharacters.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
+                                 Background="{DynamicResource PanelBackground}"
+                                 Foreground="{DynamicResource TextColor}"
+                                 MinWidth="265">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="models:Character">
+                                    <StackPanel Orientation="Horizontal">
+                                        <components:CharacterAvatarControl Character="{Binding}" AvatarSize="54" />
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold"
+                                                       Foreground="{DynamicResource TextColor}" />
+                                            <TextBlock Foreground="{DynamicResource TextColor}">
+                                                <Run Text="Bounty: " />
+                                                <Run Text="{Binding Bounty, Converter={StaticResource BountyConverter}}" />
+                                            </TextBlock>
+                                            <TextBlock Foreground="{DynamicResource TextColor}">
+                                                <Run Text="System: " />
+                                                <Run Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
+                                                <Run Text=" (" />
+                                                <Run Text="{Binding EveSystem.SecurityStatus, StringFormat={}{0:F1}, FallbackValue='?'}"
+                                                     Foreground="{Binding EveSystem.EveSystemDto.SecurityColorHex, Converter={StaticResource HexColorToBrushConverter}}" />
+                                                <Run Text=")" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Panel>
+
+                    <Border Grid.Row="1"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            Background="{DynamicResource PanelBackground}"
+                            BorderBrush="Gray"
+                            BorderThickness="1"
+                            Margin="10 0 10 10">
+
+                        <components:DpsChart HorizontalAlignment="Stretch"
+                                             VerticalAlignment="Stretch" />
+                    </Border>
+                </Grid>
+
+                <!-- Toolbar -->
+                <Border Grid.Column="2" Grid.Row="0" Grid.RowSpan="2"
+                        Background="{DynamicResource PanelBackground}"
+                        Width="170"
+                        Margin="0 0 10 10">
+                    <StackPanel Orientation="Vertical">
+                        <Image Source="avares://UI.avalonia/Assets/eveworkbench-logo.png"
+                               Width="150" Height="150" Margin="10 10 10 20" />
+
+                        <Button Classes="EveBtn" Content="Bounties" Command="{Binding ShowViewCommand}">
+                            <Button.CommandParameter>
+                                <views:DefaultView />
+                            </Button.CommandParameter>
+                        </Button>
+
+                        <Button Classes="EveBtn" Content="Account" Command="{Binding ShowViewCommand}">
+                            <Button.CommandParameter>
+                                <views:AccountView />
+                            </Button.CommandParameter>
+                        </Button>
+
+                        <Button Classes="EveBtn" Content="Settings" Command="{Binding ShowViewCommand}">
+                            <Button.CommandParameter>
+                                <views:SettingsView />
+                            </Button.CommandParameter>
+                        </Button>
+
+                        <Button Classes="EveBtn" Content="Log viewer" Command="{Binding ShowViewCommand}">
+                            <Button.CommandParameter>
+                                <views:LogView />
+                            </Button.CommandParameter>
+                        </Button>
+
+                        <!-- Delimiter -->
+                        <Border BorderBrush="{DynamicResource WindowBackground}" BorderThickness="0 1 0 0" Margin="5" />
+
+                        <Button Content="Stop Watching" Classes="EveBtn" Click="StopWatching_Click" />
+                        <Button Content="{Binding IsBountyRunActive, Converter={StaticResource BountyRunButtonTextConverter}}"
+                                Classes="EveBtn"
+                                Background="{Binding IsBountyRunActive, Converter={StaticResource BountyRunButtonColorConverter}}"
+                                Click="BountyRunButton_Click" />
+
+                        <!-- Delimiter -->
+                        <Border BorderBrush="{DynamicResource WindowBackground}" BorderThickness="0 1 0 0" Margin="5" />
+
+                        <!-- open evejournal.com in the browser -->
+                        <Button Content="Open EVE Journal" Classes="EveBtn" Click="OpenEveJournal_Click" />
+
+                        <Border BorderBrush="{DynamicResource WindowBackground}" BorderThickness="0 1 0 0" Margin="5" />
+                        <TextBlock Text="Show Offline Characters" Margin="10 10 10 0"
+                                   Foreground="{DynamicResource TextColor}" />
+                        <ToggleButton Content="Show Offline Characters"
+                                      IsChecked="{Binding ShowOfflineCharacters}"
+                                      Classes="SwitchToggleButton"
+                                      Margin="10" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Modal Overlay -->
+                <Panel x:Name="ModalOverlay"
+                       IsVisible="False"
+                       Background="#80000000"
+                       Grid.ColumnSpan="3" Grid.RowSpan="2"
+                       ZIndex="10"
+                       PointerPressed="ModalOverlay_PointerPressed">
+                    <Border Background="{DynamicResource PanelBackground}"
+                            Padding="20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            CornerRadius="8">
+                        <ContentControl x:Name="ModalContent" />
+                    </Border>
+                </Panel>
+            </Grid>
+        </Grid>
+    </Border>
 </Window>

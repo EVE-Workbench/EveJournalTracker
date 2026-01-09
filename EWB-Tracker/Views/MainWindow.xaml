@@ -1,7 +1,7 @@
 ﻿<Window x:Class="EWB_Tracker.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
+        xmlns:converters="clr-namespace:EWB_Tracker.Converters"
         xmlns:views="clr-namespace:EWB_Tracker.Views"
         xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
         xmlns:components="clr-namespace:EWB_Tracker.Views.Components"

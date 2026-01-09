@@ -1,8 +1,9 @@
-﻿using System.Globalization;
+using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace SharedLibrary.Converters;
+namespace EWB_Tracker.Converters;
 
 public class ZeroToCollapsedConverter : IValueConverter
 {
@@ -10,10 +11,11 @@ public class ZeroToCollapsedConverter : IValueConverter
     {
         if (value is int count && count == 0)
             return Visibility.Collapsed;
-
         return Visibility.Visible;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+    {
+        throw new NotImplementedException();
+    }
 }

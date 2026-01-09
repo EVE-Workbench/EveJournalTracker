@@ -1,7 +1,8 @@
-﻿using System.Globalization;
+using System;
+using System.Globalization;
 using System.Windows.Data;
 
-namespace SharedLibrary.Converters;
+namespace EWB_Tracker.Converters;
 
 public class BountyRunButtonTextConverter : IValueConverter
 {

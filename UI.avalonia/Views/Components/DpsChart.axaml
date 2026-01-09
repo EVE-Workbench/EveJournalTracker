@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+             x:Class="UI.avalonia.Views.Components.DpsChart"
+             Background="Transparent">
+
+    <lvc:CartesianChart Series="{Binding Series}"
+                        SyncContext="{Binding Sync}"
+                        XAxes="{Binding XAxes}"
+                        LegendTextPaint="{Binding LegendTextPaint}"
+                        LegendPosition="Bottom" />
+</UserControl>

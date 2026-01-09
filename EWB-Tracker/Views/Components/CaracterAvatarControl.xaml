@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
-             xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
+             xmlns:converters="clr-namespace:EWB_Tracker.Converters"
              mc:Ignorable="d" 
              x:Name="Root">
     

@@ -1,7 +1,8 @@
-﻿using System.Globalization;
+using System;
+using System.Globalization;
 using System.Windows.Data;
 
-namespace SharedLibrary.Converters;
+namespace EWB_Tracker.Converters;
 
 public class InverseBooleanConverter : IValueConverter
 {
@@ -11,7 +12,7 @@ public class InverseBooleanConverter : IValueConverter
         {
             return !boolValue;
         }
-        return true; // Default to true if not a boolean
+        return true;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -20,6 +21,6 @@ public class InverseBooleanConverter : IValueConverter
         {
             return !boolValue;
         }
-        return false; // Default to false if not a boolean
+        return true;
     }
 }

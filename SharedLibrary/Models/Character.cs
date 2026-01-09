@@ -6,13 +6,16 @@ namespace SharedLibrary.Models
     public class Character : INotifyPropertyChanged
     {
         public int CharacterId { get; set; }
-        
+
         private string _name;
         private bool _online;
         private int _bounty;
         private EveSystemDto? _eveSystem;
         private bool _active = true;
         private int _position;
+
+        // Computed property for character avatar image URL
+        public string ImageUrl => $"https://images.evetech.net/characters/{CharacterId}/portrait?size=128";
 
         public string Name
         {

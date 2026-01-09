@@ -1,0 +1,78 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Default TextBlock Style -->
+    <Style Selector="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}" />
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+    </Style>
+
+    <!-- Default Button Style -->
+    <Style Selector="Button">
+        <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource ButtonTextColor}" />
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="Margin" Value="5" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
+    <Style Selector="Button:pointerover">
+        <Setter Property="Background" Value="{DynamicResource ButtonHoverBackground}" />
+    </Style>
+
+    <Style Selector="Button:pressed">
+        <Setter Property="Background" Value="{DynamicResource ButtonClickBackground}" />
+    </Style>
+
+    <!-- EveBtn Style -->
+    <Style Selector="Button.EveBtn">
+        <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource ButtonTextColor}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="Margin" Value="2,1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WindowBackground}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="CornerRadius" Value="0" />
+    </Style>
+
+    <Style Selector="Button.EveBtn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource ButtonHoverBackground}" />
+    </Style>
+
+    <Style Selector="Button.EveBtn:pressed">
+        <Setter Property="Background" Value="{DynamicResource ButtonClickBackground}" />
+    </Style>
+
+    <!-- ToggleSwitch Style for Show Offline Characters -->
+    <Style Selector="ToggleSwitch">
+        <Setter Property="MinWidth" Value="50" />
+        <Setter Property="MinHeight" Value="25" />
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+    </Style>
+
+    <!-- TextBlock inside ToggleSwitch should also use custom font -->
+    <Style Selector="ToggleSwitch TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+    </Style>
+
+    <!-- ToggleButton Style -->
+    <Style Selector="ToggleButton">
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+    </Style>
+
+    <Style Selector="ToggleButton.SwitchToggleButton">
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+    </Style>
+
+</Styles>

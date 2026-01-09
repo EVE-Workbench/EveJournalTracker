@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
+             xmlns:converters="clr-namespace:UI.avalonia.Converters"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+             x:Class="UI.avalonia.Views.DefaultView"
+             Background="Transparent">
+    <UserControl.Resources>
+        <converters:BountyConverter x:Key="BountyConverter" />
+        <converters:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
+        <converters:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
+    </UserControl.Resources>
+    <StackPanel Margin="10">
+        <!-- Bounty Runs Section -->
+        <StackPanel Orientation="Horizontal" Margin="5 0">
+            <TextBlock Text="Bounty Runs" FontSize="20" FontWeight="Bold" />
+            <TextBlock Text="- last 3 runs" FontSize="12" Foreground="Gray" Margin="5,0,0,0" VerticalAlignment="Center" />
+            <TextBlock Text="(Add new run: ctrl+shift+N)" FontSize="12" Foreground="Gray" Margin="5,0,0,0" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <!-- Empty state for bounty runs -->
+        <ContentControl IsVisible="{Binding BountyRuns.Count, Converter={StaticResource ZeroToVisibleConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                <TextBlock Text="Currently there are no bounty runs being tracked" FontSize="16" Foreground="Gray" HorizontalAlignment="Center" />
+                <TextBlock Text="You can track your bounty per mission/event from the menu on the right." FontSize="12" Foreground="DarkGray" HorizontalAlignment="Center" />
+            </StackPanel>
+        </ContentControl>
+
+        <!-- Bounty runs list -->
+        <ItemsControl ItemsSource="{Binding TopBountyRuns}"
+                      IsVisible="{Binding TopBountyRuns.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
+                      Margin="0,0,0,20">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="models:BountyRun">
+                    <Border BorderBrush="#cccccc" BorderThickness="1" Padding="10" Margin="5"
+                            Background="{DynamicResource PanelBackground}">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14"
+                                           Foreground="{DynamicResource TextColor}" />
+                                <TextBlock Foreground="{DynamicResource TextColor}" FontSize="12">
+                                    <Run Text="Started: " />
+                                    <Run Text="{Binding StartTime, StringFormat='{}{0:MMM dd, yyyy HH:mm}'}" />
+                                </TextBlock>
+                                <TextBlock Foreground="{DynamicResource TextColor}" FontSize="12"
+                                           IsVisible="{Binding IsCompleted, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <Run Text="Ended: " />
+                                    <Run Text="{Binding EndTime, StringFormat='{}{0:MMM dd, yyyy HH:mm}'}" />
+                                </TextBlock>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Right" Margin="10,0">
+                                <TextBlock Text="Total ISK:" FontSize="12"
+                                           Foreground="{DynamicResource TextColor}"
+                                           HorizontalAlignment="Right" />
+                                <TextBlock Text="{Binding TotalIsk, Converter={StaticResource BountyConverter}}"
+                                           FontWeight="Bold" FontSize="14"
+                                           Foreground="{DynamicResource AccentColor}"
+                                           HorizontalAlignment="Right" />
+                            </StackPanel>
+
+                            <Border Grid.Column="2"
+                                    CornerRadius="12" Padding="8,4" Margin="10,0,0,0"
+                                    VerticalAlignment="Center">
+                                <Border.Background>
+                                    <SolidColorBrush Color="{Binding IsCompleted, Converter={x:Static converters:BountyRunStatusColorConverter.Instance}}" />
+                                </Border.Background>
+                                <TextBlock Text="{Binding IsCompleted, Converter={x:Static converters:BountyRunStatusTextConverter.Instance}}"
+                                           FontSize="10" FontWeight="Bold"
+                                           Foreground="White" />
+                            </Border>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Systems Section -->
+        <TextBlock Text="Systems" FontSize="20" Margin="5 0" FontWeight="Bold" />
+        <ContentControl IsVisible="{Binding EveSystemCollection.Count, Converter={StaticResource ZeroToVisibleConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                <TextBlock Text="No active bounty in systems" FontSize="16" Foreground="Gray" HorizontalAlignment="Center" />
+                <TextBlock Text="When you receive bounty in known systems, you'll see it here." FontSize="12" Foreground="DarkGray" HorizontalAlignment="Center" />
+            </StackPanel>
+        </ContentControl>
+        <ItemsControl ItemsSource="{Binding EveSystemCollection}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="3" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="models:EveSystem">
+                    <Border BorderBrush="#cccccc" BorderThickness="1" Padding="5" Margin="5">
+                        <StackPanel>
+                            <TextBlock>
+                                <Run Text="{Binding EveSystemDto.Name}" />
+                                <Run Text=" (" />
+                                <Run Text="{Binding EveSystemDto.SecurityStatus, StringFormat={}{0:F1}}"
+                                     Foreground="{Binding EveSystemDto.SecurityColorHex, Converter={StaticResource HexColorToBrushConverter}}" />
+                                <Run Text=")" />
+                            </TextBlock>
+                            <TextBlock Text="Bounty:" />
+                            <TextBlock Text="{Binding Bounty, Converter={StaticResource BountyConverter}, FallbackValue=0}"
+                                       Foreground="{DynamicResource AccentColor}" FontWeight="Bold" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </StackPanel>
+</UserControl>

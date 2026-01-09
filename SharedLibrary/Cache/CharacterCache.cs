@@ -62,8 +62,7 @@ public class CharacterCache
     public void SaveChanges()
     {
         var characterDtos =  _context.Characters.ToList();
-        
-        
+
         foreach (var character in _characters.Values)
         {
             var existingCharacterDto = characterDtos.FirstOrDefault(c => c.CharacterId == character.CharacterId);
@@ -74,7 +73,7 @@ public class CharacterCache
                 _context.Add(characterDto);
             }
         }
-        
+
         _context.SaveChanges();
     }
 }

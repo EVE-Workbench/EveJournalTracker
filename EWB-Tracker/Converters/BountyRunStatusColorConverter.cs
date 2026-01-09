@@ -1,23 +1,21 @@
-﻿using System.Globalization;
+using System;
+using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace SharedLibrary.Converters;
+namespace EWB_Tracker.Converters;
 
 public class BountyRunStatusColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if ((bool)value)
+        if (value is bool isCompleted)
         {
-            // Green for completed
-            return new SolidColorBrush(Color.FromRgb(40, 167, 69));
+            return isCompleted
+                ? new SolidColorBrush(Color.FromRgb(40, 167, 69))   // Green for completed
+                : new SolidColorBrush(Color.FromRgb(0, 120, 160));  // Blue for active
         }
-        else
-        {
-            // Orange for active
-            return new SolidColorBrush(Color.FromRgb(255, 193, 7));
-        }
+        return new SolidColorBrush(Colors.Gray);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

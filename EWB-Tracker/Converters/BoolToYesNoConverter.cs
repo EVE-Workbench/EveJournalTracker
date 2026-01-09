@@ -1,7 +1,8 @@
-﻿using System.Globalization;
+using System;
+using System.Globalization;
 using System.Windows.Data;
 
-namespace SharedLibrary.Converters;
+namespace EWB_Tracker.Converters;
 
 public class BoolToYesNoConverter : IValueConverter
 {
@@ -11,7 +12,6 @@ public class BoolToYesNoConverter : IValueConverter
         {
             return boolValue ? "Yes" : "No";
         }
-            
         return "No";
     }
 
@@ -21,7 +21,6 @@ public class BoolToYesNoConverter : IValueConverter
         {
             return stringValue.Equals("Yes", StringComparison.OrdinalIgnoreCase);
         }
-            
         return false;
     }
 }

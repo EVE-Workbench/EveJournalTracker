@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:UI.avalonia.Converters"
+             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             mc:Ignorable="d"
+             x:Class="UI.avalonia.Views.Components.CharacterAvatarControl"
+             x:Name="Root">
+
+    <Panel Width="{Binding #Root.AvatarSize}"
+           Height="{Binding #Root.AvatarSize}"
+           Margin="{Binding #Root.AvatarMargin}">
+        <!-- Colored border ring for online status -->
+        <Ellipse StrokeThickness="2" Fill="Transparent">
+            <Ellipse.Stroke>
+                <SolidColorBrush Color="{Binding #Root.Character.Online, Mode=OneWay, Converter={x:Static converters:OnlineStatusToColorConverter.Instance}}" />
+            </Ellipse.Stroke>
+        </Ellipse>
+
+        <!-- White background circle -->
+        <Ellipse Fill="White" Margin="2" />
+
+        <!-- Character avatar image with clipping -->
+        <Panel Margin="2" ClipToBounds="True">
+            <Panel.Clip>
+                <EllipseGeometry Center="{Binding #Root.CenterPoint}"
+                                 RadiusX="{Binding #Root.CircleRadius}"
+                                 RadiusY="{Binding #Root.CircleRadius}" />
+            </Panel.Clip>
+            <Image asyncImageLoader:ImageLoader.Source="{Binding #Root.Character.ImageUrl}"
+                   Width="{Binding #Root.InnerSize}"
+                   Height="{Binding #Root.InnerSize}"
+                   Stretch="UniformToFill" />
+        </Panel>
+    </Panel>
+</UserControl>

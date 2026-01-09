@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using SharedLibrary.Cache;
 
 namespace SharedLibrary.Services;
@@ -28,7 +27,7 @@ public class BackgroundSaveService : BackgroundService
             {
                 Console.WriteLine($"Error saving changes: {ex.Message}");
             }
-            
+
             await Task.Delay(_interval, stoppingToken);
         }
     }

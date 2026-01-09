@@ -1,4 +1,7 @@
-﻿namespace SharedLibrary.Services;
+﻿using System;
+using System.Threading.Tasks;
+
+namespace SharedLibrary.Services;
 
 public class ClipboardHandlerService
     {

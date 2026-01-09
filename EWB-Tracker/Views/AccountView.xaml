@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:components="clr-namespace:EWB_Tracker.Views.Components"
              xmlns:models="clr-namespace:SharedLibrary.Models;assembly=SharedLibrary"
-             xmlns:converters="clr-namespace:SharedLibrary.Converters;assembly=SharedLibrary"
+             xmlns:converters="clr-namespace:EWB_Tracker.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 

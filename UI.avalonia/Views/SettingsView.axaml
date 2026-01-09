@@ -1,0 +1,229 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:UI.avalonia.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="500" d:DesignWidth="500"
+             x:Class="UI.avalonia.Views.SettingsView"
+             Background="Transparent">
+
+    <UserControl.Resources>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Settings"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource TextColor}"
+                       Margin="0,0,0,5" />
+            <TextBlock Text="Configure your EVE Workbench Desktop Agent settings"
+                       FontSize="12"
+                       Foreground="Gray" />
+        </StackPanel>
+
+        <!-- Settings Form -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Agent Settings Section -->
+                <Border Background="{DynamicResource PanelBackground}"
+                        BorderBrush="{DynamicResource WindowBorder}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="15"
+                        Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="📂 Agent Settings"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextColor}"
+                                   Margin="0,0,0,10" />
+
+                        <TextBlock Text="Log location:"
+                                   FontSize="14"
+                                   Margin="0,0,0,5"
+                                   Foreground="{DynamicResource TextColor}" />
+
+                        <TextBox Text="{Binding LogDir}"
+                                 FontSize="14"
+                                 Padding="7"
+                                 Margin="0,0,0,5"
+                                 Background="{DynamicResource WindowBackground}"
+                                 Foreground="{DynamicResource TextColor}"
+                                 BorderBrush="{DynamicResource WindowBorder}"
+                                 IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}" />
+
+                        <TextBlock Text="When changing the log location, please restart the application to apply changes"
+                                   FontSize="10"
+                                   Foreground="Gray"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <!-- API Configuration Section -->
+                <Border Background="{DynamicResource PanelBackground}"
+                        BorderBrush="{DynamicResource WindowBorder}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="15"
+                        Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="🔐 API Configuration"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextColor}"
+                                   Margin="0,0,0,10" />
+
+                        <TextBlock FontSize="14"
+                                   Margin="0,0,0,5"
+                                   Foreground="{DynamicResource TextColor}">
+                            <Run Text="EWB Personal Access Token: " />
+                            <Run Text="(open Access Tokens request page in browser)"
+                                 TextDecorations="Underline" />
+                        </TextBlock>
+
+                        <TextBox Text="{Binding ApiKey}"
+                                 FontSize="14"
+                                 Padding="7"
+                                 Margin="0,0,0,5"
+                                 Background="{DynamicResource WindowBackground}"
+                                 Foreground="{DynamicResource TextColor}"
+                                 BorderBrush="{DynamicResource WindowBorder}"
+                                 PasswordChar="*"
+                                 IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}" />
+
+                        <TextBlock Text="Enter your Eve Workbench Personal Access Token to enable website integration."
+                                   FontSize="10"
+                                   Foreground="Gray"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Bounty Configuration Section -->
+                <Border Background="{DynamicResource PanelBackground}"
+                        BorderBrush="{DynamicResource WindowBorder}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="15"
+                        Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="💰 Bounty Configuration"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextColor}"
+                                   Margin="0,0,0,15" />
+
+                        <CheckBox Content="Force all bounty to one character"
+                                  IsChecked="{Binding ForceBountyToOneUser}"
+                                  FontSize="14"
+                                  Margin="0,0,0,15"
+                                  Foreground="{DynamicResource TextColor}"
+                                  IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}" />
+
+                        <TextBlock Text="Select Character:"
+                                   FontSize="14"
+                                   Margin="0,0,0,5"
+                                   Foreground="{DynamicResource TextColor}"
+                                   IsVisible="{Binding ForceBountyToOneUser, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <ComboBox ItemsSource="{Binding Characters}"
+                                  SelectedItem="{Binding SelectedCharacter}"
+                                  FontSize="14"
+                                  Padding="10"
+                                  Height="35"
+                                  Margin="0,0,0,5"
+                                  Background="{DynamicResource WindowBackground}"
+                                  Foreground="{DynamicResource TextColor}"
+                                  BorderBrush="{DynamicResource WindowBorder}"
+                                  IsVisible="{Binding ForceBountyToOneUser, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                        <TextBlock Text=" - " Foreground="Gray" />
+                                        <TextBlock Text="{Binding Corporation}" Foreground="Gray" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <TextBlock Text="When enabled, all bounty tracking will be attributed to the selected character regardless of which character actually earned it"
+                                   FontSize="10"
+                                   Foreground="Gray"
+                                   TextWrapping="Wrap"
+                                   IsVisible="{Binding ForceBountyToOneUser, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Loading Indicator -->
+                <Border Background="{DynamicResource PanelBackground}"
+                        BorderBrush="Orange"
+                        BorderThickness="2"
+                        CornerRadius="8"
+                        Padding="15"
+                        IsVisible="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="⟳" FontSize="16" Foreground="Orange">
+                            <TextBlock.RenderTransform>
+                                <RotateTransform Angle="0" />
+                            </TextBlock.RenderTransform>
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:1" IterationCount="Infinite">
+                                            <KeyFrame Cue="0%">
+                                                <Setter Property="(RotateTransform.Angle)" Value="0" />
+                                            </KeyFrame>
+                                            <KeyFrame Cue="100%">
+                                                <Setter Property="(RotateTransform.Angle)" Value="360" />
+                                            </KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                            </TextBlock.Styles>
+                        </TextBlock>
+                        <TextBlock Text=" Loading..." FontSize="14" Foreground="Orange" Margin="5,0,0,0" />
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Action Buttons -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource PanelBackground}"
+                BorderBrush="{DynamicResource WindowBorder}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,10,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+                <Button Content="🔄 Refresh"
+                        Command="{Binding LoadCommand}"
+                        Margin="0,0,10,0"
+                        Padding="15,8"
+                        ToolTip.Tip="Reload settings from database" />
+
+                <Button Content="💾 Save Settings"
+                        Command="{Binding SaveCommand}"
+                        Background="{DynamicResource CtaColor}"
+                        Padding="20,8"
+                        ToolTip.Tip="Save all settings to database" />
+
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</UserControl>

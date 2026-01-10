@@ -67,6 +67,7 @@ public partial class App : Application
                 services.AddTransient<EwbApiClientService>();
                 services.AddTransient<StartupService>();
                 services.AddTransient<CharacterService>();
+                services.AddSingleton<UI.avalonia.Services.GlobalHotkeyService>();
                 #endregion
 
                 #region ViewModels

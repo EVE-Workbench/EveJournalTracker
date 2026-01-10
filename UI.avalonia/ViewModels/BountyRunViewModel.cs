@@ -54,21 +54,10 @@ public class BountyRunViewModel : INotifyPropertyChanged
 
         // Get MainWindowViewModel and set current run
         var mainViewModel = _serviceProvider.GetService<MainWindowViewModel>();
-        // DEBUG: Check if we got the ViewModel
         if (mainViewModel == null)
-        {
-            System.Diagnostics.Debug.WriteLine("❌ MainWindowViewModel is null!");
             return;
-        }
-
-        System.Diagnostics.Debug.WriteLine($"✅ Adding bounty run: {bountyRun.Name}");
-        System.Diagnostics.Debug.WriteLine($"✅ BountyRuns count before: {mainViewModel.BountyRuns.Count}");
 
         mainViewModel.SetCurrentBountyRun(bountyRun);
-
-        System.Diagnostics.Debug.WriteLine($"✅ BountyRuns count after: {mainViewModel.BountyRuns.Count}");
-        System.Diagnostics.Debug.WriteLine($"✅ IsBountyRunActive: {mainViewModel.IsBountyRunActive}");
-
         OnRunStarted?.Invoke();
     }
 

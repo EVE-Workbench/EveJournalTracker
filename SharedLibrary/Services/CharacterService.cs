@@ -120,17 +120,14 @@ public class CharacterService
             if (body != null)
                 request.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
-            Console.WriteLine($"Request: {method} {endpoint}");
-
             var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
             return JsonDocument.Parse(responseString);
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Request error: {ex.Message}");
             return null;
         }
     }

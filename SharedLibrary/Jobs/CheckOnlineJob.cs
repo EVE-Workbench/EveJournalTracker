@@ -57,31 +57,30 @@ public class CheckOnlineJob
 
             var allCharacters = _characterCache.GetAllCharacters();
 
-            // loop through all online characters and check if they exist in the cache
-            if (onlineCharacterNames.Count > 0)
-            {
-                foreach (var onlineChar in onlineCharacterNames)
-                {
-                    if (allCharacters.Any(x => x.Name == onlineChar))
-                    {
-                        // Character already exists in cache, no need to fetch again
-                        continue;
-                    }
-
-                    var charId = _characterService.GetCharacterIdAsync(onlineChar).GetAwaiter().GetResult();
-                    if(charId == null) continue;
-
-                    _characterService.GetOrCreateCharacter((int)charId);
-                }
-            }
-
-            allCharacters = _characterCache.GetAllCharacters();
-
             // check for each character in the cache
             foreach (var character in allCharacters)
             {
                 var characterForUpdate = _characterCache.GetCharacter(character.CharacterId);
                 if (characterForUpdate == null) continue;
+
+                // Retry fetching character name if it's still using the fallback name
+                if (characterForUpdate.Name.StartsWith("Char-") &&
+                    int.TryParse(characterForUpdate.Name.Substring(5), out var charIdFromName) &&
+                    charIdFromName == characterForUpdate.CharacterId)
+                {
+                    try
+                    {
+                        var realName = _characterService.GetCharacterNameAsync(characterForUpdate.CharacterId).GetAwaiter().GetResult();
+                        if (!string.IsNullOrEmpty(realName))
+                        {
+                            characterForUpdate.Name = realName;
+                        }
+                    }
+                    catch
+                    {
+                        // Silently continue if name fetch fails - will retry next time
+                    }
+                }
 
                 var wasOnline = characterForUpdate.Online;
                 var isOnline = onlineCharacterNames.Contains(character.Name);

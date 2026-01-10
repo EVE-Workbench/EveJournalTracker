@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using SharedLibrary.Services;
 using UI.avalonia.ViewModels;
+using UI.avalonia.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,15 +13,17 @@ namespace UI.avalonia.Views
     public partial class MainWindow : Window
     {
         private readonly FileWatcherService _fileWatcherService;
+        private readonly GlobalHotkeyService _globalHotkeyService;
         private bool _isWatching = true;
         private readonly IServiceProvider _serviceProvider;
 
-        public MainWindow(MainWindowViewModel viewModel, FileWatcherService fileWatcherService, IServiceProvider serviceProvider)
+        public MainWindow(MainWindowViewModel viewModel, FileWatcherService fileWatcherService, GlobalHotkeyService globalHotkeyService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
             DataContext = viewModel;
 
             _fileWatcherService = fileWatcherService;
+            _globalHotkeyService = globalHotkeyService;
             _serviceProvider = serviceProvider;
             viewModel.CurrentView = _serviceProvider.GetService<DefaultView>();
 
@@ -29,13 +32,103 @@ namespace UI.avalonia.Views
                 viewModel.UpdateCurrentBountyRunIsk(e.ISKChange, e.Character);
             };
 
-            Opened += (s, e) => _fileWatcherService.StartWatching();
+            Opened += (s, e) =>
+            {
+                _fileWatcherService.StartWatching();
+                InitializeGlobalHotkeys();
+            };
+
             Closing += (s, e) =>
             {
                 _fileWatcherService.StopWatching();
+                _globalHotkeyService.Dispose();
                 // Call the app shutdown method
                 (App.Current as App)?.Shutdown();
             };
+
+            // Keep local keyboard event handler as fallback
+            KeyDown += Window_KeyDown;
+        }
+
+        private void InitializeGlobalHotkeys()
+        {
+            try
+            {
+                // Initialize the global hotkey service with this window
+                _globalHotkeyService.Initialize(this);
+
+                // Register hotkeys
+                _globalHotkeyService.RegisterHotkey("NewBountyRun",
+                    GlobalHotkeyService.ModifierKeys.Control | GlobalHotkeyService.ModifierKeys.Shift,
+                    Key.N);
+
+                _globalHotkeyService.RegisterHotkey("OpenJournal",
+                    GlobalHotkeyService.ModifierKeys.Control | GlobalHotkeyService.ModifierKeys.Shift,
+                    Key.J);
+
+                // Subscribe to hotkey events
+                _globalHotkeyService.HotkeyPressed += OnGlobalHotkeyPressed;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error initializing global hotkeys: {ex.Message}");
+            }
+        }
+
+        private void OnGlobalHotkeyPressed(int hotkeyId, string hotkeyName)
+        {
+            // Execute on UI thread
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                switch (hotkeyName)
+                {
+                    case "NewBountyRun":
+                        // Start new bounty run directly without modal
+                        StartNewBountyRunDirect();
+                        break;
+
+                    case "OpenJournal":
+                        OpenEveJournal_Click(this, new RoutedEventArgs());
+                        break;
+                }
+            });
+        }
+
+        private void StartNewBountyRunDirect()
+        {
+            var mainViewModel = (MainWindowViewModel)DataContext;
+
+            // Generate default name with current time
+            var runCount = mainViewModel.BountyRuns.Count + 1;
+            var currentTime = DateTime.Now.ToString("h:mm tt");
+            var runName = $"Run #{runCount}, {currentTime}";
+
+            var bountyRun = new SharedLibrary.Models.BountyRun
+            {
+                Id = DateTime.Now.Ticks.GetHashCode(),
+                Name = runName,
+                StartTime = DateTime.Now,
+                TotalIsk = 0,
+                IsCompleted = false
+            };
+
+            mainViewModel.SetCurrentBountyRun(bountyRun);
+        }
+
+        private void Window_KeyDown(object? sender, KeyEventArgs e)
+        {
+            // Check for Ctrl+Shift+N (Start new bounty run)
+            if (e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift) && e.Key == Key.N)
+            {
+                e.Handled = true;
+                StartNewBountyRunDirect();
+            }
+            // Check for Ctrl+Shift+J (Open EVE Journal)
+            else if (e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift) && e.Key == Key.J)
+            {
+                e.Handled = true;
+                OpenEveJournal_Click(this, new RoutedEventArgs());
+            }
         }
 
         public void CloseModal()

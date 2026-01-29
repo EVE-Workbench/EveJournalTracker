@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Timers;
 using SharedLibrary.Cache;
 using SharedLibrary.Events;
@@ -7,13 +9,17 @@ using Timer = System.Timers.Timer;
 
 namespace SharedLibrary.Jobs;
 
-public class CheckOnlineJob
+public partial class CheckOnlineJob
 {
     private readonly Timer _timer;
     private readonly CharacterCache _characterCache;
     private readonly CharacterService _characterService;
     private bool _isChecking = false;
+    private static readonly bool IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
     public event EventHandler<CharacterStatusChangedEventArgs>? CharacterStatusChanged;
+
+    [GeneratedRegex(@"/autoSelectCharacter:(\d+)", RegexOptions.IgnoreCase)]
+    private static partial Regex AutoSelectCharacterRegex();
 
     public CheckOnlineJob(double interval, CharacterCache characterCache, CharacterService characterService)
     {
@@ -45,15 +51,21 @@ public class CheckOnlineJob
         {
             _isChecking = true;
 
-            // Fetch all processes with a main window title that starts with "EVE -"
-            var processes = Process.GetProcesses()
-                .Where(p => !string.IsNullOrWhiteSpace(p.MainWindowTitle) &&
-                            p.MainWindowTitle.StartsWith("EVE -", StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            HashSet<int> onlineCharacterIds;
+            HashSet<string> onlineCharacterNames;
 
-            var onlineCharacterNames = processes
-                .Select(p => p.MainWindowTitle.Split('-')[1].Trim())
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (IsLinux)
+            {
+                // On Linux (Wine/Proton), parse command line for /autoSelectCharacter:<id>
+                onlineCharacterIds = GetOnlineCharacterIdsFromLinux();
+                onlineCharacterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                // On Windows, use MainWindowTitle "EVE - CharacterName"
+                onlineCharacterIds = new HashSet<int>();
+                onlineCharacterNames = GetOnlineCharacterNamesFromWindows();
+            }
 
             var allCharacters = _characterCache.GetAllCharacters();
 
@@ -83,7 +95,16 @@ public class CheckOnlineJob
                 }
 
                 var wasOnline = characterForUpdate.Online;
-                var isOnline = onlineCharacterNames.Contains(character.Name);
+                bool isOnline;
+
+                if (IsLinux)
+                {
+                    isOnline = onlineCharacterIds.Contains(character.CharacterId);
+                }
+                else
+                {
+                    isOnline = onlineCharacterNames.Contains(character.Name);
+                }
 
                 if (wasOnline != isOnline)
                 {
@@ -102,5 +123,60 @@ public class CheckOnlineJob
         {
             _isChecking = false;
         }
+    }
+
+    private static HashSet<string> GetOnlineCharacterNamesFromWindows()
+    {
+        var processes = Process.GetProcesses()
+            .Where(p => !string.IsNullOrWhiteSpace(p.MainWindowTitle) &&
+                        p.MainWindowTitle.StartsWith("EVE -", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        return processes
+            .Select(p => p.MainWindowTitle.Split('-')[1].Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static HashSet<int> GetOnlineCharacterIdsFromLinux()
+    {
+        var characterIds = new HashSet<int>();
+
+        try
+        {
+            // Read all process command lines from /proc
+            var procDirs = Directory.GetDirectories("/proc")
+                .Where(d => int.TryParse(Path.GetFileName(d), out _));
+
+            foreach (var procDir in procDirs)
+            {
+                try
+                {
+                    var cmdlinePath = Path.Combine(procDir, "cmdline");
+                    if (!File.Exists(cmdlinePath)) continue;
+
+                    var cmdline = File.ReadAllText(cmdlinePath);
+
+                    // Check if this is an EVE process (exefile.exe)
+                    if (!cmdline.Contains("exefile.exe", StringComparison.OrdinalIgnoreCase)) continue;
+
+                    // Extract character ID from /autoSelectCharacter:<id>
+                    var match = AutoSelectCharacterRegex().Match(cmdline);
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out var characterId))
+                    {
+                        characterIds.Add(characterId);
+                    }
+                }
+                catch
+                {
+                    // Skip processes we can't read (permission denied, process exited, etc.)
+                }
+            }
+        }
+        catch
+        {
+            // If we can't read /proc at all, return empty set
+        }
+
+        return characterIds;
     }
 }

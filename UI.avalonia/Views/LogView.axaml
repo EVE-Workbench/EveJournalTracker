@@ -10,6 +10,8 @@
 
     <UserControl.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
+        <converters:LogEventTypeToBrushConverter x:Key="LogEventTypeToBrushConverter" />
+        <converters:LogEventSummaryConverter x:Key="LogEventSummaryConverter" />
     </UserControl.Resources>
 
     <Grid>
@@ -18,27 +20,30 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Header met buttons -->
-        <StackPanel Grid.Row="0" Margin="10 0 0 0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Event logs" FontSize="20" FontWeight="Bold"
-                           Grid.Column="0" VerticalAlignment="Center"
-                           Foreground="{DynamicResource TextColor}" />
+        <!-- Header met icon group -->
+        <Grid Grid.Row="0" Margin="10,4,10,4" ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Text="Event logs" FontSize="20" FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextColor}" />
 
-                <Button Grid.Column="1" Content="📂" ToolTip.Tip="Import" Margin="5,0" VerticalAlignment="Center"
-                        Command="{Binding ImportLogEventsCommand}" />
-                <Button Grid.Column="2" Content="🧹" ToolTip.Tip="Clear log" Margin="5,0" VerticalAlignment="Center"
-                        Command="{Binding ClearLogEventsCommand}" />
-                <Button Grid.Column="3" Content="🔃" ToolTip.Tip="Sort" Margin="5,0 0 0" VerticalAlignment="Center"
-                        Command="{Binding SortLogEventsCommand}" />
-            </Grid>
-        </StackPanel>
+            <Border Grid.Column="1" Background="{DynamicResource WindowBackground}"
+                    CornerRadius="4" Padding="2" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <Button Classes="IconBtn" ToolTip.Tip="Load the full session"
+                            Command="{Binding ImportLogEventsCommand}">
+                        <PathIcon Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                    </Button>
+                    <Button Classes="IconBtn" ToolTip.Tip="Clear the log"
+                            Command="{Binding ClearLogEventsCommand}">
+                        <PathIcon Data="M6 19c0 1.1 0.9 2 2 2h8c1.1 0 2-0.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                    </Button>
+                    <Button Classes="IconBtn" ToolTip.Tip="Toggle sort order (newest/oldest first)"
+                            Command="{Binding SortLogEventsCommand}">
+                        <PathIcon Data="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" />
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
 
         <!-- ListBox met Event Logs -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
@@ -50,24 +55,43 @@
                      Background="{DynamicResource PanelBackground}"
                      Foreground="{DynamicResource TextColor}"
                      BorderBrush="Transparent">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Padding" Value="6,0" />
+                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="MinHeight" Value="0" />
+                    </Style>
+                </ListBox.Styles>
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="models:LogEvent">
-                        <StackPanel>
-                            <TextBlock Foreground="{DynamicResource TextColor}">
-                                <Run Text="{Binding Timestamp}" />
-                                <Run Text=" - " />
-                                <Run Text="{Binding Character.Name}" />
-                                <Run Text=" - " />
-                                <Run Text="{Binding Type}" />
-                                <Run Text=" - " />
-                                <Run Text="{Binding Value}" />
-                                <Run Text=" - " />
-                                <Run Text="{Binding DamageType}" />
-                                <Run Text=" - " />
-                                <Run Text="{Binding DamageQuality}" />
-                                <Run Text="{Binding BountyValue, Converter={StaticResource BountyConverter}}" />
-                            </TextBlock>
-                        </StackPanel>
+                        <Grid ColumnDefinitions="Auto,52,Auto,*" Margin="0,1">
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
+                                       FontFamily="Consolas,monospace" FontSize="11"
+                                       Foreground="#7A7A7A" VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+
+                            <Border Grid.Column="1"
+                                    Background="{Binding Type, Converter={StaticResource LogEventTypeToBrushConverter}}"
+                                    CornerRadius="2" Height="15" Margin="0,0,8,0"
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                <TextBlock Text="{Binding Type}" FontSize="9" FontWeight="SemiBold"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding Character.Name}"
+                                       FontSize="11" Foreground="#9AA0A6" VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+
+                            <TextBlock Grid.Column="3"
+                                       Text="{Binding Converter={StaticResource LogEventSummaryConverter}}"
+                                       FontFamily="Consolas,monospace" FontSize="11"
+                                       Foreground="{DynamicResource TextColor}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

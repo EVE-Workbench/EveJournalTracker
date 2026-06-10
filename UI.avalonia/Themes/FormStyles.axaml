@@ -66,6 +66,33 @@
         <Setter Property="Background" Value="{DynamicResource PanelBackground}" />
     </Style>
 
+    <!-- Compact monochrome icon buttons (e.g. the log viewer toolbar) -->
+    <Style Selector="Button.IconBtn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.IconBtn:pointerover">
+        <Setter Property="Background" Value="{DynamicResource ButtonHoverBackground}" />
+    </Style>
+
+    <Style Selector="Button.IconBtn:pressed">
+        <Setter Property="Background" Value="{DynamicResource ButtonClickBackground}" />
+    </Style>
+
+    <Style Selector="Button.IconBtn PathIcon">
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}" />
+        <Setter Property="Width" Value="15" />
+        <Setter Property="Height" Value="15" />
+    </Style>
+
     <!-- ToggleSwitch Style for Show Offline Characters -->
     <Style Selector="ToggleSwitch">
         <Setter Property="MinWidth" Value="50" />

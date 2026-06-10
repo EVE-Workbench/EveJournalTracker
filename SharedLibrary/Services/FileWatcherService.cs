@@ -363,7 +363,14 @@ public class FileWatcherService : IDisposable
             return logEvent;
         }
 
-        return null;
+        // Anything we don't specifically parse is still kept so it shows up in the log
+        // viewer (handy for spotting useful information we don't extract yet).
+        if (string.IsNullOrWhiteSpace(line))
+            return null;
+
+        logEvent.Type = LogEventType.Other;
+        logEvent.Value = line;
+        return logEvent;
     }
 
     private IskUpdate BuildIskUpdate(LogEvent bountyEvent, Character character)

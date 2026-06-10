@@ -1,4 +1,4 @@
-﻿name: Build and Release
+name: Build and Release
 
 on:
   push:
@@ -7,23 +7,26 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'tagname e.g. v1.2.3'
+        description: 'tag name e.g. v1.2.3'
         required: true
 
 permissions:
   contents: write
 
+env:
+  DOTNET_VERSION: '9.0.x'
+  CONFIGURATION: Release
+  # The Avalonia client is the cross-platform app shipped on every OS (the legacy WPF
+  # project is being retired and is no longer built/released).
+  PROJECT_PATH: UI.avalonia/UI.avalonia.csproj
+  APP_NAME: EWBAgent
+
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     env:
-      CONFIGURATION: Release
       RUNTIME_ID: win-x64
-      SOLUTION_PATH: EWB-Tracker-v2.sln
-      PROJECT_PATH: EWB-Tracker/EWB-Tracker.csproj
-      OUTPUT_DIR: publish\win-x64
-      ZIP_NAME: EWBAgent-win-x64.zip
-
+      OUTPUT_DIR: publish/win-x64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,87 +34,145 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
-          cache: false
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dependencies
-        run: dotnet restore $env:SOLUTION_PATH
-
-      - name: Publish WPF (self-contained, single file)
+      - name: Publish (self-contained, single file)
         run: >
-          dotnet publish $env:PROJECT_PATH
-          -c $env:CONFIGURATION
-          -r $env:RUNTIME_ID
+          dotnet publish ${{ env.PROJECT_PATH }}
+          -c ${{ env.CONFIGURATION }}
+          -r ${{ env.RUNTIME_ID }}
           --self-contained true
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
-          -p:EnableWindowsTargeting=true
-          -o $env:OUTPUT_DIR
+          -p:DebugType=none
+          -o ${{ env.OUTPUT_DIR }}
+
+      - name: Rename app host
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:OUTPUT_DIR 'UI.avalonia.exe'
+          if (Test-Path $exe) { Rename-Item $exe "$env:APP_NAME.exe" }
 
       - name: Create ZIP
         shell: pwsh
-        run: |
-          if (Test-Path $env:ZIP_NAME) { Remove-Item $env:ZIP_NAME -Force }
-          Compress-Archive -Path "$env:OUTPUT_DIR\*" -DestinationPath "$env:ZIP_NAME"
+        run: Compress-Archive -Path "$env:OUTPUT_DIR/*" -DestinationPath "$env:APP_NAME-win-x64.zip" -Force
 
-      - name: Upload build artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: EWBAgent-win-x64
-          path: ${{ env.ZIP_NAME }}
+          name: windows
+          path: ${{ env.APP_NAME }}-win-x64.zip
 
-  release:
-    needs: build
-    runs-on: windows-latest
+  build-linux:
+    runs-on: ubuntu-latest
     env:
-      ZIP_NAME: EWBAgent-win-x64.zip
-
+      RUNTIME_ID: linux-x64
+      OUTPUT_DIR: publish/linux-x64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download artifact
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish (self-contained, single file)
+        run: >
+          dotnet publish ${{ env.PROJECT_PATH }}
+          -c ${{ env.CONFIGURATION }}
+          -r ${{ env.RUNTIME_ID }}
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=none
+          -o ${{ env.OUTPUT_DIR }}
+
+      - name: Rename app host
+        run: |
+          if [ -f "$OUTPUT_DIR/UI.avalonia" ]; then
+            mv "$OUTPUT_DIR/UI.avalonia" "$OUTPUT_DIR/$APP_NAME"
+          fi
+          chmod +x "$OUTPUT_DIR/$APP_NAME"
+
+      - name: Create tarball
+        run: tar -czf "$APP_NAME-linux-x64.tar.gz" -C "$OUTPUT_DIR" .
+
+      - name: Build AppImage
+        run: |
+          set -e
+          APPDIR=AppDir
+          mkdir -p "$APPDIR/usr/bin"
+          cp -r "$OUTPUT_DIR"/. "$APPDIR/usr/bin/"
+
+          cp UI.avalonia/Assets/eveworkbench-logo.png "$APPDIR/ewbagent.png"
+
+          cat > "$APPDIR/ewbagent.desktop" <<EOF
+          [Desktop Entry]
+          Type=Application
+          Name=EVE Workbench Agent
+          Comment=Companion app for the EVE Journal (bounty and game-log tracking)
+          Exec=$APP_NAME
+          Icon=ewbagent
+          Categories=Utility;Game;
+          Terminal=false
+          EOF
+
+          cat > "$APPDIR/AppRun" <<EOF
+          #!/bin/sh
+          HERE="\$(dirname "\$(readlink -f "\$0")")"
+          exec "\$HERE/usr/bin/$APP_NAME" "\$@"
+          EOF
+          chmod +x "$APPDIR/AppRun"
+
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run "$APPDIR" "$APP_NAME-x86_64.AppImage"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            ${{ env.APP_NAME }}-linux-x64.tar.gz
+            ${{ env.APP_NAME }}-x86_64.AppImage
+
+  release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: EWBAgent-win-x64
           path: dist
+          merge-multiple: true
 
       - name: Determine tag
         id: vars
-        shell: pwsh
         run: |
-          if ("${{ github.ref_type }}" -eq "tag") {
-            $tag = "${{ github.ref_name }}"
-          } elseif ("${{ github.event.inputs.version }}") {
-            $tag = "${{ github.event.inputs.version }}"
-          } else {
-            $tag = "v0.0.0-untagged-${{ github.run_number }}"
-          }
-          echo "tag_name=$tag" >> $env:GITHUB_OUTPUT
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            TAG="${{ github.event.inputs.version }}"
+          else
+            TAG="v0.0.0-untagged-${{ github.run_number }}"
+          fi
+          echo "tag_name=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Prepare release notes from CHANGELOG.md
-        id: notes
-        shell: pwsh
+      - name: Extract release notes from CHANGELOG.md
         run: |
-          $tag = "${{ steps.vars.outputs.tag_name }}"
-          $notesFile = "RELEASE_NOTES.md"
-
-          "" | Out-File -Encoding UTF8 $notesFile
-
-          if (Test-Path "CHANGELOG.md") {
-            $content = Get-Content CHANGELOG.md -Raw
-
-            $escaped = [Regex]::Escape($tag)
-            $pattern = "^##\s+$escaped[^\r\n]*\r?\n(.*?)(?=^##\s+|\Z)"
-
-            $options = [System.Text.RegularExpressions.RegexOptions]::Singleline -bor `
-                       [System.Text.RegularExpressions.RegexOptions]::Multiline
-
-            $m = [regex]::Match($content, $pattern, $options)
-            if ($m.Success) {
-              $m.Groups[1].Value.Trim() | Out-File -Encoding UTF8 $notesFile
-            }
-          }
+          TAG="${{ steps.vars.outputs.tag_name }}"
+          : > RELEASE_NOTES.md
+          if [ -f CHANGELOG.md ]; then
+            awk -v tag="$TAG" '
+              index($0, "## ") == 1 && index($0, tag) > 0 { flag=1; next }
+              flag && index($0, "## ") == 1 { flag=0 }
+              flag { print }
+            ' CHANGELOG.md > RELEASE_NOTES.md || true
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -121,4 +182,6 @@ jobs:
           body_path: RELEASE_NOTES.md
           generate_release_notes: true
           files: |
-            dist/${{ env.ZIP_NAME }}
+            dist/*.zip
+            dist/*.tar.gz
+            dist/*.AppImage

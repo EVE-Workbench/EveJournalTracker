@@ -15,16 +15,18 @@ namespace UI.avalonia.Views
     {
         private readonly FileWatcherService _fileWatcherService;
         private readonly GlobalHotkeyService _globalHotkeyService;
+        private readonly ShortcutService _shortcutService;
         private bool _isWatching = true;
         private readonly IServiceProvider _serviceProvider;
 
-        public MainWindow(MainWindowViewModel viewModel, FileWatcherService fileWatcherService, GlobalHotkeyService globalHotkeyService, IServiceProvider serviceProvider)
+        public MainWindow(MainWindowViewModel viewModel, FileWatcherService fileWatcherService, GlobalHotkeyService globalHotkeyService, ShortcutService shortcutService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
             DataContext = viewModel;
 
             _fileWatcherService = fileWatcherService;
             _globalHotkeyService = globalHotkeyService;
+            _shortcutService = shortcutService;
             _serviceProvider = serviceProvider;
             viewModel.CurrentView = _serviceProvider.GetService<DefaultView>();
 
@@ -36,7 +38,8 @@ namespace UI.avalonia.Views
             Opened += (s, e) =>
             {
                 _fileWatcherService.StartWatching();
-                InitializeGlobalHotkeys();
+                _globalHotkeyService.Initialize(this);
+                _shortcutService.RegisterGlobals();
             };
 
             Closing += (s, e) =>
@@ -46,52 +49,36 @@ namespace UI.avalonia.Views
                 (App.Current as App)?.Shutdown();
             };
 
-            // Keep local keyboard event handler as fallback
+            _shortcutService.Triggered += OnShortcutTriggered;
+
+            // In-app shortcuts: keyboard via KeyDown, mouse buttons via bubbling PointerPressed
+            // (bubble so the Settings capture handlers can intercept first while recording).
             KeyDown += Window_KeyDown;
+            AddHandler(PointerPressedEvent, OnWindowPointerPressed, RoutingStrategies.Bubble);
         }
 
-        private void InitializeGlobalHotkeys()
+        private void OnShortcutTriggered(string commandId)
         {
-            try
-            {
-                // Initialize the global hotkey service with this window
-                _globalHotkeyService.Initialize(this);
-
-                // Register hotkeys
-                _globalHotkeyService.RegisterHotkey("NewBountyRun",
-                    GlobalHotkeyService.ModifierKeys.Control | GlobalHotkeyService.ModifierKeys.Shift,
-                    Key.N);
-
-                _globalHotkeyService.RegisterHotkey("OpenJournal",
-                    GlobalHotkeyService.ModifierKeys.Control | GlobalHotkeyService.ModifierKeys.Shift,
-                    Key.J);
-
-                // Subscribe to hotkey events
-                _globalHotkeyService.HotkeyPressed += OnGlobalHotkeyPressed;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error initializing global hotkeys: {ex.Message}");
-            }
-        }
-
-        private void OnGlobalHotkeyPressed(int hotkeyId, string hotkeyName)
-        {
-            // Execute on UI thread
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                switch (hotkeyName)
+                switch (commandId)
                 {
-                    case "NewBountyRun":
-                        // Start new bounty run directly without modal
+                    case UI.avalonia.Input.ShortcutCommands.NewBountyRun:
                         StartNewBountyRunDirect();
                         break;
 
-                    case "OpenJournal":
+                    case UI.avalonia.Input.ShortcutCommands.OpenEveJournal:
                         OpenEveJournal_Click(this, new RoutedEventArgs());
                         break;
                 }
             });
+        }
+
+        private void OnWindowPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            var button = ShortcutService.ToMouseButton(e.GetCurrentPoint(this).Properties.PointerUpdateKind);
+            if (_shortcutService.HandlePointer(e.KeyModifiers, button))
+                e.Handled = true;
         }
 
         private void StartNewBountyRunDirect()
@@ -125,18 +112,8 @@ namespace UI.avalonia.Views
                 return;
             }
 
-            // Check for Ctrl+Shift+N (Start new bounty run)
-            if (e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift) && e.Key == Key.N)
-            {
+            if (_shortcutService.HandleKeyDown(e.KeyModifiers, e.Key))
                 e.Handled = true;
-                StartNewBountyRunDirect();
-            }
-            // Check for Ctrl+Shift+J (Open EVE Journal)
-            else if (e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift) && e.Key == Key.J)
-            {
-                e.Handled = true;
-                OpenEveJournal_Click(this, new RoutedEventArgs());
-            }
         }
 
         public void CloseModal()

@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Configurable shortcuts, managed from Settings: a list of available actions (start a bounty run, open EVE Journal) each with a **Record** button to bind your own combination, and a **Clear** button. Supports keyboard combos and mouse buttons (mouse 3/4/5), e.g. `Ctrl+Shift+Mouse4`. Keyboard shortcuts still work system-wide on Windows; mouse buttons work while the window is focused.
+
 ### Fixed
 - Fixed the security-status colour not showing next to a character's system in the character list
 

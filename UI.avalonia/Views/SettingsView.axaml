@@ -77,6 +77,66 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Shortcuts Section -->
+                <Border Background="{DynamicResource PanelBackground}"
+                        BorderBrush="{DynamicResource WindowBorder}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="15"
+                        Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="⌨ Shortcuts"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextColor}"
+                                   Margin="0,0,0,5" />
+                        <TextBlock Text="Click Record, then press a key combination or a mouse button (mouse 3/4/5). Press Esc to cancel."
+                                   FontSize="10"
+                                   Foreground="Gray"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,12" />
+
+                        <ItemsControl ItemsSource="{Binding Shortcuts}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,8" VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding DisplayName}"
+                                                       Foreground="{DynamicResource TextColor}" />
+                                            <TextBlock Text="{Binding GestureDisplay}"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource AccentColor}"
+                                                       IsVisible="{Binding IsRecording, Converter={StaticResource InverseBooleanConverter}}" />
+                                            <TextBlock Text="Press a key or mouse button…  (Esc to cancel)"
+                                                       FontSize="12"
+                                                       Foreground="Orange"
+                                                       IsVisible="{Binding IsRecording}" />
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1"
+                                                Content="Record"
+                                                Tag="{Binding CommandId}"
+                                                Click="OnRecordShortcut"
+                                                Padding="12,6"
+                                                Margin="0,0,8,0" />
+                                        <Button Grid.Column="2"
+                                                Content="Clear"
+                                                Tag="{Binding CommandId}"
+                                                Click="OnClearShortcut"
+                                                Padding="12,6" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Keyboard shortcuts work system-wide on Windows (also while EVE is focused); on Linux/macOS they work while this window is focused. Mouse-button shortcuts work while this window is focused."
+                                   FontSize="10"
+                                   Foreground="Gray"
+                                   TextWrapping="Wrap"
+                                   Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
                 <!-- API Configuration Section -->
                 <Border Background="{DynamicResource PanelBackground}"
                         BorderBrush="{DynamicResource WindowBorder}"

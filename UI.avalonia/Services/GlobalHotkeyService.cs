@@ -20,6 +20,9 @@ public class GlobalHotkeyService : IDisposable
     public delegate void HotkeyPressedEventHandler(int hotkeyId, string hotkeyName);
     public event HotkeyPressedEventHandler? HotkeyPressed;
 
+    /// <summary>True when system-wide keyboard hotkeys are available (Windows, initialized).</summary>
+    public bool IsActive => _isWindows && _messageWindowHandle != IntPtr.Zero;
+
     // Windows API imports
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);

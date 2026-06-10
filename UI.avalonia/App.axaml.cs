@@ -69,6 +69,7 @@ public partial class App : Application
                 services.AddTransient<StartupService>();
                 services.AddTransient<CharacterService>();
                 services.AddSingleton<UI.avalonia.Services.GlobalHotkeyService>();
+                services.AddSingleton<UI.avalonia.Services.ShortcutService>();
                 #endregion
 
                 #region ViewModels

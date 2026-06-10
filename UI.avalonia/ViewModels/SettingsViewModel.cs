@@ -5,7 +5,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Input;
 using UI.avalonia.Commands;
+using UI.avalonia.Input;
+using UI.avalonia.Services;
 using SharedLibrary.Cache;
 using SharedLibrary.Models;
 using SharedLibrary.Repositories.Interfaces;
@@ -16,6 +19,7 @@ public class SettingsViewModel : INotifyPropertyChanged
 {
     private readonly ISettingRepository _settingRepository;
     private readonly CharacterCache _characterCache;
+    private readonly ShortcutService _shortcutService;
 
     private string _logDir = EveUtils.GetDefaultLogFolderLocation();
     private string _apiKey = string.Empty;
@@ -35,7 +39,7 @@ public class SettingsViewModel : INotifyPropertyChanged
     #endregion
 
 
-    public SettingsViewModel(ISettingRepository settingRepository, CharacterCache characterCache)
+    public SettingsViewModel(ISettingRepository settingRepository, CharacterCache characterCache, ShortcutService shortcutService)
     {
         SaveCommand = new RelayCommand(() => _ = SaveSettings(), () => !IsLoading);
         LoadCommand = new RelayCommand(() => _ = LoadSettings(), () => !IsLoading);
@@ -43,12 +47,68 @@ public class SettingsViewModel : INotifyPropertyChanged
 
         _settingRepository = settingRepository;
         _characterCache = characterCache;
+        _shortcutService = shortcutService;
 
         Characters = [];
+        Shortcuts = [];
+        BuildShortcutRows();
 
         _characterCache.CharacterAdded += OnCharacterAddedAsync;
 
     }
+
+    #region Shortcuts
+
+    public ObservableCollection<ShortcutRowViewModel> Shortcuts { get; }
+
+    private string? _recordingCommandId;
+
+    private void BuildShortcutRows()
+    {
+        Shortcuts.Clear();
+        foreach (var command in ShortcutCommands.All)
+        {
+            Shortcuts.Add(new ShortcutRowViewModel(
+                command.Id,
+                command.DisplayName,
+                _shortcutService.GetBinding(command.Id).ToDisplayString()));
+        }
+    }
+
+    public void BeginRecording(string commandId)
+    {
+        _recordingCommandId = commandId;
+        foreach (var row in Shortcuts)
+            row.IsRecording = row.CommandId == commandId;
+    }
+
+    public void CancelRecording()
+    {
+        _recordingCommandId = null;
+        foreach (var row in Shortcuts)
+            row.IsRecording = false;
+    }
+
+    public bool IsRecording => _recordingCommandId != null;
+
+    public void ApplyRecording(ShortcutGesture gesture)
+    {
+        if (_recordingCommandId == null)
+            return;
+
+        _shortcutService.Update(_recordingCommandId, gesture);
+        _recordingCommandId = null;
+        BuildShortcutRows();
+    }
+
+    public void ClearBinding(string commandId)
+    {
+        _shortcutService.Update(commandId, new ShortcutGesture());
+        CancelRecording();
+        BuildShortcutRows();
+    }
+
+    #endregion
 
     public async Task InitializeAsync()
     {

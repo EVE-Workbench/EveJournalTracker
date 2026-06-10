@@ -1,4 +1,5 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -203,6 +204,89 @@ namespace UI.avalonia.Views
         {
             Close();
         }
+
+        #region Manual window resize (borderless, cross-platform)
+
+        private bool _resizing;
+        private (bool West, bool East, bool North, bool South) _resizeEdge;
+        private PixelPoint _resizeStartPointer;
+        private PixelPoint _resizeStartPosition;
+        private Size _resizeStartSize;
+
+        private void ResizePressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (WindowState == WindowState.Maximized) return;
+            if (sender is not Control control || control.Tag is not string tag) return;
+            if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+
+            _resizeEdge = EdgeFromTag(tag);
+            _resizing = true;
+            _resizeStartPointer = this.PointToScreen(e.GetPosition(this));
+            _resizeStartPosition = Position;
+            _resizeStartSize = Bounds.Size;
+            e.Pointer.Capture(control);
+            e.Handled = true;
+        }
+
+        private void ResizeMoved(object? sender, PointerEventArgs e)
+        {
+            if (!_resizing) return;
+
+            var current = this.PointToScreen(e.GetPosition(this));
+            double dx = current.X - _resizeStartPointer.X;
+            double dy = current.Y - _resizeStartPointer.Y;
+
+            double x = _resizeStartPosition.X;
+            double y = _resizeStartPosition.Y;
+            double width = _resizeStartSize.Width;
+            double height = _resizeStartSize.Height;
+
+            if (_resizeEdge.East)
+                width = Math.Max(MinWidth, _resizeStartSize.Width + dx);
+
+            if (_resizeEdge.South)
+                height = Math.Max(MinHeight, _resizeStartSize.Height + dy);
+
+            if (_resizeEdge.West)
+            {
+                width = Math.Max(MinWidth, _resizeStartSize.Width - dx);
+                x = _resizeStartPosition.X + (_resizeStartSize.Width - width);
+            }
+
+            if (_resizeEdge.North)
+            {
+                height = Math.Max(MinHeight, _resizeStartSize.Height - dy);
+                y = _resizeStartPosition.Y + (_resizeStartSize.Height - height);
+            }
+
+            Position = new PixelPoint((int)Math.Round(x), (int)Math.Round(y));
+            Width = width;
+            Height = height;
+            e.Handled = true;
+        }
+
+        private void ResizeReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            if (!_resizing) return;
+            _resizing = false;
+            e.Pointer.Capture(null);
+            e.Handled = true;
+        }
+
+        private static (bool West, bool East, bool North, bool South) EdgeFromTag(string tag) => tag switch
+        {
+            "West" => (true, false, false, false),
+            "East" => (false, true, false, false),
+            "North" => (false, false, true, false),
+            "South" => (false, false, false, true),
+            "NorthWest" => (true, false, true, false),
+            "NorthEast" => (false, true, true, false),
+            "SouthWest" => (true, false, false, true),
+            "SouthEast" => (false, true, false, true),
+            _ => (false, false, false, false)
+        };
+
+        #endregion
 
         // Handle Pointer Press on Title Bar
         private void TitleBar_PointerPressed(object sender, PointerPressedEventArgs e)

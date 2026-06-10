@@ -14,10 +14,9 @@
         Title="EVE Workbench Desktop Agent"
         Width="1240" Height="700"
         MinWidth="980" MinHeight="650"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
-        Background="Transparent"
-        TransparencyLevelHint="AcrylicBlur">
+        SystemDecorations="None"
+        CanResize="True"
+        Background="Transparent">
 
     <Window.Resources>
         <converters:BountyConverter x:Key="BountyConverter" />
@@ -29,6 +28,7 @@
         <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
     </Window.Resources>
 
+    <Grid>
     <Border Background="{DynamicResource WindowBackground}"
             BorderBrush="{DynamicResource WindowBorder}"
             BorderThickness="1">
@@ -281,4 +281,31 @@
             </Grid>
         </Grid>
     </Border>
+
+        <!-- Manual resize grips: borderless window with reliable cross-platform resizing -->
+        <Border Tag="West" Width="5" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="0,8"
+                Background="Transparent" Cursor="SizeWestEast"
+                PointerPressed="ResizePressed" PointerMoved="ResizeMoved" PointerReleased="ResizeReleased" />
+        <Border Tag="East" Width="5" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="0,8"
+                Background="Transparent" Cursor="SizeWestEast"
+                PointerPressed="ResizePressed" PointerMoved="ResizeMoved" PointerReleased="ResizeReleased" />
+        <Border Tag="North" Height="5" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="8,0"
+                Background="Transparent" Cursor="SizeNorthSouth"
+                PointerPressed="ResizePressed" PointerMoved="ResizeMoved" PointerReleased="ResizeReleased" />
+        <Border Tag="South" Height="5" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="8,0"
+                Background="Transparent" Cursor="SizeNorthSouth"
+                PointerPressed="ResizePressed" PointerMoved="ResizeMoved" PointerReleased="ResizeReleased" />
+        <Border Tag="NorthWest" Width="8" Height="8" HorizontalAlignment="Left" VerticalAlignment="Top"
+                Background="Transparent" Cursor="TopLeftCorner"
+                PointerPressed="ResizePressed" PointerMoved="ResizeMoved" PointerReleased="ResizeReleased" />
+        <Border Tag="NorthEast" Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Top"
+                Background="Transparent" Cursor="TopRightCorner"
+                PointerPressed="ResizePressed" PointerMoved="ResizeMoved" PointerReleased="ResizeReleased" />
+        <Border Tag="SouthWest" Width="8" Height="8" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                Background="Transparent" Cursor="BottomLeftCorner"
+                PointerPressed="ResizePressed" PointerMoved="ResizeMoved" PointerReleased="ResizeReleased" />
+        <Border Tag="SouthEast" Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Background="Transparent" Cursor="BottomRightCorner"
+                PointerPressed="ResizePressed" PointerMoved="ResizeMoved" PointerReleased="ResizeReleased" />
+    </Grid>
 </Window>

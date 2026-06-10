@@ -288,14 +288,14 @@ namespace UI.avalonia.ViewModels
 
         private void FilterCharacters()
         {
-            if (ShowOfflineCharacters)
-            {
-                FilteredCharacters = new ObservableCollection<Character>(Characters);
-            }
-            else
-            {
-                FilteredCharacters = new ObservableCollection<Character>(Characters.Where(c => c.Online));
-            }
+            var visible = ShowOfflineCharacters ? Characters : Characters.Where(c => c.Online);
+
+            var ordered = visible
+                .OrderByDescending(c => c.Online)
+                .ThenBy(c => c.Position)
+                .ThenBy(c => c.Name);
+
+            FilteredCharacters = new ObservableCollection<Character>(ordered);
             OnPropertyChanged(nameof(FilteredCharacters));
         }
 

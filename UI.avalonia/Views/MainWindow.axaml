@@ -263,12 +263,16 @@
                         <Button Content="Open EVE Journal" Classes="EveBtn" Click="OpenEveJournal_Click" />
 
                         <Border BorderBrush="{DynamicResource WindowBackground}" BorderThickness="0 1 0 0" Margin="5" />
-                        <TextBlock Text="Show Offline Characters" Margin="10 10 10 0"
-                                   Foreground="{DynamicResource TextColor}" />
-                        <ToggleButton Content="Show Offline Characters"
-                                      IsChecked="{Binding ShowOfflineCharacters}"
-                                      Classes="SwitchToggleButton"
-                                      Margin="10" />
+                        <StackPanel Margin="10,8" Spacing="4">
+                            <TextBlock Text="Offline characters"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextColor}" />
+                            <ToggleSwitch IsChecked="{Binding ShowOfflineCharacters}"
+                                          OnContent="Shown"
+                                          OffContent="Hidden"
+                                          Foreground="{DynamicResource TextColor}"
+                                          ToolTip.Tip="Show characters that are currently offline in the list" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

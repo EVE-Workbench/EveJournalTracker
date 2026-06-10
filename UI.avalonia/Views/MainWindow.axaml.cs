@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using SharedLibrary.Models;
 using SharedLibrary.Services;
 using UI.avalonia.ViewModels;
 using UI.avalonia.Services;
@@ -18,6 +20,7 @@ namespace UI.avalonia.Views
         private readonly ShortcutService _shortcutService;
         private bool _isWatching = true;
         private readonly IServiceProvider _serviceProvider;
+        private readonly Dictionary<int, DpsOverlayWindow> _characterDpsOverlays = new();
 
         public MainWindow(MainWindowViewModel viewModel, FileWatcherService fileWatcherService, GlobalHotkeyService globalHotkeyService, ShortcutService shortcutService, IServiceProvider serviceProvider)
         {
@@ -327,6 +330,39 @@ namespace UI.avalonia.Views
                     RestoreFromMaximize();
                 BeginMoveDrag(e);
             }
+        }
+
+        private void CharacterDps_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Control { DataContext: Character character })
+                return;
+
+            // One overlay per character: re-focus an existing one instead of stacking.
+            if (_characterDpsOverlays.TryGetValue(character.CharacterId, out var existing))
+            {
+                existing.Activate();
+                return;
+            }
+
+            var vm = new DpsChartViewModel { CharacterId = character.CharacterId };
+
+            void OnLog(object? s, LogEvent ev) => vm.ProcessLog(ev);
+            _fileWatcherService.OnNewLogEvent += OnLog;
+
+            var overlay = new DpsOverlayWindow(persistGeometry: false, headerText: $"DPS · {character.Name}")
+            {
+                DataContext = vm
+            };
+
+            overlay.Closed += (_, _) =>
+            {
+                _fileWatcherService.OnNewLogEvent -= OnLog;
+                vm.Dispose();
+                _characterDpsOverlays.Remove(character.CharacterId);
+            };
+
+            _characterDpsOverlays[character.CharacterId] = overlay;
+            overlay.Show();
         }
 
         private void OpenEveJournal_Click(object sender, RoutedEventArgs e)

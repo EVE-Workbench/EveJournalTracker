@@ -38,6 +38,9 @@ public sealed partial class DpsChartViewModel : ViewModelBase, IDisposable
     public int GraphPointCapacity => GraphCapacity;
     public IReadOnlyList<DpsSeries> Series => [_dealtSeries, _receivedSeries];
 
+    // When set, the meter only tracks this character; null means the whole fleet.
+    public int? CharacterId { get; init; }
+
     public DpsChartViewModel()
     {
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(33) };
@@ -49,6 +52,10 @@ public sealed partial class DpsChartViewModel : ViewModelBase, IDisposable
     {
         // Old log lines read at startup must never be replayed through the live meter.
         if (log.IsHistorical)
+            return;
+
+        // A per-character meter ignores everyone else's combat.
+        if (CharacterId is int id && log.Character?.CharacterId != id)
             return;
 
         if (!TryDirection(log.DamageType, out var direction))

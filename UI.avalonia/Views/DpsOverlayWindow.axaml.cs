@@ -16,13 +16,26 @@ public partial class DpsOverlayWindow : Window
 
     private readonly SolidColorBrush _fillBrush = new(Color.Parse("#1E1E1E"));
     private readonly DispatcherTimer _saveDebounce;
-    private OverlayGeometry _geometry = OverlayStore.Load();
+    private readonly bool _persistGeometry;
+    private OverlayGeometry _geometry;
     private PixelPoint _lastPosition;
     private bool _ready;
 
-    public DpsOverlayWindow()
+    public DpsOverlayWindow() : this(true, "DPS METER")
+    {
+    }
+
+    public DpsOverlayWindow(bool persistGeometry, string headerText)
     {
         InitializeComponent();
+
+        _persistGeometry = persistGeometry;
+        HeaderLabel.Text = headerText;
+
+        _geometry = OverlayStore.Load();
+        if (!persistGeometry)
+            // Per-character overlays open centered and don't write to the shared overlay file.
+            _geometry.HasPosition = false;
 
         PanelBorder.Background = _fillBrush;
         FillOpacity = Math.Clamp(_geometry.Opacity, 0, 1);
@@ -49,7 +62,7 @@ public partial class DpsOverlayWindow : Window
 
     private void QueueSave()
     {
-        if (!_ready)
+        if (!_ready || !_persistGeometry)
             return;
         _saveDebounce.Stop();
         _saveDebounce.Start();
@@ -57,6 +70,9 @@ public partial class DpsOverlayWindow : Window
 
     private void Persist()
     {
+        if (!_persistGeometry)
+            return;
+
         _geometry.HasPosition = true;
         _geometry.X = _lastPosition.X;
         _geometry.Y = _lastPosition.Y;

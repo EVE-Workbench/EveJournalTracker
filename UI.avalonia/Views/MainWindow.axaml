@@ -168,9 +168,9 @@
                                  MinWidth="265">
                             <ListBox.ItemTemplate>
                                 <DataTemplate DataType="models:Character">
-                                    <StackPanel Orientation="Horizontal">
-                                        <components:CharacterAvatarControl Character="{Binding}" AvatarSize="54" />
-                                        <StackPanel>
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <components:CharacterAvatarControl Grid.Column="0" Character="{Binding}" AvatarSize="54" />
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,4,0">
                                             <TextBlock Text="{Binding Name}" FontWeight="Bold"
                                                        Foreground="{DynamicResource TextColor}" />
                                             <StackPanel Orientation="Horizontal">
@@ -188,7 +188,14 @@
                                                 <TextBlock Text=")" Foreground="{DynamicResource TextColor}" />
                                             </StackPanel>
                                         </StackPanel>
-                                    </StackPanel>
+
+                                        <Button Grid.Column="2" Content="📊"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent" BorderThickness="0"
+                                                Padding="6" FontSize="15" Cursor="Hand"
+                                                Click="CharacterDps_Click"
+                                                ToolTip.Tip="Open a DPS meter for this character" />
+                                    </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>

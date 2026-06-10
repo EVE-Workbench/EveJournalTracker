@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Configurable shortcuts, managed from Settings: a list of available actions (start a bounty run, open EVE Journal) each with a **Record** button to bind your own combination, and a **Clear** button. Supports keyboard combos and mouse buttons (mouse 3/4/5), e.g. `Ctrl+Shift+Mouse4`. Keyboard shortcuts still work system-wide on Windows; mouse buttons work while the window is focused.
 - System-wide (window-unfocused) keyboard shortcuts on Linux via the desktop's GlobalShortcuts portal (KDE Plasma). The app registers its actions with the desktop; assign keys under System Settings → Shortcuts. No extra permissions required.
 - Setting to choose what is loaded at startup: load the full current gamelog session (default), or only new lines from the moment the agent starts. The live DPS meter always ignores old lines either way, so loading a session no longer sends a spike through the graph.
+- Per-character DPS meter: a 📊 button next to each character in the list opens a pop-out DPS overlay scoped to just that character (the main meter still shows the combined fleet DPS). Multiple character overlays can be open at once.
 
 ### Fixed
 - Fixed the security-status colour not showing next to a character's system in the character list

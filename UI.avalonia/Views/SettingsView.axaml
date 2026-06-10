@@ -63,6 +63,13 @@
                                  BorderBrush="{DynamicResource WindowBorder}"
                                  IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}" />
 
+                        <Button Content="🔍 Auto-detect log location"
+                                Command="{Binding AutoDetectLogDirCommand}"
+                                Padding="10,6"
+                                Margin="0,0,0,5"
+                                HorizontalAlignment="Left"
+                                ToolTip.Tip="Scan common locations (incl. Steam/Proton and Wine on Linux) for the EVE gamelog folder" />
+
                         <TextBlock Text="When changing the log location, please restart the application to apply changes"
                                    FontSize="10"
                                    Foreground="Gray"

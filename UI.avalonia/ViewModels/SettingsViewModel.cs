@@ -30,6 +30,7 @@ public class SettingsViewModel : INotifyPropertyChanged
 
     public ICommand SaveCommand { get; }
     public ICommand LoadCommand { get; }
+    public ICommand AutoDetectLogDirCommand { get; }
 
     #endregion
 
@@ -38,6 +39,7 @@ public class SettingsViewModel : INotifyPropertyChanged
     {
         SaveCommand = new RelayCommand(() => _ = SaveSettings(), () => !IsLoading);
         LoadCommand = new RelayCommand(() => _ = LoadSettings(), () => !IsLoading);
+        AutoDetectLogDirCommand = new RelayCommand(() => LogDir = EveLogLocator.Detect(), () => !IsLoading);
 
         _settingRepository = settingRepository;
         _characterCache = characterCache;
@@ -130,6 +132,7 @@ public class SettingsViewModel : INotifyPropertyChanged
             // In Avalonia, we need to manually raise CanExecuteChanged
             (SaveCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (LoadCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (AutoDetectLogDirCommand as RelayCommand)?.RaiseCanExecuteChanged();
         }
     }
 

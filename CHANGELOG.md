@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- Starting a new bounty run (via Ctrl+Shift+N or the modal) now closes the currently active run first instead of leaving it open
+
 ## v0.3.0 - Shortcuts, per-character DPS & log viewer
 
 ### Added

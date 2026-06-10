@@ -179,6 +179,9 @@ namespace UI.avalonia.ViewModels
 
         public void SetCurrentBountyRun(BountyRun bountyRun)
         {
+            // Close the previous run before starting a new one.
+            StopCurrentBountyRun();
+
             CurrentBountyRun = bountyRun;
             IsBountyRunActive = true;
 

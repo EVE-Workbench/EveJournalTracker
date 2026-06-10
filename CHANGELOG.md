@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Configurable shortcuts, managed from Settings: a list of available actions (start a bounty run, open EVE Journal) each with a **Record** button to bind your own combination, and a **Clear** button. Supports keyboard combos and mouse buttons (mouse 3/4/5), e.g. `Ctrl+Shift+Mouse4`. Keyboard shortcuts still work system-wide on Windows; mouse buttons work while the window is focused.
+- System-wide (window-unfocused) keyboard shortcuts on Linux via the desktop's GlobalShortcuts portal (KDE Plasma). The app registers its actions with the desktop; assign keys under System Settings → Shortcuts. No extra permissions required.
 
 ### Fixed
 - Fixed the security-status colour not showing next to a character's system in the character list

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Input;
 using UI.avalonia.Input;
 
@@ -8,16 +9,20 @@ namespace UI.avalonia.Services;
 /// <summary>
 /// Owns the configurable shortcut bindings and turns input into command triggers.
 ///
-/// In-app handling (keyboard + mouse) works on every platform while the window is focused.
-/// On Windows, keyboard shortcuts are additionally registered system-wide via
-/// <see cref="GlobalHotkeyService"/> so they fire while EVE is in the foreground; to avoid
-/// double-firing, in-app keyboard matching is skipped when the global path is active. Mouse
-/// buttons are in-app only (a system-wide mouse hook is unreliable and unavailable on Wayland).
+/// In-app handling (keyboard + mouse) works on every platform while the window is focused. Global
+/// (window-unfocused) handling is added per platform: Windows via Win32 (<see cref="GlobalHotkeyService"/>),
+/// Linux via the XDG GlobalShortcuts portal (<see cref="GlobalShortcutsPortal"/>). When both the global
+/// path and the in-app path fire for the same press, <see cref="Fire"/> debounces so the command runs once.
+/// Mouse buttons are in-app only.
 /// </summary>
 public class ShortcutService
 {
     private readonly GlobalHotkeyService _global;
-    private Dictionary<string, ShortcutGesture> _bindings;
+    private GlobalShortcutsPortal? _portal;
+    private readonly Dictionary<string, ShortcutGesture> _bindings;
+
+    private readonly object _fireLock = new();
+    private readonly Dictionary<string, DateTime> _lastFired = new();
 
     public event Action<string>? Triggered;
     public event Action? BindingsChanged;
@@ -26,15 +31,13 @@ public class ShortcutService
     {
         _global = global;
         _bindings = ShortcutStore.Load();
-        _global.HotkeyPressed += (_, commandId) => Triggered?.Invoke(commandId);
+        _global.HotkeyPressed += (_, commandId) => Fire(commandId);
     }
-
-    public bool GlobalKeyboardActive => _global.IsActive;
 
     public ShortcutGesture GetBinding(string commandId) =>
         _bindings.TryGetValue(commandId, out var gesture) ? gesture : new ShortcutGesture();
 
-    /// <summary>Registers the keyboard bindings system-wide (Windows only); no-op elsewhere.</summary>
+    /// <summary>Registers the keyboard bindings for global (window-unfocused) use, per platform.</summary>
     public void RegisterGlobals()
     {
         foreach (var commandId in _bindings.Keys)
@@ -43,6 +46,8 @@ public class ShortcutService
         foreach (var (commandId, gesture) in _bindings)
             if (!gesture.IsMouse && gesture.Key != Key.None)
                 _global.RegisterHotkey(commandId, ToGlobalModifiers(gesture.Modifiers), gesture.Key);
+
+        EnsureLinuxPortal();
     }
 
     public void Update(string commandId, ShortcutGesture gesture)
@@ -55,20 +60,27 @@ public class ShortcutService
 
         _bindings[commandId] = gesture;
         ShortcutStore.Save(_bindings);
-        RegisterGlobals();
+
+        // Re-register the Windows global keyboard hotkeys. The Linux portal binding is owned by the
+        // desktop (changed in its shortcut settings), so it is only set up once at startup.
+        foreach (var id in _bindings.Keys)
+            _global.UnregisterHotkey(id);
+        foreach (var (id, g) in _bindings)
+            if (!g.IsMouse && g.Key != Key.None)
+                _global.RegisterHotkey(id, ToGlobalModifiers(g.Modifiers), g.Key);
+
         BindingsChanged?.Invoke();
     }
 
     public bool HandleKeyDown(KeyModifiers modifiers, Key key)
     {
-        // On Windows the global hotkey already fires (even when focused), so skip the in-app path.
-        if (GlobalKeyboardActive || IsModifierKey(key))
+        if (IsModifierKey(key))
             return false;
 
         foreach (var (commandId, gesture) in _bindings)
             if (gesture.Matches(modifiers, key))
             {
-                Triggered?.Invoke(commandId);
+                Fire(commandId);
                 return true;
             }
 
@@ -83,7 +95,7 @@ public class ShortcutService
         foreach (var (commandId, gesture) in _bindings)
             if (gesture.Matches(modifiers, button))
             {
-                Triggered?.Invoke(commandId);
+                Fire(commandId);
                 return true;
             }
 
@@ -98,6 +110,40 @@ public class ShortcutService
         _ => ShortcutMouseButton.None
     };
 
+    private void Fire(string commandId)
+    {
+        lock (_fireLock)
+        {
+            var now = DateTime.UtcNow;
+            if (_lastFired.TryGetValue(commandId, out var last) && (now - last).TotalMilliseconds < 250)
+                return;
+            _lastFired[commandId] = now;
+        }
+
+        Triggered?.Invoke(commandId);
+    }
+
+    private void EnsureLinuxPortal()
+    {
+        if (_portal != null || !OperatingSystem.IsLinux())
+            return;
+
+        _portal = new GlobalShortcutsPortal();
+        _portal.Activated += Fire;
+        _ = _portal.StartAsync(BuildPortalShortcuts());
+    }
+
+    private List<PortalShortcut> BuildPortalShortcuts()
+    {
+        var shortcuts = new List<PortalShortcut>();
+        foreach (var command in ShortcutCommands.All)
+        {
+            var gesture = GetBinding(command.Id);
+            shortcuts.Add(new PortalShortcut(command.Id, command.DisplayName, KeyboardTriggerString(gesture)));
+        }
+        return shortcuts;
+    }
+
     private static bool IsModifierKey(Key key) => key is
         Key.LeftCtrl or Key.RightCtrl or Key.LeftShift or Key.RightShift or
         Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin;
@@ -110,5 +156,38 @@ public class ShortcutService
         if (modifiers.HasFlag(KeyModifiers.Alt)) result |= GlobalHotkeyService.ModifierKeys.Alt;
         if (modifiers.HasFlag(KeyModifiers.Meta)) result |= GlobalHotkeyService.ModifierKeys.Win;
         return result;
+    }
+
+    /// <summary>
+    /// Best-effort XDG portal trigger string (e.g. "CTRL+SHIFT+n") for a keyboard gesture, or null
+    /// for mouse/unsupported keys so the user binds it in their desktop's shortcut settings.
+    /// </summary>
+    private static string? KeyboardTriggerString(ShortcutGesture gesture)
+    {
+        if (gesture.IsMouse || gesture.Key == Key.None)
+            return null;
+
+        var key = KeysymName(gesture.Key);
+        if (key == null)
+            return null;
+
+        var parts = new List<string>();
+        if (gesture.Modifiers.HasFlag(KeyModifiers.Control)) parts.Add("CTRL");
+        if (gesture.Modifiers.HasFlag(KeyModifiers.Shift)) parts.Add("SHIFT");
+        if (gesture.Modifiers.HasFlag(KeyModifiers.Alt)) parts.Add("ALT");
+        if (gesture.Modifiers.HasFlag(KeyModifiers.Meta)) parts.Add("LOGO");
+        parts.Add(key);
+        return string.Join("+", parts);
+    }
+
+    private static string? KeysymName(Key key)
+    {
+        if (key is >= Key.A and <= Key.Z)
+            return key.ToString().ToLowerInvariant();
+        if (key is >= Key.D0 and <= Key.D9)
+            return ((int)(key - Key.D0)).ToString();
+        if (key is >= Key.F1 and <= Key.F12)
+            return key.ToString();
+        return null;
     }
 }

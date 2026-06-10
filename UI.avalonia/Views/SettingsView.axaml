@@ -129,7 +129,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <TextBlock Text="Keyboard shortcuts work system-wide on Windows (also while EVE is focused); on Linux/macOS they work while this window is focused. Mouse-button shortcuts work while this window is focused."
+                        <TextBlock Text="In-app, shortcuts (keyboard and mouse) work while this window is focused. For system-wide use while EVE is in front: on Windows keyboard shortcuts work everywhere automatically; on Linux (KDE Plasma) they are registered with the desktop — assign a key under System Settings → Shortcuts (look for this app). System-wide mouse buttons are not supported."
                                    FontSize="10"
                                    Foreground="Gray"
                                    TextWrapping="Wrap"

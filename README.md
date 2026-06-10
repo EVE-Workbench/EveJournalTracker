@@ -39,7 +39,7 @@ Open the **Settings** menu:
 
 - Add your EVE Workbench **Access Token** (create one [here](https://evejournal.com/my-account/personal-access-tokens)).
 - Verify your **game log folder** — on Linux the app auto-detects Steam/Proton locations, or use the **Auto-detect** button.
-- Optionally rebind the **shortcuts** (start a bounty run, open EVE Journal): click **Record** and press a key combo or a mouse button (mouse 3/4/5). On Windows keyboard shortcuts work system-wide; on Linux/macOS and for mouse buttons they work while the window is focused.
+- Optionally rebind the **shortcuts** (start a bounty run, open EVE Journal): click **Record** and press a key combo or a mouse button (mouse 3/4/5). They work in-app while the window is focused. For system-wide use while EVE is in front: on **Windows** keyboard shortcuts work everywhere automatically; on **Linux (KDE Plasma)** the app registers its actions with the desktop — assign a key under *System Settings → Shortcuts* (look for this app). System-wide mouse buttons aren't supported.
 
 ## 💾 Where your data is stored
 

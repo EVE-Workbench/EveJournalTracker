@@ -26,6 +26,7 @@
         <converters:BountyRunButtonColorConverter x:Key="BountyRunButtonColorConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
+        <converters:StringEqualsConverter x:Key="StringEqualsConverter" />
     </Window.Resources>
 
     <Grid>
@@ -223,25 +224,29 @@
                         <Image Source="avares://UI.avalonia/Assets/eveworkbench-logo.png"
                                Width="150" Height="150" Margin="10 10 10 20" />
 
-                        <Button Classes="EveBtn" Content="Bounties" Command="{Binding ShowViewCommand}">
+                        <Button Classes="EveBtn" Content="Bounties" Command="{Binding ShowViewCommand}"
+                                Classes.active="{Binding CurrentPage, Converter={StaticResource StringEqualsConverter}, ConverterParameter=DefaultView}">
                             <Button.CommandParameter>
                                 <views:DefaultView />
                             </Button.CommandParameter>
                         </Button>
 
-                        <Button Classes="EveBtn" Content="Account" Command="{Binding ShowViewCommand}">
+                        <Button Classes="EveBtn" Content="Account" Command="{Binding ShowViewCommand}"
+                                Classes.active="{Binding CurrentPage, Converter={StaticResource StringEqualsConverter}, ConverterParameter=AccountView}">
                             <Button.CommandParameter>
                                 <views:AccountView />
                             </Button.CommandParameter>
                         </Button>
 
-                        <Button Classes="EveBtn" Content="Settings" Command="{Binding ShowViewCommand}">
+                        <Button Classes="EveBtn" Content="Settings" Command="{Binding ShowViewCommand}"
+                                Classes.active="{Binding CurrentPage, Converter={StaticResource StringEqualsConverter}, ConverterParameter=SettingsView}">
                             <Button.CommandParameter>
                                 <views:SettingsView />
                             </Button.CommandParameter>
                         </Button>
 
-                        <Button Classes="EveBtn" Content="Log viewer" Command="{Binding ShowViewCommand}">
+                        <Button Classes="EveBtn" Content="Log viewer" Command="{Binding ShowViewCommand}"
+                                Classes.active="{Binding CurrentPage, Converter={StaticResource StringEqualsConverter}, ConverterParameter=LogView}">
                             <Button.CommandParameter>
                                 <views:LogView />
                             </Button.CommandParameter>

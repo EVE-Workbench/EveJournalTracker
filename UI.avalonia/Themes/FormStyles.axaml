@@ -54,6 +54,18 @@
         <Setter Property="Background" Value="{DynamicResource ButtonClickBackground}" />
     </Style>
 
+    <!-- Active navigation button (current page): recessed/darker with a teal accent bar -->
+    <Style Selector="Button.EveBtn.active">
+        <Setter Property="Background" Value="{DynamicResource WindowBackground}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CtaColor}" />
+        <Setter Property="BorderThickness" Value="3,0,0,0" />
+    </Style>
+
+    <Style Selector="Button.EveBtn.active:pointerover">
+        <Setter Property="Background" Value="{DynamicResource PanelBackground}" />
+    </Style>
+
     <!-- ToggleSwitch Style for Show Offline Characters -->
     <Style Selector="ToggleSwitch">
         <Setter Property="MinWidth" Value="50" />

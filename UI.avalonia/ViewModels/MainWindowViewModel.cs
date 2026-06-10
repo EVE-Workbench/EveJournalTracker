@@ -105,8 +105,12 @@ namespace UI.avalonia.ViewModels
             {
                 _currentView = value;
                 OnPropertyChanged(nameof(CurrentView));
+                OnPropertyChanged(nameof(CurrentPage));
             }
         }
+
+        // The active view's type name, used to highlight the matching navigation button.
+        public string CurrentPage => _currentView?.GetType().Name ?? string.Empty;
 
         public bool ShowOfflineCharacters
         {

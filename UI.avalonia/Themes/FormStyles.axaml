@@ -93,6 +93,45 @@
         <Setter Property="Height" Value="15" />
     </Style>
 
+    <!-- Window titlebar buttons (minimize / maximize / close): flat, edge-to-edge hover -->
+    <Style Selector="Button.TitleBarBtn">
+        <Setter Property="Width" Value="46" />
+        <Setter Property="Height" Value="45" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="Button.TitleBarBtn /template/ ContentPresenter">
+        <Setter Property="CornerRadius" Value="0" />
+    </Style>
+
+    <Style Selector="Button.TitleBarBtn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#1FFFFFFF" />
+    </Style>
+
+    <Style Selector="Button.TitleBarBtn:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="#2FFFFFFF" />
+    </Style>
+
+    <Style Selector="Button.TitleBarBtn.close:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#E81123" />
+    </Style>
+
+    <Style Selector="Button.TitleBarBtn.close:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="#C50F1F" />
+    </Style>
+
+    <Style Selector="Button.TitleBarBtn PathIcon">
+        <Setter Property="Foreground" Value="{DynamicResource TitleBarButtonTextColor}" />
+        <Setter Property="Width" Value="11" />
+        <Setter Property="Height" Value="11" />
+    </Style>
+
     <!-- ToggleSwitch Style for Show Offline Characters -->
     <Style Selector="ToggleSwitch">
         <Setter Property="MinWidth" Value="50" />

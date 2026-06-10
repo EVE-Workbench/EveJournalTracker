@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Setting to choose what is loaded at startup: load the full current gamelog session (default), or only new lines from the moment the agent starts. The live DPS meter always ignores old lines either way, so loading a session no longer sends a spike through the graph.
 - Per-character DPS meter: a 📊 button next to each character in the list opens a pop-out DPS overlay scoped to just that character (the main meter still shows the combined fleet DPS). Multiple character overlays can be open at once.
 - The navigation menu now highlights the current page (recessed background with a teal accent bar)
+- Cleaner window titlebar buttons: monochrome vector icons (no more coloured emoji) with an edge-to-edge hover, fixing the odd spacing between them
 
 ### Fixed
 - Fixed the security-status colour not showing next to a character's system in the character list

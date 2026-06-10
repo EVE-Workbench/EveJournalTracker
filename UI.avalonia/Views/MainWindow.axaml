@@ -48,67 +48,16 @@
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Stretch">
-                    <Button Width="46" Height="45" Padding="0" Margin="0"
-                            Click="Minimize_Click"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            VerticalContentAlignment="Center"
-                            HorizontalContentAlignment="Center">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="Background" Value="#1FFFFFFF" />
-                            </Style>
-                            <Style Selector="Button:pressed">
-                                <Setter Property="Background" Value="#2FFFFFFF" />
-                            </Style>
-                        </Button.Styles>
-                        <TextBlock Text="—"
-                                   FontSize="14"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{DynamicResource TitleBarButtonTextColor}" />
+                    <Button Classes="TitleBarBtn" Click="Minimize_Click" ToolTip.Tip="Minimize">
+                        <PathIcon Data="M4 11h16v1.5H4z" />
                     </Button>
 
-                    <Button Width="46" Height="45" Padding="0" Margin="0"
-                            Click="Maximize_Click"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            VerticalContentAlignment="Center"
-                            HorizontalContentAlignment="Center">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="Background" Value="#1FFFFFFF" />
-                            </Style>
-                            <Style Selector="Button:pressed">
-                                <Setter Property="Background" Value="#2FFFFFFF" />
-                            </Style>
-                        </Button.Styles>
-                        <TextBlock Text="☐"
-                                   FontSize="14"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{DynamicResource TitleBarButtonTextColor}" />
+                    <Button Classes="TitleBarBtn" Click="Maximize_Click" ToolTip.Tip="Maximize">
+                        <PathIcon Data="M4 4h16v16H4V4zm2 2v12h12V6H6z" />
                     </Button>
 
-                    <Button Width="46" Height="45" Padding="0" Margin="0"
-                            Click="Close_Click"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            VerticalContentAlignment="Center"
-                            HorizontalContentAlignment="Center">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="Background" Value="#E81123" />
-                            </Style>
-                            <Style Selector="Button:pressed">
-                                <Setter Property="Background" Value="#C50F1F" />
-                            </Style>
-                        </Button.Styles>
-                        <TextBlock Text="✕"
-                                   FontSize="14"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{DynamicResource TitleBarButtonTextColor}" />
+                    <Button Classes="TitleBarBtn close" Click="Close_Click" ToolTip.Tip="Close">
+                        <PathIcon Data="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                     </Button>
                 </StackPanel>
             </Panel>

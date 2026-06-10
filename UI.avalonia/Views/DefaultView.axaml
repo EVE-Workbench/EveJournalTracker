@@ -19,7 +19,7 @@
         <StackPanel Orientation="Horizontal" Margin="5 0">
             <TextBlock Text="Bounty Runs" FontSize="20" FontWeight="Bold" />
             <TextBlock Text="- last 3 runs" FontSize="12" Foreground="Gray" Margin="5,0,0,0" VerticalAlignment="Center" />
-            <TextBlock Text="(Add new run: ctrl+shift+N)" FontSize="12" Foreground="Gray" Margin="5,0,0,0" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding NewRunShortcut, StringFormat='(Add new run: {0})'}" FontSize="12" Foreground="Gray" Margin="5,0,0,0" VerticalAlignment="Center" />
         </StackPanel>
 
         <!-- Empty state for bounty runs -->

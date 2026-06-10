@@ -20,6 +20,7 @@ public class ShortcutService
     private Dictionary<string, ShortcutGesture> _bindings;
 
     public event Action<string>? Triggered;
+    public event Action? BindingsChanged;
 
     public ShortcutService(GlobalHotkeyService global)
     {
@@ -55,6 +56,7 @@ public class ShortcutService
         _bindings[commandId] = gesture;
         ShortcutStore.Save(_bindings);
         RegisterGlobals();
+        BindingsChanged?.Invoke();
     }
 
     public bool HandleKeyDown(KeyModifiers modifiers, Key key)

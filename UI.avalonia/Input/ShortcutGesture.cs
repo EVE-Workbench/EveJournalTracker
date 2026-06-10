@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Avalonia.Input;
 
 namespace UI.avalonia.Input;
@@ -13,8 +14,8 @@ public sealed class ShortcutGesture
     public Key Key { get; set; } = Key.None;
     public ShortcutMouseButton MouseButton { get; set; } = ShortcutMouseButton.None;
 
-    public bool IsEmpty => Key == Key.None && MouseButton == ShortcutMouseButton.None;
-    public bool IsMouse => MouseButton != ShortcutMouseButton.None;
+    [JsonIgnore] public bool IsEmpty => Key == Key.None && MouseButton == ShortcutMouseButton.None;
+    [JsonIgnore] public bool IsMouse => MouseButton != ShortcutMouseButton.None;
 
     public bool Matches(KeyModifiers modifiers, Key key) =>
         !IsMouse && Key != Key.None && key == Key && modifiers == Modifiers;

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using UI.avalonia.Input;
+using UI.avalonia.Services;
 using UI.avalonia.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using SharedLibrary.Models;
@@ -15,10 +17,13 @@ public partial class DefaultView : UserControl, INotifyPropertyChanged
 {
     private readonly FileWatcherService _fileWatcherService;
     private readonly MainWindowViewModel _mainWindowViewModel;
+    private readonly ShortcutService _shortcutService;
 
     public ObservableCollection<EveSystem> EveSystemCollection { get; set; } = new();
     public ObservableCollection<BountyRun> BountyRuns => _mainWindowViewModel.BountyRuns;
     public ObservableCollection<BountyRun> TopBountyRuns => _mainWindowViewModel.TopBountyRuns;
+
+    public string NewRunShortcut => _shortcutService.GetBinding(ShortcutCommands.NewBountyRun).ToDisplayString();
 
     public DefaultView()
     {
@@ -26,9 +31,11 @@ public partial class DefaultView : UserControl, INotifyPropertyChanged
 
         _fileWatcherService = App.ServiceProvider.GetRequiredService<FileWatcherService>();
         _mainWindowViewModel = App.ServiceProvider.GetRequiredService<MainWindowViewModel>();
+        _shortcutService = App.ServiceProvider.GetRequiredService<ShortcutService>();
 
         _mainWindowViewModel.PropertyChanged += OnMainViewModelPropertyChanged;
         _fileWatcherService.OnISKUpdated += OnNewLogEvent;
+        _shortcutService.BindingsChanged += () => OnPropertyChanged(nameof(NewRunShortcut));
 
         DataContext = this;
     }

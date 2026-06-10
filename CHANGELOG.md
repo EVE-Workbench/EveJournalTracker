@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Borderless window now uses `SystemDecorations="None"` for consistent custom chrome on all platforms (removes the duplicate native title bar that showed on Linux)
 - Maximize now fits the screen's working area instead of full screen, so it no longer overlaps the taskbar/panel
 - Reworked the DPS meter to a sliding-window tracker with wall-clock sampling and EMA smoothing at ~30fps; removed the LiveChartsCore dependency
+- Store the database and overlay layout in a per-user data folder (`%APPDATA%\EveJournalTracker` on Windows, `~/.config/EveJournalTracker` on Linux/macOS) so updates can no longer overwrite them; an existing database next to the executable is copied across automatically on first launch
 - Made the access token field in settings a password box to hide the token
 - Update dotnet version to 9.0.10
 - Silenced long-standing nullable/style build warnings so launching from a console stays clean (proper cleanup tracked separately)

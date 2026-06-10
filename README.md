@@ -15,19 +15,51 @@ This website allows you to track events, missions, rewards and bounties directly
 
 ## 🚀 Getting Started
 
-1. Download the latest [release](https://github.com/EVE-Workbench/EveJournalTracker/releases/latest).  
-2. Extract the ZIP to a folder of your choice.  
-3. Run **`EWB-Tracker.exe`**.  
-4. Open the **Settings** menu:  
-   - Add your EVE Workbench **Access Token** (create one [here](https://evejournal.com/my-account/personal-access-tokens)).  
-   - Verify your **game log folder** is correct.  
+Download the latest [release](https://github.com/EVE-Workbench/EveJournalTracker/releases/latest), then follow the steps for your platform.
+
+### Windows
+
+1. Download `EWBAgent-win-x64.zip`.
+2. Extract it to a folder of your choice.
+3. Run **`EWBAgent.exe`**.
+
+### Linux
+
+The app ships as an **AppImage**, which runs on virtually any distribution without installation.
+
+1. Download `EWBAgent-x86_64.AppImage`.
+2. Make it executable: `chmod +x EWBAgent-x86_64.AppImage`
+3. Run it: `./EWBAgent-x86_64.AppImage`
+
+> A `EWBAgent-linux-x64.tar.gz` (self-contained folder) is also provided if you prefer to extract and run `./EWBAgent` yourself.
+
+### First run
+
+Open the **Settings** menu:
+
+- Add your EVE Workbench **Access Token** (create one [here](https://evejournal.com/my-account/personal-access-tokens)).
+- Verify your **game log folder** — on Linux the app auto-detects Steam/Proton locations, or use the **Auto-detect** button.
+
+## 💾 Where your data is stored
+
+Your settings, characters and bounty data live **outside** the application folder, so they are never touched by an update:
+
+| Platform | Location |
+|----------|----------|
+| Windows  | `%APPDATA%\EveJournalTracker\` (e.g. `C:\Users\<you>\AppData\Roaming\EveJournalTracker\`) |
+| Linux    | `~/.config/EveJournalTracker/` |
+| macOS    | `~/.config/EveJournalTracker/` |
+
+This folder contains `eve_tracker.db` (settings + character info) and `dps-overlay.json` (DPS overlay layout).
 
 ## 🔄 Updating the Application
 
-1. Backup your **`eve_tracker.db`** file (stores settings and character info).  
-2. Download the latest release ZIP.  
-3. Extract it to a folder.  
-4. Copy your `eve_tracker.db` file back into the main folder.  
+Just download and run the latest release — your data lives in the folder above and is **not** affected by updating.
+
+- **Windows:** extract the new ZIP over (or replace) your old folder.
+- **Linux:** replace the old AppImage with the new one.
+
+> Upgrading from an older version that kept `eve_tracker.db` next to the executable? The app **automatically copies** that database into the new location on first launch, so your data carries over. The old file is left untouched; you can delete it afterwards.
 
 ## 📸 Screenshot
 
@@ -35,7 +67,7 @@ This website allows you to track events, missions, rewards and bounties directly
 
 ## 🗺️ Roadmap / Future Plans
 
-- Switch UI from WPF → [Avalonia](https://avaloniaui.net/) for Linux and macOS support  
+- ✅ Cross-platform UI on [Avalonia](https://avaloniaui.net/) (Windows + Linux; macOS to follow)  
 - Add mining support  
 - Optional location tracking to map travels  
 - Make keyboard shortcuts configurable

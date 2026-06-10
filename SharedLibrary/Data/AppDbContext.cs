@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Models;
 using SharedLibrary.Models.Database;
+using SharedLibrary.Utils;
 
 namespace SharedLibrary.Data;
 
@@ -19,7 +20,7 @@ public class AppDbContext : DbContext
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite("Data Source=eve_tracker.db");
+        optionsBuilder.UseSqlite($"Data Source={AppPaths.DatabasePath}");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

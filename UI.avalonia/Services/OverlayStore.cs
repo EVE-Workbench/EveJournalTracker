@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using SharedLibrary.Utils;
 
 namespace UI.avalonia.Services;
 
@@ -10,10 +11,7 @@ namespace UI.avalonia.Services;
 /// </summary>
 public static class OverlayStore
 {
-    private static readonly string DirectoryPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EveJournalTracker");
-
-    private static readonly string FilePath = Path.Combine(DirectoryPath, "dps-overlay.json");
+    private static readonly string FilePath = Path.Combine(AppPaths.DataDirectory, "dps-overlay.json");
 
     public static OverlayGeometry Load()
     {
@@ -34,7 +32,7 @@ public static class OverlayStore
     {
         try
         {
-            Directory.CreateDirectory(DirectoryPath);
+            Directory.CreateDirectory(AppPaths.DataDirectory);
             File.WriteAllText(FilePath, JsonSerializer.Serialize(geometry));
         }
         catch

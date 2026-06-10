@@ -134,6 +134,9 @@ public partial class App : Application
 
                 try
                 {
+                    // Carry over a database from older versions that stored it next to the exe.
+                    SharedLibrary.Utils.AppPaths.MigrateLegacyDatabase();
+
                     var databaseExists = context.Database.CanConnect();
 
                     if (!databaseExists)

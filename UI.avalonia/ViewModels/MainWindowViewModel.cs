@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -135,12 +136,19 @@ namespace UI.avalonia.ViewModels
 
             _characterCache.CharacterAdded += (sender, e) =>
             {
-                var characters = Characters.ToList();
-                characters.Add(e);
-                Characters = new ObservableCollection<Character>(characters);
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    WatchCharacter(e);
+                    var characters = Characters.ToList();
+                    characters.Add(e);
+                    Characters = new ObservableCollection<Character>(characters);
+                });
             };
 
             var characters = _characterCache.GetAllCharacters();
+            foreach (var character in characters)
+                WatchCharacter(character);
+
             _characters = new ObservableCollection<Character>(characters);
             FilteredCharacters = new ObservableCollection<Character>(_characters);
 
@@ -290,9 +298,24 @@ namespace UI.avalonia.ViewModels
             CurrentView = view;
         }
 
+        private void WatchCharacter(Character character)
+        {
+            character.PropertyChanged += OnCharacterPropertyChanged;
+        }
+
+        private void OnCharacterPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            // Toggling a character active/inactive must immediately add/remove it from the list.
+            if (e.PropertyName == nameof(Character.Active))
+                Avalonia.Threading.Dispatcher.UIThread.Post(FilterCharacters);
+        }
+
         private void FilterCharacters()
         {
-            var visible = ShowOfflineCharacters ? Characters : Characters.Where(c => c.Online);
+            IEnumerable<Character> visible = Characters.Where(c => c.Active);
+
+            if (!ShowOfflineCharacters)
+                visible = visible.Where(c => c.Online);
 
             var ordered = visible
                 .OrderByDescending(c => c.Online)

@@ -75,6 +75,9 @@ public partial class CheckOnlineJob
                 var characterForUpdate = _characterCache.GetCharacter(character.CharacterId);
                 if (characterForUpdate == null) continue;
 
+                // Deactivated characters are not tracked at all.
+                if (!characterForUpdate.Active) continue;
+
                 // Retry fetching character name if it's still using the fallback name
                 if (characterForUpdate.Name.StartsWith("Char-") &&
                     int.TryParse(characterForUpdate.Name.Substring(5), out var charIdFromName) &&

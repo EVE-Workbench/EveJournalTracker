@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the security-status colour not showing next to a character's system in the character list
 - Clearer "show offline characters" control: replaced the duplicated label and cut-off button with a single labelled toggle switch (Shown/Hidden)
 - Character list is now sorted with online characters first, then offline
+- Deactivating a character (Account page) now actually takes effect: it is hidden from the character list and no longer tracked (log parsing and online checks are skipped), updating immediately when toggled
 - Per-character bounty and the "last bounty" counter now update live again; previously they stayed at 0 because the values were bound through `Run` elements, which Avalonia does not refresh on change, and were updated off the UI thread
 - Bounty amounts are now parsed regardless of the EVE client's language (handles comma, dot, space and apostrophe thousands separators)
 - Only the current play session is loaded at startup (the log files still being written), instead of replaying every character's entire gamelog history

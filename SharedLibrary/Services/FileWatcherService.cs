@@ -188,6 +188,10 @@ public class FileWatcherService : IDisposable
                             var characterId = Convert.ToInt32(ExtractCharacterIdFromFileName(Path.GetFileName(filePath)));
                             var character = _characterService.GetOrCreateCharacter(characterId);
 
+                            // Deactivated characters are not tracked.
+                            if (!character.Active)
+                                continue;
+
                             var logEvent = ParseLogLine(line, character);
 
                             // Ignore empty log events

@@ -102,7 +102,10 @@ public partial class App : Application
                     var logFolderLocation = ResolveLogFolder(logDirSetting?.Value, settingsRepository);
                     var logger = provider.GetRequiredService<ILogger<FileWatcherService>>();
 
-                    return new FileWatcherService(logFolderLocation, characterCache, characterService, context, logger);
+                    var fullSessionSetting = settingsRepository.GetByKeyAsync("LoadFullSessionOnStart").GetAwaiter().GetResult();
+                    var loadFullSession = !bool.TryParse(fullSessionSetting?.Value, out var parsedFullSession) || parsedFullSession;
+
+                    return new FileWatcherService(logFolderLocation, characterCache, characterService, context, logger, loadFullSession);
                 });
 
                 services.AddSingleton(provider =>

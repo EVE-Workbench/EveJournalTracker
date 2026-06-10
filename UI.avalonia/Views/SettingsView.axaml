@@ -74,6 +74,19 @@
                                    FontSize="10"
                                    Foreground="Gray"
                                    TextWrapping="Wrap" />
+
+                        <CheckBox Content="Load the full gamelog session on start"
+                                  IsChecked="{Binding LoadFullSessionOnStart}"
+                                  FontSize="14"
+                                  Margin="0,12,0,0"
+                                  Foreground="{DynamicResource TextColor}"
+                                  IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}" />
+
+                        <TextBlock Text="When enabled, bounties and systems already logged before the agent started are loaded too. When disabled, only new lines from this moment on are tracked. The live DPS meter always ignores old lines either way. Restart to apply."
+                                   FontSize="10"
+                                   Foreground="Gray"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
 

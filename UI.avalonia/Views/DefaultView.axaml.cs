@@ -8,6 +8,7 @@ using UI.avalonia.Input;
 using UI.avalonia.Services;
 using UI.avalonia.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using SharedLibrary.Events;
 using SharedLibrary.Models;
 using SharedLibrary.Services;
 
@@ -48,7 +49,7 @@ public partial class DefaultView : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void OnNewLogEvent(object sender, (int TotalISK, int ISKChange, Character Character) e)
+    private void OnNewLogEvent(object sender, IskUpdate e)
     {
         Dispatcher.UIThread.InvokeAsync(() =>
         {

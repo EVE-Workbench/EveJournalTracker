@@ -147,10 +147,14 @@ namespace UI.avalonia.ViewModels
 
             ShowOfflineCharacters = _showOfflineCharacters;
 
-            _fileWatcherService.OnISKUpdated += (sender, iskValues) =>
+            _fileWatcherService.OnISKUpdated += (sender, update) =>
             {
-                TotalIsk = iskValues.TotalISK;
-                IskChange = iskValues.ISKChange;
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    TotalIsk = update.TotalBounty;
+                    IskChange = update.LastBounty;
+                    update.Character.Bounty = update.CharacterBounty;
+                });
             };
 
             _checkOnlineJob.CharacterStatusChanged += OnCharacterStatusChanged;

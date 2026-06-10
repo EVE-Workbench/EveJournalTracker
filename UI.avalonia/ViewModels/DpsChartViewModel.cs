@@ -47,6 +47,10 @@ public sealed partial class DpsChartViewModel : ViewModelBase, IDisposable
 
     public void ProcessLog(LogEvent log)
     {
+        // Old log lines read at startup must never be replayed through the live meter.
+        if (log.IsHistorical)
+            return;
+
         if (!TryDirection(log.DamageType, out var direction))
             return;
 

@@ -24,6 +24,7 @@ public class SettingsViewModel : INotifyPropertyChanged
     private string _logDir = EveUtils.GetDefaultLogFolderLocation();
     private string _apiKey = string.Empty;
     private bool _forceBountyToOneUser = false;
+    private bool _loadFullSessionOnStart = true;
     private Character _selectedCharacter;
     private bool _isLoading = false;
 
@@ -182,6 +183,16 @@ public class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool LoadFullSessionOnStart
+    {
+        get => _loadFullSessionOnStart;
+        set
+        {
+            _loadFullSessionOnStart = value;
+            OnPropertyChanged();
+        }
+    }
+
     public bool IsLoading
     {
         get => _isLoading;
@@ -245,6 +256,10 @@ public class SettingsViewModel : INotifyPropertyChanged
             var forceBountySetting = await _settingRepository.GetByKeyAsync("ForceBountyToOneUser");
             ForceBountyToOneUser = bool.TryParse(forceBountySetting?.Value, out var forceValue) && forceValue;
 
+            // Load session-load preference (defaults to loading the full session)
+            var fullSessionSetting = await _settingRepository.GetByKeyAsync("LoadFullSessionOnStart");
+            LoadFullSessionOnStart = !bool.TryParse(fullSessionSetting?.Value, out var fullSessionValue) || fullSessionValue;
+
             // Load Selected Character
             var selectedCharacterSetting = await _settingRepository.GetByKeyAsync("SelectedCharacterId");
             if (int.TryParse(selectedCharacterSetting?.Value, out var characterId))
@@ -271,6 +286,9 @@ public class SettingsViewModel : INotifyPropertyChanged
 
             // Save Force Bounty setting
             await _settingRepository.UpsertAsync("ForceBountyToOneUser", ForceBountyToOneUser.ToString());
+
+            // Save session-load preference
+            await _settingRepository.UpsertAsync("LoadFullSessionOnStart", LoadFullSessionOnStart.ToString());
 
             // Save Selected Character (only if force bounty is enabled)
             if (ForceBountyToOneUser && SelectedCharacter != null)

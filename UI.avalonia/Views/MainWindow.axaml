@@ -122,11 +122,11 @@
                         <TextBlock Text="{Binding TotalIsk, Converter={StaticResource BountyConverter}, FallbackValue=0}"
                                    HorizontalAlignment="Center" FontSize="30"
                                    Foreground="{DynamicResource AccentColor}" />
-                        <TextBlock HorizontalAlignment="Center" FontSize="20"
-                                   Foreground="{DynamicResource AccentColor}">
-                            <Run Text="+" />
-                            <Run Text="{Binding IskChange, Converter={StaticResource BountyConverter}, FallbackValue=0}" />
-                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="+ " FontSize="20" Foreground="{DynamicResource AccentColor}" />
+                            <TextBlock Text="{Binding IskChange, Converter={StaticResource BountyConverter}, FallbackValue=0}"
+                                       FontSize="20" Foreground="{DynamicResource AccentColor}" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
@@ -173,18 +173,20 @@
                                         <StackPanel>
                                             <TextBlock Text="{Binding Name}" FontWeight="Bold"
                                                        Foreground="{DynamicResource TextColor}" />
-                                            <TextBlock Foreground="{DynamicResource TextColor}">
-                                                <Run Text="Bounty: " />
-                                                <Run Text="{Binding Bounty, Converter={StaticResource BountyConverter}}" />
-                                            </TextBlock>
-                                            <TextBlock Foreground="{DynamicResource TextColor}">
-                                                <Run Text="System: " />
-                                                <Run Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
-                                                <Run Text=" (" />
-                                                <Run Text="{Binding EveSystem.SecurityStatus, StringFormat={}{0:F1}, FallbackValue='?'}"
-                                                     Foreground="{Binding EveSystem.SecurityColorHex, Converter={StaticResource HexColorToBrushConverter}}" />
-                                                <Run Text=")" />
-                                            </TextBlock>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Bounty: " Foreground="{DynamicResource TextColor}" />
+                                                <TextBlock Text="{Binding Bounty, Converter={StaticResource BountyConverter}}"
+                                                           Foreground="{DynamicResource TextColor}" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="System: " Foreground="{DynamicResource TextColor}" />
+                                                <TextBlock Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}"
+                                                           Foreground="{DynamicResource TextColor}" />
+                                                <TextBlock Text=" (" Foreground="{DynamicResource TextColor}" />
+                                                <TextBlock Text="{Binding EveSystem.SecurityStatus, StringFormat={}{0:F1}, FallbackValue='?'}"
+                                                           Foreground="{Binding EveSystem.SecurityColorHex, Converter={StaticResource HexColorToBrushConverter}}" />
+                                                <TextBlock Text=")" Foreground="{DynamicResource TextColor}" />
+                                            </StackPanel>
                                         </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>

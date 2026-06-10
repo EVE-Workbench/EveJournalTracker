@@ -30,9 +30,10 @@ namespace UI.avalonia.Views
             _serviceProvider = serviceProvider;
             viewModel.CurrentView = _serviceProvider.GetService<DefaultView>();
 
-            _fileWatcherService.OnISKUpdated += async (sender, e) =>
+            _fileWatcherService.OnISKUpdated += (sender, e) =>
             {
-                viewModel.UpdateCurrentBountyRunIsk(e.ISKChange, e.Character);
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    viewModel.UpdateCurrentBountyRunIsk(e.LastBounty, e.Character));
             };
 
             Opened += (s, e) =>

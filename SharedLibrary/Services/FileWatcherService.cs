@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using SharedLibrary.Cache;
 using SharedLibrary.Data;
 using SharedLibrary.Enums;
+using SharedLibrary.Events;
 using SharedLibrary.Models;
 using SharedLibrary.Models.Database;
 
@@ -22,20 +23,28 @@ public class FileWatcherService : IDisposable
     private readonly ConcurrentQueue<string> _fileChangeQueue;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly Dictionary<string, long> _filePositions = new();
+    private readonly Dictionary<string, long> _startLengths = new();
+    private readonly bool _loadFullSession;
+
+    // A log file counts as part of the current session only if it was last written within
+    // this window of the most recently touched file. This keeps previous sessions and other
+    // characters' old logs out, while still covering every client active right now.
+    private static readonly TimeSpan SessionWindow = TimeSpan.FromMinutes(30);
 
     public event EventHandler<LogEvent>? OnNewLogEvent;
-    public event EventHandler<(int TotalISK, int ISKChange, Character Character)>? OnISKUpdated;
+    public event EventHandler<IskUpdate>? OnISKUpdated;
 
     private List<EveSystemDto> EveSystems { get; set; } = [];
     private List<EveSystem> EveSystemsList { get; set; } = [];
 
-    public FileWatcherService(string logDirectory, CharacterCache characterCache, CharacterService characterService, AppDbContext context, ILogger<FileWatcherService> logger)
+    public FileWatcherService(string logDirectory, CharacterCache characterCache, CharacterService characterService, AppDbContext context, ILogger<FileWatcherService> logger, bool loadFullSession)
     {
         _logDirectory = logDirectory;
         _characterCache = characterCache;
         _characterService = characterService;
         _context = context;
         _logger = logger;
+        _loadFullSession = loadFullSession;
         _logEvents = [];
         _fileWatchers = [];
         _fileChangeQueue = new ConcurrentQueue<string>();
@@ -53,18 +62,18 @@ public class FileWatcherService : IDisposable
             _logger.LogWarning("Log directory '{LogDirectory}' does not exist; not watching", _logDirectory);
             return;
         }
-        
+
+        BaselineExistingFiles();
+
         var watcher = new FileSystemWatcher
         {
             Path = _logDirectory,
             Filter = "*_*_*.txt",
-            NotifyFilter = NotifyFilters.Attributes
-                           | NotifyFilters.CreationTime
-                           | NotifyFilters.DirectoryName
+            // Only react to content growth and new files. LastAccess in particular would fire
+            // on a mere read, which could re-trigger old files we have intentionally parked.
+            NotifyFilter = NotifyFilters.CreationTime
                            | NotifyFilters.FileName
-                           | NotifyFilters.LastAccess
                            | NotifyFilters.LastWrite
-                           | NotifyFilters.Security
                            | NotifyFilters.Size,
             IncludeSubdirectories = false
         };
@@ -74,6 +83,62 @@ public class FileWatcherService : IDisposable
         watcher.EnableRaisingEvents = true;
 
         _fileWatchers.Add(watcher);
+    }
+
+    // Record where each existing log file ends at startup. The "current session" is the set
+    // of files still being written now (last write within SessionWindow of the newest file),
+    // de-duplicated to the newest file per character. Older files (previous sessions, other
+    // characters' history) are parked at their end so they are never replayed. In "new lines
+    // only" mode the current file is also parked at its end; in "full session" mode it is
+    // replayed from the start, with the pre-startup portion flagged as historical so the
+    // live DPS meter ignores it.
+    private void BaselineExistingFiles()
+    {
+        var files = Directory.EnumerateFiles(_logDirectory, "*_*_*.txt").ToList();
+        if (files.Count == 0)
+            return;
+
+        var newestWrite = files.Max(File.GetLastWriteTimeUtc);
+        var sessionCutoff = newestWrite - SessionWindow;
+
+        var currentSessionFiles = files
+            .Where(file => File.GetLastWriteTimeUtc(file) >= sessionCutoff)
+            .GroupBy(file => ExtractCharacterIdFromFileName(Path.GetFileName(file)))
+            .Select(group => group.MaxBy(File.GetLastWriteTimeUtc))
+            .Where(file => file != null)
+            .ToHashSet();
+
+        foreach (var file in files)
+        {
+            long length;
+            try
+            {
+                length = new FileInfo(file).Length;
+            }
+            catch (IOException)
+            {
+                continue;
+            }
+
+            if (!currentSessionFiles.Contains(file))
+            {
+                // Previous session: keep the cursor at the end so a stray change can't re-read it.
+                _filePositions[file] = length;
+                continue;
+            }
+
+            _startLengths[file] = length;
+
+            if (_loadFullSession)
+            {
+                _filePositions[file] = 0;
+                _fileChangeQueue.Enqueue(file);
+            }
+            else
+            {
+                _filePositions[file] = length;
+            }
+        }
     }
 
     public void StopWatching()
@@ -108,9 +173,14 @@ public class FileWatcherService : IDisposable
                     try
                     {
                         _filePositions.TryAdd(filePath, 0);
+                        var startPosition = _filePositions[filePath];
+
+                        // Anything read before the file's startup length was already present
+                        // when the client launched, so it is backfill rather than live input.
+                        var isHistorical = startPosition < _startLengths.GetValueOrDefault(filePath);
 
                         await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                        stream.Seek(_filePositions[filePath], SeekOrigin.Begin);
+                        stream.Seek(startPosition, SeekOrigin.Begin);
 
                         using var reader = new StreamReader(stream);
                         while (await reader.ReadLineAsync(token) is { } line)
@@ -123,16 +193,14 @@ public class FileWatcherService : IDisposable
                             // Ignore empty log events
                             if (logEvent == null) continue;
 
+                            logEvent.IsHistorical = isHistorical;
                             _logEvents.Add(logEvent);
 
                             OnNewLogEvent?.Invoke(this, logEvent);
-                            // Update ISK values
-                            var totalIsk = _logEvents.Sum(log => log.BountyValue) ?? 0;
-                            var lastBountyEvent = _logEvents.LastOrDefault(log => log.Type == LogEventType.Bounty);
-                            var iskChange = lastBountyEvent?.BountyValue ?? 0;
+
                             if (logEvent.Type == LogEventType.Bounty)
                             {
-                                OnISKUpdated?.Invoke(this, (totalIsk, iskChange, character));
+                                OnISKUpdated?.Invoke(this, BuildIskUpdate(logEvent, character));
                             }
                         }
 
@@ -205,22 +273,17 @@ public class FileWatcherService : IDisposable
 
         if (line.Contains("(bounty)"))
         {
-            const string bountyPattern = @"<color=0xff00aa00>([\d,. ]+) ISK</b>";
+            // The amount uses the client's locale, so the thousands separator may be a comma,
+            // dot, (non-breaking) space or apostrophe. Capture it whole and keep only the digits.
+            const string bountyPattern = @"<color=0xff00aa00>([^<]+?)\s*ISK</b>";
             var match = Regex.Match(line, bountyPattern);
 
             if (match.Success)
             {
-                var valueString = match.Groups[1].Value.Replace(",", "").Replace(".", "").Replace(" ", "");
-                if (int.TryParse(valueString, out var value))
+                var digits = Regex.Replace(match.Groups[1].Value, @"\D", "");
+                if (int.TryParse(digits, out var value))
                 {
                     logEvent.BountyValue = value;
-
-                    var totalCharacterBounty = _logEvents
-                        .Where(log =>
-                            log.Character.CharacterId == character.CharacterId && log.Type == LogEventType.Bounty)
-                        .Sum(log => log.BountyValue);
-
-                    character.Bounty = totalCharacterBounty + value ?? value;
                 }
             }
 
@@ -297,6 +360,19 @@ public class FileWatcherService : IDisposable
         }
 
         return null;
+    }
+
+    private IskUpdate BuildIskUpdate(LogEvent bountyEvent, Character character)
+    {
+        var totalBounty = _logEvents
+            .Where(log => log.Type == LogEventType.Bounty)
+            .Sum(log => log.BountyValue) ?? 0;
+
+        var characterBounty = _logEvents
+            .Where(log => log.Type == LogEventType.Bounty && log.Character.CharacterId == character.CharacterId)
+            .Sum(log => log.BountyValue) ?? 0;
+
+        return new IskUpdate(totalBounty, bountyEvent.BountyValue ?? 0, character, characterBounty);
     }
 
     private void UpdateEveSystemsList(LogEvent logEvent)

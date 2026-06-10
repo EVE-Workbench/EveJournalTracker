@@ -6,9 +6,13 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Configurable shortcuts, managed from Settings: a list of available actions (start a bounty run, open EVE Journal) each with a **Record** button to bind your own combination, and a **Clear** button. Supports keyboard combos and mouse buttons (mouse 3/4/5), e.g. `Ctrl+Shift+Mouse4`. Keyboard shortcuts still work system-wide on Windows; mouse buttons work while the window is focused.
 - System-wide (window-unfocused) keyboard shortcuts on Linux via the desktop's GlobalShortcuts portal (KDE Plasma). The app registers its actions with the desktop; assign keys under System Settings → Shortcuts. No extra permissions required.
+- Setting to choose what is loaded at startup: load the full current gamelog session (default), or only new lines from the moment the agent starts. The live DPS meter always ignores old lines either way, so loading a session no longer sends a spike through the graph.
 
 ### Fixed
 - Fixed the security-status colour not showing next to a character's system in the character list
+- Per-character bounty and the "last bounty" counter now update live again; previously they stayed at 0 because the values were bound through `Run` elements, which Avalonia does not refresh on change, and were updated off the UI thread
+- Bounty amounts are now parsed regardless of the EVE client's language (handles comma, dot, space and apostrophe thousands separators)
+- Only the current play session is loaded at startup (the log files still being written), instead of replaying every character's entire gamelog history
 
 ### Removed
 - Removed the legacy WPF UI project (`EWB-Tracker`); the application is now Avalonia-only and cross-platform

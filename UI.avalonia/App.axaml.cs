@@ -97,9 +97,7 @@ public partial class App : Application
                     var settingsRepository = provider.GetRequiredService<ISettingRepository>();
 
                     var logDirSetting = settingsRepository.GetByKeyAsync("LogDir").GetAwaiter().GetResult();
-                    var logFolderLocation = logDirSetting != null && !string.IsNullOrWhiteSpace(logDirSetting.Value)
-                        ? logDirSetting.Value
-                        : EveUtils.GetDefaultLogFolderLocation();
+                    var logFolderLocation = ResolveLogFolder(logDirSetting?.Value, settingsRepository);
 
                     return new FileWatcherService(logFolderLocation, characterCache, characterService, context);
                 });
@@ -209,6 +207,21 @@ public partial class App : Application
         // TaskCanceledException as an unhandled exception on exit. Our own resources are
         // released above, so exit promptly to avoid that noisy crash during shutdown.
         Environment.Exit(0);
+    }
+
+    private static string ResolveLogFolder(string? savedPath, ISettingRepository settingsRepository)
+    {
+        if (!string.IsNullOrWhiteSpace(savedPath) && Directory.Exists(savedPath))
+            return savedPath;
+
+        // Saved path is empty or no longer exists (e.g. EVE now runs through a different
+        // Steam/Proton prefix). Auto-detect, and persist the correction when we find a real
+        // folder so it sticks and shows up in settings.
+        var detected = EveLogLocator.Detect();
+        if (Directory.Exists(detected) && !string.Equals(detected, savedPath, StringComparison.Ordinal))
+            settingsRepository.UpsertAsync("LogDir", detected).GetAwaiter().GetResult();
+
+        return detected;
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

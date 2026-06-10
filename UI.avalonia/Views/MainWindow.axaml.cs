@@ -117,6 +117,14 @@ namespace UI.avalonia.Views
 
         private void Window_KeyDown(object? sender, KeyEventArgs e)
         {
+            // Alt+F4 closes the borderless window (no native chrome to handle it).
+            if (e.Key == Key.F4 && e.KeyModifiers.HasFlag(KeyModifiers.Alt))
+            {
+                e.Handled = true;
+                Close();
+                return;
+            }
+
             // Check for Ctrl+Shift+N (Start new bounty run)
             if (e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift) && e.Key == Key.N)
             {
@@ -194,9 +202,48 @@ namespace UI.avalonia.Views
         // Maximize or Restore Window
         private void Maximize_Click(object sender, RoutedEventArgs e)
         {
-            WindowState = WindowState == WindowState.Maximized
-                ? WindowState.Normal
-                : WindowState.Maximized;
+            ToggleMaximize();
+        }
+
+        // Borderless windows have no OS maximize, and WindowState.Maximized would cover the
+        // taskbar/panel. Maximize manually to the screen's working area instead so it stays
+        // correct on Windows, Linux and macOS.
+        private bool _isMaximized;
+        private PixelPoint _restorePosition;
+        private Size _restoreSize;
+
+        private void ToggleMaximize()
+        {
+            if (_isMaximized)
+                RestoreFromMaximize();
+            else
+                Maximize();
+        }
+
+        private void Maximize()
+        {
+            var screen = Screens?.ScreenFromWindow(this) ?? Screens?.Primary;
+            if (screen is null)
+                return;
+
+            _restorePosition = Position;
+            _restoreSize = Bounds.Size;
+
+            var area = screen.WorkingArea;
+            var scale = screen.Scaling;
+
+            Position = area.Position;
+            Width = area.Width / scale;
+            Height = area.Height / scale;
+            _isMaximized = true;
+        }
+
+        private void RestoreFromMaximize()
+        {
+            Position = _restorePosition;
+            Width = _restoreSize.Width;
+            Height = _restoreSize.Height;
+            _isMaximized = false;
         }
 
         // Close Window
@@ -215,7 +262,7 @@ namespace UI.avalonia.Views
 
         private void ResizePressed(object? sender, PointerPressedEventArgs e)
         {
-            if (WindowState == WindowState.Maximized) return;
+            if (_isMaximized) return;
             if (sender is not Control control || control.Tag is not string tag) return;
             if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
 
@@ -293,12 +340,13 @@ namespace UI.avalonia.Views
         {
             if (e.ClickCount == 2)
             {
-                WindowState = WindowState == WindowState.Maximized
-                    ? WindowState.Normal
-                    : WindowState.Maximized;
+                ToggleMaximize();
             }
             else if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
+                // Dragging a maximized window restores it first, then moves.
+                if (_isMaximized)
+                    RestoreFromMaximize();
                 BeginMoveDrag(e);
             }
         }

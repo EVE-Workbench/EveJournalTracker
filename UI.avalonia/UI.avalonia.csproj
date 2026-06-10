@@ -6,6 +6,9 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+        <!-- Pre-existing nullable/style warnings + Avalonia DI-view loader notes. Silenced to
+             keep the run console clean; a proper nullability pass is planned in the joint review. -->
+        <NoWarn>$(NoWarn);CS8981;CS8618;CS8625;CS8767;CS8612;CS8622;CS8601;CS8602;CS8600;CS8603;CS8604;CS0108;AVLN3001</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

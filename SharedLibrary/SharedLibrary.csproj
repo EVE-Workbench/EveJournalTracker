@@ -4,6 +4,9 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <!-- Pre-existing nullable/style warnings. Silenced to keep the run console clean;
+             a proper nullability pass is planned in the joint project review. -->
+        <NoWarn>$(NoWarn);CS8981;CS8618;CS8625;CS8767;CS8612;CS8622;CS8601;CS8602;CS8600;CS8603;CS8604;CS0108</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

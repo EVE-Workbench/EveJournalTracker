@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## v0.2.0 - Cross-platform Avalonia release
+
 ### Added
 - New Avalonia UI cross-platform application (UI.avalonia)
 - AsyncImageLoader.Avalonia package for loading character avatar images from HTTP URLs

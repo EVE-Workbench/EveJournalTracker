@@ -1,14 +1,9 @@
 name: Build and Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'tag name e.g. v1.2.3'
-        required: true
 
 permissions:
   contents: write
@@ -137,8 +132,9 @@ jobs:
             ${{ env.APP_NAME }}-linux-x64.tar.gz
             ${{ env.APP_NAME }}-x86_64.AppImage
 
-  release:
+  publish-assets:
     needs: [build-windows, build-linux]
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -150,21 +146,9 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Determine tag
-        id: vars
-        run: |
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            TAG="${{ github.ref_name }}"
-          elif [ -n "${{ github.event.inputs.version }}" ]; then
-            TAG="${{ github.event.inputs.version }}"
-          else
-            TAG="v0.0.0-untagged-${{ github.run_number }}"
-          fi
-          echo "tag_name=$TAG" >> "$GITHUB_OUTPUT"
-
       - name: Extract release notes from CHANGELOG.md
         run: |
-          TAG="${{ steps.vars.outputs.tag_name }}"
+          TAG="${{ github.event.release.tag_name }}"
           : > RELEASE_NOTES.md
           if [ -f CHANGELOG.md ]; then
             awk -v tag="$TAG" '
@@ -173,14 +157,15 @@ jobs:
               flag { print }
             ' CHANGELOG.md > RELEASE_NOTES.md || true
           fi
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "See [CHANGELOG.md](CHANGELOG.md) for details." > RELEASE_NOTES.md
+          fi
 
-      - name: Create GitHub Release
+      - name: Attach assets and notes to the release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.vars.outputs.tag_name }}
-          name: ${{ steps.vars.outputs.tag_name }}
+          tag_name: ${{ github.event.release.tag_name }}
           body_path: RELEASE_NOTES.md
-          generate_release_notes: true
           files: |
             dist/*.zip
             dist/*.tar.gz

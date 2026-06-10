@@ -13,13 +13,25 @@ All notable changes to this project will be documented in this file.
   - Falls back to local keyboard events on non-Windows platforms
 - Clickable hyperlink in Settings to open Personal Access Token page in browser
 - Custom window controls with proper hover states and styling
+- DPS meter rebuilt as a lightweight custom graph control with a pop-out, always-on-top overlay (draggable, resizable, adjustable opacity, remembers its position/size)
+- Cross-platform EVE gamelog auto-detection (Steam/Proton including Flatpak and extra Steam libraries, plus Wine prefixes), with an "Auto-detect log location" button in Settings
+- Automatic correction of the saved log path at startup when it no longer exists (e.g. a different Steam/Proton prefix)
+- Manual resize grips on all edges/corners for the borderless window
+- Alt+F4 closes the window
+- Makefile with run/build/release/restore/clean targets for the Avalonia client
 
 ### Changed
 - Migrated from WPF to Avalonia for cross-platform support
+- Borderless window now uses `SystemDecorations="None"` for consistent custom chrome on all platforms (removes the duplicate native title bar that showed on Linux)
+- Maximize now fits the screen's working area instead of full screen, so it no longer overlaps the taskbar/panel
+- Reworked the DPS meter to a sliding-window tracker with wall-clock sampling and EMA smoothing at ~30fps; removed the LiveChartsCore dependency
 - Made the access token field in settings a password box to hide the token
 - Update dotnet version to 9.0.10
+- Silenced long-standing nullable/style build warnings so launching from a console stays clean (proper cleanup tracked separately)
 
 ### Fixed
+- Fixed a crash / noisy `TaskCanceledException` on exit (Linux) by cancelling the file-watcher loop and stopping the host with a final save during shutdown
+- Fixed the file watcher starting twice, which double-counted log events and logged "Log directory doesn't exist" twice
 - Fixed Avalonia data binding feedback loop causing online status to flip between True/False
   - Changed Online property bindings to use `Mode=OneWay` in AccountView and CharacterAvatarControl
 - Fixed character avatar images not loading by implementing AsyncImageLoader

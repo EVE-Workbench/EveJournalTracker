@@ -1,6 +1,8 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using UI.avalonia.ViewModels;
+using UI.avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
 using SharedLibrary.Services;
 using SharedLibrary.Models;
@@ -11,6 +13,7 @@ public partial class DpsChart : UserControl
 {
     private DpsChartViewModel? _vm;
     private FileWatcherService? _watcher;
+    private DpsOverlayWindow? _overlay;
 
     public DpsChart(DpsChartViewModel vm, FileWatcherService watcher)
     {
@@ -62,4 +65,20 @@ public partial class DpsChart : UserControl
 
     private void Watcher_OnNewLogEvent(object? sender, LogEvent e)
         => _vm?.ProcessLog(e);
+
+    private void OnPopOut(object? sender, RoutedEventArgs e)
+    {
+        if (_vm is null)
+            return;
+
+        if (_overlay is not null)
+        {
+            _overlay.Activate();
+            return;
+        }
+
+        _overlay = new DpsOverlayWindow { DataContext = _vm };
+        _overlay.Closed += (_, __) => _overlay = null;
+        _overlay.Show();
+    }
 }

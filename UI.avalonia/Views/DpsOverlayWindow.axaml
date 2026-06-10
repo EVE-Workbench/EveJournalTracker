@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:UI.avalonia.ViewModels"
+        xmlns:ctrl="using:UI.avalonia.Controls"
+        x:Class="UI.avalonia.Views.DpsOverlayWindow"
+        x:DataType="vm:DpsChartViewModel"
+        x:Name="OverlayRoot"
+        Title="DPS Overlay"
+        Width="420" Height="240"
+        MinWidth="240" MinHeight="150"
+        Topmost="True"
+        CanResize="True"
+        ShowInTaskbar="True"
+        SystemDecorations="None"
+        WindowStartupLocation="CenterScreen"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent">
+
+    <Border x:Name="PanelBorder" BorderBrush="{DynamicResource WindowBorder}" BorderThickness="1">
+        <Grid RowDefinitions="Auto,*">
+
+            <!-- draggable header -->
+            <Border x:Name="DragHandle" Grid.Row="0" Background="#22000000"
+                    Padding="10,6" PointerPressed="OnHeaderPressed">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                    <TextBlock Grid.Column="0" Text="DPS METER" FontSize="12" FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextColor}" />
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12"
+                                HorizontalAlignment="Right" Margin="0,0,10,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="OUT" FontSize="11" VerticalAlignment="Center" Foreground="#FF1E90FF" />
+                            <TextBlock Text="{Binding DpsDealt, StringFormat='{}{0:N0}'}"
+                                       FontSize="13" FontWeight="SemiBold" Foreground="#FF1E90FF" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="IN" FontSize="11" VerticalAlignment="Center" Foreground="#FFFF4500" />
+                            <TextBlock Text="{Binding DpsReceived, StringFormat='{}{0:N0}'}"
+                                       FontSize="13" FontWeight="SemiBold" Foreground="#FFFF4500" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button x:Name="OpacityButton" Grid.Column="2" Content="◐" Padding="7,3" FontSize="12"
+                            ToolTip.Tip="Overlay opacity">
+                        <Button.Flyout>
+                            <Flyout Placement="Bottom">
+                                <StackPanel Width="190" Margin="6" Spacing="8">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="OVERLAY OPACITY" FontSize="11"
+                                                   Foreground="{DynamicResource TextColor}" />
+                                        <TextBlock Grid.Column="1" FontSize="11"
+                                                   Foreground="{DynamicResource TextColor}"
+                                                   Text="{Binding #OverlayRoot.FillOpacity, StringFormat='{}{0:P0}'}" />
+                                    </Grid>
+                                    <Slider Minimum="0" Maximum="1" SmallChange="0.05" LargeChange="0.1"
+                                            Value="{Binding #OverlayRoot.FillOpacity, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                    <ToggleButton Grid.Column="3" Content="PIN" Padding="8,3" FontSize="10" Margin="6,0,0,0"
+                                  IsChecked="{Binding $parent[Window].Topmost, Mode=TwoWay}"
+                                  ToolTip.Tip="Always on top" />
+                    <Button Grid.Column="4" Content="✕" Padding="8,3" FontSize="11" Margin="6,0,0,0"
+                            Click="OnClose" ToolTip.Tip="Close overlay" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Margin="6" BorderBrush="{DynamicResource WindowBorder}" BorderThickness="1"
+                    Background="#22000000">
+                <ctrl:DpsGraph Series="{Binding Series}"
+                               Revision="{Binding GraphRevision}"
+                               Capacity="{Binding GraphPointCapacity}" />
+            </Border>
+
+            <!-- resize grip (manual pointer capture; reliable for frameless windows) -->
+            <Border x:Name="ResizeGrip" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                    Width="26" Height="26" Background="Transparent" Cursor="BottomRightCorner"
+                    PointerPressed="OnResizePressed" PointerMoved="OnResizeMoved"
+                    PointerReleased="OnResizeReleased">
+                <TextBlock Text="◢" FontSize="12" Foreground="{DynamicResource TextColor}"
+                           HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,3,1" />
+            </Border>
+
+        </Grid>
+    </Border>
+
+</Window>

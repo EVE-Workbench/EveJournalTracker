@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Removed
+- Removed the legacy WPF UI project (`EWB-Tracker`); the application is now Avalonia-only and cross-platform
+
 ## v0.2.0 - Cross-platform Avalonia release
 
 ### Added

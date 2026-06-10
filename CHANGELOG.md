@@ -1,14 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## v0.3.0 - Shortcuts, per-character DPS & log viewer
 
 ### Added
 - Working log viewer: live event log with compact, colour-coded rows per type (jump, bounty, combat, other), a monochrome icon toolbar (load full session / clear / sort), and unrecognised log lines are now shown too so you can spot information that isn't parsed yet
 - Configurable shortcuts, managed from Settings: a list of available actions (start a bounty run, open EVE Journal) each with a **Record** button to bind your own combination, and a **Clear** button. Supports keyboard combos and mouse buttons (mouse 3/4/5), e.g. `Ctrl+Shift+Mouse4`. Keyboard shortcuts still work system-wide on Windows; mouse buttons work while the window is focused.
 - System-wide (window-unfocused) keyboard shortcuts on Linux via the desktop's GlobalShortcuts portal (KDE Plasma). The app registers its actions with the desktop; assign keys under System Settings → Shortcuts. No extra permissions required.
 - Setting to choose what is loaded at startup: load the full current gamelog session (default), or only new lines from the moment the agent starts. The live DPS meter always ignores old lines either way, so loading a session no longer sends a spike through the graph.
-- Per-character DPS meter: a 📊 button next to each character in the list opens a pop-out DPS overlay scoped to just that character (the main meter still shows the combined fleet DPS). Multiple character overlays can be open at once.
+- Per-character DPS meter: a chart button next to each character in the list opens a pop-out DPS overlay scoped to just that character (the main meter still shows the combined fleet DPS). Multiple character overlays can be open at once.
 - The navigation menu now highlights the current page (recessed background with a teal accent bar)
 - Cleaner window titlebar buttons: monochrome vector icons (no more coloured emoji) with an edge-to-edge hover, fixing the odd spacing between them
 - Replaced the remaining coloured emoji (Settings section headers and buttons, per-character DPS button) with consistent monochrome vector icons

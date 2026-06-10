@@ -355,7 +355,7 @@ namespace UI.avalonia.Views
         {
             try
             {
-                var url = App.ServiceProvider.GetService<IConfiguration>().GetValue<string>("EveJournalUrl");
+                var url = _serviceProvider.GetService<IConfiguration>().GetValue<string>("EveJournalUrl");
                 if (!string.IsNullOrEmpty(url))
                 {
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo

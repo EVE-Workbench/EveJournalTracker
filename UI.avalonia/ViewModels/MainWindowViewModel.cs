@@ -340,7 +340,7 @@ namespace UI.avalonia.ViewModels
                     case "OpenJournal":
                         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                         {
-                            FileName = App.ServiceProvider.GetService<IConfiguration>().GetValue<string>("EveJournalUrl"),
+                            FileName = _configuration.GetValue<string>("EveJournalUrl"),
                             UseShellExecute = true
                         });
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.IO;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using SharedLibrary.Cache;
 using SharedLibrary.Data;
 using SharedLibrary.Enums;
@@ -15,6 +16,7 @@ public class FileWatcherService : IDisposable
     private readonly CharacterCache _characterCache;
     private readonly CharacterService _characterService;
     private readonly AppDbContext _context;
+    private readonly ILogger<FileWatcherService> _logger;
     private readonly List<LogEvent> _logEvents;
     private readonly List<FileSystemWatcher> _fileWatchers;
     private readonly ConcurrentQueue<string> _fileChangeQueue;
@@ -27,12 +29,13 @@ public class FileWatcherService : IDisposable
     private List<EveSystemDto> EveSystems { get; set; } = [];
     private List<EveSystem> EveSystemsList { get; set; } = [];
 
-    public FileWatcherService(string logDirectory, CharacterCache characterCache, CharacterService characterService, AppDbContext context)
+    public FileWatcherService(string logDirectory, CharacterCache characterCache, CharacterService characterService, AppDbContext context, ILogger<FileWatcherService> logger)
     {
         _logDirectory = logDirectory;
         _characterCache = characterCache;
         _characterService = characterService;
         _context = context;
+        _logger = logger;
         _logEvents = [];
         _fileWatchers = [];
         _fileChangeQueue = new ConcurrentQueue<string>();
@@ -47,9 +50,8 @@ public class FileWatcherService : IDisposable
         // check if the log directory exists
         if (!Directory.Exists(_logDirectory))
         {
-            Console.WriteLine("Log directory doesn't exist");
+            _logger.LogWarning("Log directory '{LogDirectory}' does not exist; not watching", _logDirectory);
             return;
-            //throw new DirectoryNotFoundException($"The log directory '{_logDirectory}' does not exist.");
         }
         
         var watcher = new FileSystemWatcher

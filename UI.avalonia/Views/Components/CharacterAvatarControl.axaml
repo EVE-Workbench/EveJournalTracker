@@ -28,7 +28,7 @@
                                  RadiusX="{Binding #Root.CircleRadius}"
                                  RadiusY="{Binding #Root.CircleRadius}" />
             </Panel.Clip>
-            <Image asyncImageLoader:ImageLoader.Source="{Binding #Root.Character.ImageUrl}"
+            <Image asyncImageLoader:ImageLoader.Source="{Binding #Root.Character.CharacterId, Converter={x:Static converters:CharacterPortraitUrlConverter.Instance}}"
                    Width="{Binding #Root.InnerSize}"
                    Height="{Binding #Root.InnerSize}"
                    Stretch="UniformToFill" />

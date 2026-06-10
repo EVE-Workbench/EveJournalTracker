@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using SharedLibrary.Cache;
 using SharedLibrary.Data;
 using SharedLibrary.Jobs;
@@ -98,8 +99,9 @@ public partial class App : Application
 
                     var logDirSetting = settingsRepository.GetByKeyAsync("LogDir").GetAwaiter().GetResult();
                     var logFolderLocation = ResolveLogFolder(logDirSetting?.Value, settingsRepository);
+                    var logger = provider.GetRequiredService<ILogger<FileWatcherService>>();
 
-                    return new FileWatcherService(logFolderLocation, characterCache, characterService, context);
+                    return new FileWatcherService(logFolderLocation, characterCache, characterService, context, logger);
                 });
 
                 services.AddSingleton(provider =>

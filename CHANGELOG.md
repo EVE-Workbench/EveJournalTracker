@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- Fixed the security-status colour not showing next to a character's system in the character list
+
 ### Removed
 - Removed the legacy WPF UI project (`EWB-Tracker`); the application is now Avalonia-only and cross-platform
 

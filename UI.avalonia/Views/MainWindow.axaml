@@ -182,7 +182,7 @@
                                                 <Run Text="{Binding EveSystem.Name, FallbackValue='Unknown System'}" />
                                                 <Run Text=" (" />
                                                 <Run Text="{Binding EveSystem.SecurityStatus, StringFormat={}{0:F1}, FallbackValue='?'}"
-                                                     Foreground="{Binding EveSystem.EveSystemDto.SecurityColorHex, Converter={StaticResource HexColorToBrushConverter}}" />
+                                                     Foreground="{Binding EveSystem.SecurityColorHex, Converter={StaticResource HexColorToBrushConverter}}" />
                                                 <Run Text=")" />
                                             </TextBlock>
                                         </StackPanel>

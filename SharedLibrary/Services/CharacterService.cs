@@ -16,37 +16,7 @@ public class CharacterService
     {
         _characterCache = characterCache;
     }
-    
-    /*private static async Task<string?> GetCharacterNameAsync(int charId)
-    {
-        using HttpClient client = new();
-        client.BaseAddress = new Uri(BaseUrl);
-        client.DefaultRequestHeaders.Accept.Clear();
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        client.DefaultRequestHeaders.Add("User-Agent", "Eve Workbench - Agent");
 
-        try
-        {
-            Console.WriteLine($"Request url: characters/{charId}/?datasource=tranquility");
-            var response = await client.GetAsync($"characters/{charId}/?datasource=tranquility");
-            response.EnsureSuccessStatusCode(); // trigger exception if not successful
-
-            var responseString = await response.Content.ReadAsStringAsync();
-            var json = JsonDocument.Parse(responseString);
-            return json.RootElement.GetProperty("name").GetString();
-        }
-        catch (HttpRequestException e)
-        {
-            Console.WriteLine($"Request error: {e.Message}");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"Unexpected error: {e.Message}");
-        }
-
-        return null;
-    }*/
-    
     public Character GetOrCreateCharacter(int characterId)
     {
         var character = _characterCache.GetCharacter(characterId);

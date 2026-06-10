@@ -14,9 +14,6 @@ namespace SharedLibrary.Models
         private bool _active = true;
         private int _position;
 
-        // Computed property for character avatar image URL
-        public string ImageUrl => $"https://images.evetech.net/characters/{CharacterId}/portrait?size=128";
-
         public string Name
         {
             get => _name;

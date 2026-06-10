@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file.
 - Per-character DPS meter: a 📊 button next to each character in the list opens a pop-out DPS overlay scoped to just that character (the main meter still shows the combined fleet DPS). Multiple character overlays can be open at once.
 - The navigation menu now highlights the current page (recessed background with a teal accent bar)
 - Cleaner window titlebar buttons: monochrome vector icons (no more coloured emoji) with an edge-to-edge hover, fixing the odd spacing between them
+- Replaced the remaining coloured emoji (Settings section headers and buttons, per-character DPS button) with consistent monochrome vector icons
+- The "Online" status on the Account page now updates live instead of staying frozen at the value it had when the page opened
+
+### Changed
+- Unhandled exceptions are now written to a crash log (`crash.log` in the app-data folder) for easier diagnosis
 
 ### Fixed
 - Fixed the security-status colour not showing next to a character's system in the character list

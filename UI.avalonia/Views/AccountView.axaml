@@ -56,10 +56,11 @@
                         <!-- Character Info -->
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
                             <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource TextColor}" />
-                            <TextBlock Foreground="{DynamicResource TextColor}">
-                                <Run Text="Online: " />
-                                <Run Text="{Binding Online, Mode=OneWay, Converter={StaticResource BoolToYesNoConverter}}" />
-                            </TextBlock>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Online: " Foreground="{DynamicResource TextColor}" />
+                                <TextBlock Text="{Binding Online, Converter={StaticResource BoolToYesNoConverter}}"
+                                           Foreground="{DynamicResource TextColor}" />
+                            </StackPanel>
                         </StackPanel>
 
                         <!-- Active Toggle -->

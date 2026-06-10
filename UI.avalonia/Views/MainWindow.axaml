@@ -139,12 +139,12 @@
                                             </StackPanel>
                                         </StackPanel>
 
-                                        <Button Grid.Column="2" Content="📊"
+                                        <Button Grid.Column="2" Classes="IconBtn"
                                                 VerticalAlignment="Center"
-                                                Background="Transparent" BorderThickness="0"
-                                                Padding="6" FontSize="15" Cursor="Hand"
                                                 Click="CharacterDps_Click"
-                                                ToolTip.Tip="Open a DPS meter for this character" />
+                                                ToolTip.Tip="Open a DPS meter for this character">
+                                            <PathIcon Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                                        </Button>
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>

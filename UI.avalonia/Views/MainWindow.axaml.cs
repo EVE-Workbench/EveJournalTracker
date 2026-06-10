@@ -40,9 +40,8 @@ namespace UI.avalonia.Views
 
             Closing += (s, e) =>
             {
-                _fileWatcherService.StopWatching();
                 _globalHotkeyService.Dispose();
-                // Call the app shutdown method
+                // Releases the file watcher, background services and host, then exits.
                 (App.Current as App)?.Shutdown();
             };
 

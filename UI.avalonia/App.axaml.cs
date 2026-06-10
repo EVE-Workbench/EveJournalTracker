@@ -162,8 +162,8 @@ public partial class App : Application
                 desktop.MainWindow = mainWindow;
                 mainWindow.Show();
 
-                var watcherService = _host.Services.GetRequiredService<FileWatcherService>();
-                watcherService.StartWatching();
+                // The watcher is started from MainWindow.Opened; starting it here too would
+                // attach a second FileSystemWatcher and double-count every log event.
 
                 _checkOnlineJob = _host.Services.GetRequiredService<CheckOnlineJob>();
                 _checkOnlineJob.Start();
@@ -182,15 +182,33 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
+    private bool _isShuttingDown;
+
     public void Shutdown()
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            var watcherService = _host.Services.GetRequiredService<FileWatcherService>();
-            watcherService.StopWatching();
+        if (_isShuttingDown)
+            return;
+        _isShuttingDown = true;
 
-            _checkOnlineJob?.Stop();
+        try
+        {
+            // Flush any pending character changes before tearing the host down.
+            _host.Services.GetRequiredService<CharacterCache>().SaveChanges();
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during final save: {ex.Message}");
+        }
+
+        try { _host.Services.GetRequiredService<FileWatcherService>().Dispose(); } catch { }
+        try { _checkOnlineJob?.Stop(); } catch { }
+        try { _host.StopAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult(); } catch { }
+        _host.Dispose();
+
+        // Avalonia's X11/D-Bus teardown can race on Linux and surface a benign
+        // TaskCanceledException as an unhandled exception on exit. Our own resources are
+        // released above, so exit promptly to avoid that noisy crash during shutdown.
+        Environment.Exit(0);
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

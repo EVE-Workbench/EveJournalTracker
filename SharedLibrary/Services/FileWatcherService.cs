@@ -9,7 +9,7 @@ using SharedLibrary.Models.Database;
 
 namespace SharedLibrary.Services;
 
-public class FileWatcherService
+public class FileWatcherService : IDisposable
 {
     private readonly string _logDirectory;
     private readonly CharacterCache _characterCache;
@@ -76,66 +76,80 @@ public class FileWatcherService
 
     public void StopWatching()
     {
-        //_cancellationTokenSource.Cancel();
         foreach (var watcher in _fileWatchers)
         {
             watcher.EnableRaisingEvents = false;
-            //watcher.Changed -= OnLogFileChanged;
-            //watcher.Created -= OnLogFileChanged;
             watcher.Dispose();
         }
 
         _fileWatchers.Clear();
     }
 
+    public void Dispose()
+    {
+        StopWatching();
+
+        if (!_cancellationTokenSource.IsCancellationRequested)
+            _cancellationTokenSource.Cancel();
+
+        _cancellationTokenSource.Dispose();
+    }
+
     private async Task ProcessFileChanges(CancellationToken token)
     {
-        while (!token.IsCancellationRequested)
+        try
         {
-            if (_fileChangeQueue.TryDequeue(out var filePath))
+            while (!token.IsCancellationRequested)
             {
-                try
+                if (_fileChangeQueue.TryDequeue(out var filePath))
                 {
-                    _filePositions.TryAdd(filePath, 0);
-
-                    await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    stream.Seek(_filePositions[filePath], SeekOrigin.Begin);
-
-                    using var reader = new StreamReader(stream);
-                    while (await reader.ReadLineAsync(token) is { } line)
+                    try
                     {
-                        var characterId = Convert.ToInt32(ExtractCharacterIdFromFileName(Path.GetFileName(filePath)));
-                        var character = _characterService.GetOrCreateCharacter(characterId);
+                        _filePositions.TryAdd(filePath, 0);
 
-                        var logEvent = ParseLogLine(line, character);
+                        await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        stream.Seek(_filePositions[filePath], SeekOrigin.Begin);
 
-                        // Ignore empty log events
-                        if (logEvent == null) continue;
-                        
-                        _logEvents.Add(logEvent);
-
-                        OnNewLogEvent?.Invoke(this, logEvent);
-                        // Update ISK values
-                        var totalIsk = _logEvents.Sum(log => log.BountyValue) ?? 0;
-                        var lastBountyEvent = _logEvents.LastOrDefault(log => log.Type == LogEventType.Bounty);
-                        var iskChange = lastBountyEvent?.BountyValue ?? 0;
-                        if (logEvent.Type == LogEventType.Bounty)
+                        using var reader = new StreamReader(stream);
+                        while (await reader.ReadLineAsync(token) is { } line)
                         {
-                            OnISKUpdated?.Invoke(this, (totalIsk, iskChange, character));
-                        }
-                    }
+                            var characterId = Convert.ToInt32(ExtractCharacterIdFromFileName(Path.GetFileName(filePath)));
+                            var character = _characterService.GetOrCreateCharacter(characterId);
 
-                    _filePositions[filePath] = stream.Position;
+                            var logEvent = ParseLogLine(line, character);
+
+                            // Ignore empty log events
+                            if (logEvent == null) continue;
+
+                            _logEvents.Add(logEvent);
+
+                            OnNewLogEvent?.Invoke(this, logEvent);
+                            // Update ISK values
+                            var totalIsk = _logEvents.Sum(log => log.BountyValue) ?? 0;
+                            var lastBountyEvent = _logEvents.LastOrDefault(log => log.Type == LogEventType.Bounty);
+                            var iskChange = lastBountyEvent?.BountyValue ?? 0;
+                            if (logEvent.Type == LogEventType.Bounty)
+                            {
+                                OnISKUpdated?.Invoke(this, (totalIsk, iskChange, character));
+                            }
+                        }
+
+                        _filePositions[filePath] = stream.Position;
+                    }
+                    catch (IOException)
+                    {
+                        // Ignore for now
+                    }
                 }
-                catch (IOException)
+                else
                 {
-                    // Ignore for now
+                    await Task.Delay(100, token);
                 }
             }
-            else
-            {
-                await Task.Delay(100, token);
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when the service is disposed during shutdown.
         }
     }
 

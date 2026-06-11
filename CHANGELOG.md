@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## v0.3.1 - macOS builds & bounty-run fix
 
 ### Added
 - macOS builds are now produced for releases (Apple Silicon `osx-arm64` and Intel `osx-x64`), packaged as a `.app` bundle. The app is ad-hoc signed but not notarized, so on first launch use right-click → Open (or clear quarantine with `xattr -dr com.apple.quarantine "EVE Workbench Agent.app"`).

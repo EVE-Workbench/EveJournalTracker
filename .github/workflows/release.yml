@@ -132,8 +132,94 @@ jobs:
             ${{ env.APP_NAME }}-linux-x64.tar.gz
             ${{ env.APP_NAME }}-x86_64.AppImage
 
+  build-macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        rid: [osx-arm64, osx-x64]
+    env:
+      OUTPUT_DIR: publish/macos
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish (self-contained)
+        run: >
+          dotnet publish ${{ env.PROJECT_PATH }}
+          -c ${{ env.CONFIGURATION }}
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -p:DebugType=none
+          -o ${{ env.OUTPUT_DIR }}
+
+      - name: Assemble .app bundle
+        run: |
+          set -e
+          APP="EVE Workbench Agent.app"
+          rm -rf "$APP"
+          mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+
+          cp -R "$OUTPUT_DIR"/. "$APP/Contents/MacOS/"
+          mv "$APP/Contents/MacOS/UI.avalonia" "$APP/Contents/MacOS/$APP_NAME"
+          chmod +x "$APP/Contents/MacOS/$APP_NAME"
+
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          [ -z "$VERSION" ] && VERSION="0.0.0"
+
+          printf '%s\n' \
+          '<?xml version="1.0" encoding="UTF-8"?>' \
+          '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
+          '<plist version="1.0">' \
+          '<dict>' \
+          '  <key>CFBundleName</key><string>EVE Workbench Agent</string>' \
+          '  <key>CFBundleDisplayName</key><string>EVE Workbench Agent</string>' \
+          '  <key>CFBundleIdentifier</key><string>com.eveworkbench.agent</string>' \
+          "  <key>CFBundleExecutable</key><string>$APP_NAME</string>" \
+          '  <key>CFBundleIconFile</key><string>ewbagent</string>' \
+          '  <key>CFBundlePackageType</key><string>APPL</string>' \
+          "  <key>CFBundleVersion</key><string>$VERSION</string>" \
+          "  <key>CFBundleShortVersionString</key><string>$VERSION</string>" \
+          '  <key>LSMinimumSystemVersion</key><string>11.0</string>' \
+          '  <key>NSHighResolutionCapable</key><true/>' \
+          '</dict>' \
+          '</plist>' > "$APP/Contents/Info.plist"
+
+          # Generate an .icns from the PNG logo (best-effort; the app still runs without it)
+          SRC=UI.avalonia/Assets/eveworkbench-logo.png
+          ICONSET=icon.iconset
+          mkdir -p "$ICONSET"
+          gen() { sips -z "$1" "$1" "$SRC" --out "$ICONSET/$2" >/dev/null 2>&1 || true; }
+          gen 16 icon_16x16.png
+          gen 32 icon_16x16@2x.png
+          gen 32 icon_32x32.png
+          gen 64 icon_32x32@2x.png
+          gen 128 icon_128x128.png
+          gen 256 icon_128x128@2x.png
+          gen 256 icon_256x256.png
+          gen 512 icon_256x256@2x.png
+          gen 512 icon_512x512.png
+          gen 1024 icon_512x512@2x.png
+          iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/ewbagent.icns" || true
+
+          # Ad-hoc sign so the bundle launches on Apple Silicon (no Developer ID / notarization)
+          codesign --force --deep --sign - "$APP" || true
+
+          ditto -c -k --keepParent "$APP" "$APP_NAME-${{ matrix.rid }}.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-${{ matrix.rid }}
+          path: ${{ env.APP_NAME }}-${{ matrix.rid }}.zip
+
   publish-assets:
-    needs: [build-windows, build-linux]
+    needs: [build-windows, build-linux, build-macos]
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
